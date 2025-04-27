@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Register Staff</title>
+</head>
+<body>
+    <h1>Form Registrasi Staff</h1>
+
+    <form method="POST" action="/register-staff/">
+        {% csrf_token %}
+        <label>Username:</label><br>
+        <input type="text" name="username" required><br><br>
+
+        <label>Password:</label><br>
+        <input type="password" name="password" required><br><br>
+
+        <label>Konfirmasi Password:</label><br>
+        <input type="password" name="konfirmasi_password" required><br><br>
+
+        <label>Nama Depan:</label><br>
+        <input type="text" name="nama_depan" required><br><br>
+
+        <label>Nama Tengah (opsional):</label><br>
+        <input type="text" name="nama_tengah"><br><br>
+
+        <label>Nama Belakang:</label><br>
+        <input type="text" name="nama_belakang" required><br><br>
+
+        <label>Email:</label><br>
+        <input type="email" name="email" required><br><br>
+
+        <label>Nomor Telepon:</label><br>
+        <input type="text" name="nomor_telepon" required><br><br>
+
+        <label>Peran:</label><br>
+        <select name="peran" required onchange="generateIdStaf(this)">
+            <option value="">-- Pilih Peran --</option>
+            <option value="Penjaga Hewan">Penjaga Hewan (PJHXXX)</option>
+            <option value="Staf Administrasi">Staf Administrasi (ADMXXX)</option>
+            <option value="Pelatih Pertunjukan">Pelatih Pertunjukan (PLPXXX)</option>
+        </select><br><br>
+
+        <label>ID Staff (Auto Generated):</label><br>
+        <input type="text" id="id_staf" name="id_staf" readonly><br><br>
+
+        <button type="submit">DAFTAR</button>
+    </form>
+
+    <a href="/register-pilih/">Kembali</a>
+
+    <script>
+    function generateIdStaf(select) {
+        var idInput = document.getElementById('id_staf');
+        if (select.value == "Penjaga Hewan") {
+            idInput.value = "PJH" + Math.floor(100 + Math.random() * 900);
+        } else if (select.value == "Staf Administrasi") {
+            idInput.value = "ADM" + Math.floor(100 + Math.random() * 900);
+        } else if (select.value == "Pelatih Pertunjukan") {
+            idInput.value = "PLP" + Math.floor(100 + Math.random() * 900);
+        } else {
+            idInput.value = "";
+        }
+    }
+    </script>
+</body>
+</html>

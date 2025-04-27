@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Register Dokter Hewan</title>
+</head>
+<body>
+    <h1>Form Registrasi Dokter Hewan</h1>
+
+    <form method="POST" action="/register-dokter-hewan/">
+        {% csrf_token %}
+        <label>Username:</label><br>
+        <input type="text" name="username" required><br><br>
+
+        <label>Password:</label><br>
+        <input type="password" name="password" required><br><br>
+
+        <label>Konfirmasi Password:</label><br>
+        <input type="password" name="konfirmasi_password" required><br><br>
+
+        <label>Nama Depan:</label><br>
+        <input type="text" name="nama_depan" required><br><br>
+
+        <label>Nama Tengah (opsional):</label><br>
+        <input type="text" name="nama_tengah"><br><br>
+
+        <label>Nama Belakang:</label><br>
+        <input type="text" name="nama_belakang" required><br><br>
+
+        <label>Email:</label><br>
+        <input type="email" name="email" required><br><br>
+
+        <label>Nomor Telepon:</label><br>
+        <input type="text" name="nomor_telepon" required><br><br>
+
+        <label>Nomor Sertifikasi Profesional:</label><br>
+        <input type="text" name="nomor_sertifikasi" required><br><br>
+
+        <label>Spesialisasi:</label><br>
+        <select name="spesialisasi" required onchange="toggleLainnya(this)">
+            <option value="">-- Pilih --</option>
+            <option value="Mamalia Besar">Mamalia Besar</option>
+            <option value="Reptil">Reptil</option>
+            <option value="Burung Eksotis">Burung Eksotis</option>
+            <option value="Primata">Primata</option>
+            <option value="Lainnya">Lainnya</option>
+        </select><br><br>
+
+        <div id="lainnya-input" style="display:none;">
+            <label>Spesialisasi Lainnya:</label><br>
+            <input type="text" name="spesialisasi_lainnya"><br><br>
+        </div>
+
+        <button type="submit">DAFTAR</button>
+    </form>
+
+    <a href="/register-pilih/">Kembali</a>
+
+    <script>
+    function toggleLainnya(select) {
+        var lainnyaInput = document.getElementById('lainnya-input');
+        if (select.value == 'Lainnya') {
+            lainnyaInput.style.display = 'block';
+        } else {
+            lainnyaInput.style.display = 'none';
+        }
+    }
+    </script>
+</body>
+</html>

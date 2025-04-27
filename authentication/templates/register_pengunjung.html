@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Register Pengunjung</title>
+</head>
+<body>
+    <h1>Form Registrasi Pengunjung</h1>
+
+    <form method="POST" action="/register-pengunjung/">
+        {% csrf_token %}
+        <label>Username:</label><br>
+        <input type="text" name="username" required><br><br>
+
+        <label>Password:</label><br>
+        <input type="password" name="password" required><br><br>
+
+        <label>Konfirmasi Password:</label><br>
+        <input type="password" name="konfirmasi_password" required><br><br>
+
+        <label>Nama Depan:</label><br>
+        <input type="text" name="nama_depan" required><br><br>
+
+        <label>Nama Tengah (opsional):</label><br>
+        <input type="text" name="nama_tengah"><br><br>
+
+        <label>Nama Belakang:</label><br>
+        <input type="text" name="nama_belakang" required><br><br>
+
+        <label>Email:</label><br>
+        <input type="email" name="email" required><br><br>
+
+        <label>Nomor Telepon:</label><br>
+        <input type="text" name="nomor_telepon" required><br><br>
+
+        <label>Alamat Lengkap:</label><br>
+        <textarea name="alamat" required></textarea><br><br>
+
+        <label>Tanggal Lahir:</label><br>
+        <input type="date" name="tanggal_lahir" required><br><br>
+
+        <button type="submit">DAFTAR</button>
+    </form>
+
+    <a href="/register-pilih/">Kembali</a>
+</body>
+</html>

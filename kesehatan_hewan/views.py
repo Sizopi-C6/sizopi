@@ -5,3 +5,6 @@ def rekam_medis_hewan(request):
 
 def penjadwalan_pemeriksaan_kesehatan(request):
     return render(request, 'penjadwalan_pemeriksaan_kesehatan.html')
+
+def pemberian_pakan(request):
+    return render(request, 'pemberian_pakan.html')

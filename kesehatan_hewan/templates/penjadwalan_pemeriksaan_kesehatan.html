@@ -40,7 +40,7 @@
         <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm">
             <h2 class="text-xl font-bold mb-4 text-center">TAMBAH JADWAL</h2>
 
-            <form>
+            <form onsubmit="addSchedule(event)">
                 <div class="mb-4">
                     <label for="tanggal" class="block text-gray-700 font-semibold mb-2">Tanggal Pemeriksaan Selanjutnya:</label>
                     <input type="date" id="tanggal" name="tanggal" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
@@ -67,6 +67,36 @@
             } else {
                 modal.classList.remove('flex');
                 modal.classList.add('hidden');
+            }
+        }
+
+        function toggleModal(show) {
+            const modal = document.getElementById('modal');
+            if (show) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+            }
+        }
+
+        function addSchedule(event) {
+            event.preventDefault(); 
+
+            const tanggalInput = document.getElementById('tanggal');
+            const tanggal = tanggalInput.value;
+
+            if (tanggal) {
+                const tbody = document.querySelector('table tbody');
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td class="border border-gray-300 px-4 py-2 text-center">${tanggal}</td>
+                `;
+                tbody.appendChild(newRow);
+
+                tanggalInput.value = ''; 
+                toggleModal(false); 
             }
         }
     </script>

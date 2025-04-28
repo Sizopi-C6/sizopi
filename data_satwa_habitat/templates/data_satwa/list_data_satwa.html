@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto p-6">
+    <h2 class="text-2xl font-bold mb-6 text-green-700">Data Satwa</h2>
+
+    <div class="mb-4">
+        <a href="{% url 'data_satwa_habitat:tambah_satwa' %}" class="inline-block px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition duration-200 shadow-md">+ Tambah Satwa</a>
+    </div>
+
+    <div class="overflow-x-auto bg-white rounded-lg shadow">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-green-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Nama Individu</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Spesies</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Asal Hewan</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Tanggal Lahir</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Status Kesehatan</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Habitat</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Foto</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for satwa in data_satwa %}
+                <tr class="{% cycle 'bg-white' 'bg-gray-50' %}">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ satwa.name }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ satwa.species }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ satwa.asal_hewan }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ satwa.tanggal_lahir }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                        {% if satwa.status_kesehatan|lower == 'sehat' %}
+                            bg-green-100 text-green-800
+                        {% elif satwa.status_kesehatan|lower == 'sakit' %}
+                            bg-red-100 text-red-800
+                        {% elif satwa.status_kesehatan|lower == 'dalam pemantauan' %}
+                            bg-yellow-100 text-yellow-800
+                        {% else %}
+                            bg-gray-100 text-gray-800
+                        {% endif %}">
+                            {{ satwa.status_kesehatan }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ satwa.nama_habitat }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <a href="{{ satwa.url_foto }}" target="_blank" class="text-green-600 hover:text-green-800 hover:underline">
+                            [Lihat Foto]
+                        </a>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <a href="{% url 'data_satwa_habitat:edit_satwa' satwa.id %}" class="text-green-600 hover:text-green-900 mr-2">Edit</a>
+                        <span class="text-gray-400">|</span>
+                        <a href="{% url 'data_satwa_habitat:delete_satwa' satwa.id %}" class="text-red-600 hover:text-red-900 ml-2">Hapus</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="px-6 py-10 text-center text-sm text-gray-500">Tidak ada data satwa.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

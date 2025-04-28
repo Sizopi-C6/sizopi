@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto p-6">
+    <h2 class="text-2xl font-bold mb-6 text-green-700">DETAIL HABITAT: {{ habitat.nama }}</h2>
+
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="flex justify-between items-start mb-4">
+            <div>
+                <p class="text-gray-700"><span class="font-semibold">Luas Area:</span> {{ habitat.luas_area }} m²</p>
+                <p class="text-gray-700"><span class="font-semibold">Status Habitat:</span> {{ habitat.status }}</p>
+                <p class="text-gray-700"><span class="font-semibold">Kapasitas Maksimal:</span> {{ habitat.kapasitas }} hewan</p>
+            </div>
+            <div class="flex gap-4">
+                <a href="{% url 'data_satwa_habitat:edit_habitat' habitat.nama %}" class="inline-block px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition duration-200 shadow-md">Edit Habitat</a>
+                <a href="{% url 'data_satwa_habitat:delete_habitat' habitat.nama %}" class="inline-block px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200 shadow-md">Hapus Habitat</a>
+            </div>
+        </div>
+    </div>
+
+    <h3 class="text-xl font-bold mb-4 text-green-700">Daftar Hewan dalam Habitat</h3>
+
+    <div class="overflow-x-auto bg-white rounded-lg shadow">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-green-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Nama Individu</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Spesies</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Asal Hewan</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Tanggal Lahir</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Status Kesehatan</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for hewan in hewan_list %}
+                <tr class="{% cycle 'bg-white' 'bg-gray-50' %}">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ hewan.name }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ hewan.species }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ hewan.asal_hewan }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ hewan.tanggal_lahir }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                        {% if hewan.status_kesehatan|lower == 'sehat' %}
+                            bg-green-100 text-green-800
+                        {% elif hewan.status_kesehatan|lower == 'sakit' %}
+                            bg-red-100 text-red-800
+                        {% elif hewan.status_kesehatan|lower == 'dalam pemantauan' %}
+                            bg-yellow-100 text-yellow-800
+                        {% else %}
+                            bg-gray-100 text-gray-800
+                        {% endif %}>
+                            {{ hewan.status_kesehatan }}
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-6 py-10 text-center text-sm text-gray-500">Tidak ada hewan di habitat ini.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

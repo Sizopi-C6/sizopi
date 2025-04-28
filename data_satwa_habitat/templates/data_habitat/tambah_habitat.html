@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto p-6">
+    <h2 class="text-2xl font-bold mb-6 text-green-700">Form Tambah Habitat</h2>
+
+    <form method="post" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 gap-6">
+            <div>
+                <label class="block text-gray-700 font-bold mb-2">{{ form.nama.label_tag }}</label>
+                {{ form.nama }}
+                {% if form.nama.errors %}
+                    <p class="text-red-500 text-xs italic">{{ form.nama.errors }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label class="block text-gray-700 font-bold mb-2">{{ form.luas_area.label_tag }}</label>
+                {{ form.luas_area }}
+                {% if form.luas_area.errors %}
+                    <p class="text-red-500 text-xs italic">{{ form.luas_area.errors }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label class="block text-gray-700 font-bold mb-2">{{ form.kapasitas.label_tag }}</label>
+                {{ form.kapasitas }}
+                {% if form.kapasitas.errors %}
+                    <p class="text-red-500 text-xs italic">{{ form.kapasitas.errors }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label class="block text-gray-700 font-bold mb-2">{{ form.status.label_tag }}</label>
+                {{ form.status }}
+                {% if form.status.errors %}
+                    <p class="text-red-500 text-xs italic">{{ form.status.errors }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                Tambah Habitat
+            </button>
+        </div>
+    </form>
+
+    <div class="mt-4">
+        <a href="{% url 'data_satwa_habitat:list_habitat' %}" class="text-green-600 hover:text-green-800">← Kembali ke Daftar Habitat</a>
+    </div>
+</div>
+{% endblock %}

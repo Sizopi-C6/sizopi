@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto p-6">
+    <h2 class="text-2xl font-bold mb-6 text-green-700">Daftar Habitat</h2>
+
+    <div class="mb-4">
+        <a href="{% url 'data_satwa_habitat:tambah_habitat' %}" class="inline-block px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition duration-200 shadow-md">+ Tambah Habitat</a>
+    </div>
+
+    <div class="overflow-x-auto bg-white rounded-lg shadow">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-green-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Nama Habitat</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Luas Area (m²)</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Kapasitas Maksimal</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Status Lingkungan</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for habitat in daftar_habitat %}
+                <tr class="{% cycle 'bg-white' 'bg-gray-50' %}">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ habitat.nama }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ habitat.luas_area|floatformat:2 }} m²</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ habitat.kapasitas }} hewan</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                        {% if habitat.status == 'Baik' %}
+                            bg-green-100 text-green-800
+                        {% elif habitat.status == 'Perlu Perbaikan' %}
+                            bg-yellow-100 text-yellow-800
+                        {% elif habitat.status == 'Sedang Direstorasi' %}
+                            bg-red-100 text-red-800
+                        {% else %}
+                            bg-gray-100 text-gray-800
+                        {% endif %}
+                        ">
+                            {{ habitat.status }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <a href="{% url 'data_satwa_habitat:detail_habitat' habitat.nama %}" class="text-green-600 hover:text-green-900 mr-2">Detail</a>
+                        <span class="text-gray-400">|</span>
+                        <a href="{% url 'data_satwa_habitat:edit_habitat' habitat.nama %}" class="text-green-600 hover:text-green-900 mx-2">Edit</a>
+                        <span class="text-gray-400">|</span>
+                        <a href="#" class="text-red-600 hover:text-red-900 ml-2">Hapus</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-6 py-10 text-center text-sm text-gray-500">Tidak ada data habitat.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

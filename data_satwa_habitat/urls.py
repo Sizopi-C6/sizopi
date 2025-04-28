@@ -4,7 +4,6 @@ from data_satwa_habitat.views import *
 app_name = 'data_satwa_habitat'
 
 urlpatterns = [
-    path('', show_main, name='show_main'),
     path('tambah-satwa/', tambah_satwa, name='tambah_satwa'),
     path('list-satwa/', show_list_satwa, name='show_list_satwa'),
     path('edit-satwa/<uuid:id>/', edit_satwa, name='edit_satwa'),

@@ -62,9 +62,6 @@ data_satwa = [
     }
 ]
 
-def show_main(request):
-    return render(request, "main.html", {})
-
 def tambah_satwa(request):
     if request.method == 'POST':
         form = SatwaForm(request.POST)

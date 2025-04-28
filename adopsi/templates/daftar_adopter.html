@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -57,10 +58,10 @@
         <div class="w-full max-w-6xl mx-auto">
             <!-- Header Section -->
             <div class="card p-8 mb-8">
-                <h1 class="text-3xl font-bold text-[#008000] mb-4">Manajemen Data Adopter</h1>
+                <h1 class="text-3xl font-bold text-[#008000] text-center">Data Adopter</h1>
             </div>
 
-            <!-- Contributors -->
+            <!-- Top Contributors -->
             <div class="card p-6 mb-8">
                 <h2 class="text-2xl font-semibold text-[#008000] mb-4">Adopter dengan Total Kontribusi Tertinggi dalam Setahun Terakhir</h2>
                 <div class="space-y-2">
@@ -87,9 +88,9 @@
                 </div>
             </div>
 
-            <!-- Adopters -->
+            <!-- Adopters Table -->
             <div class="card p-6">
-                <h2 class="text-2xl font-semibold text-[#008000] mb-6">Daftar Adopter</h2>
+                <h2 class="text-2xl font-semibold text-[#008000] mb-6">Daftar Seluruh Adopter</h2>
                 
                 <div class="overflow-x-auto rounded-lg border border-[#c8e1cc]">
                     <table class="w-full">
@@ -102,11 +103,12 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-[#008000]/20 bg-white">
+
                             <tr class="hover-row">
                                 <td class="px-4 py-3 text-[#008000]">Bambang</td>
                                 <td class="px-4 py-3 text-[#008000] font-medium">Rp5.000.000</td>
                                 <td class="px-4 py-3 text-[#008000]">
-                                    <a href="riwayat_adopter.html?nama=Bambang" class="btn-action btn-detail">
+                                    <a href="{% url 'adopsi:riwayat_adopter' adopter_id=1 %}" class="btn-action btn-detail">
                                         Lihat Detail
                                     </a>
                                 </td>
@@ -116,11 +118,12 @@
                                     </button>
                                 </td>
                             </tr>
+
                             <tr class="hover-row">
                                 <td class="px-4 py-3 text-[#008000]">Cindy</td>
                                 <td class="px-4 py-3 text-[#008000] font-medium">Rp3.500.000</td>
                                 <td class="px-4 py-3 text-[#008000]">
-                                    <a href="riwayat_adopter.html?nama=Bambang" class="btn-action btn-detail">
+                                    <a href="{% url 'adopsi:riwayat_adopter' adopter_id=2 %}" class="btn-action btn-detail">
                                         Lihat Detail
                                     </a>
                                 </td>
@@ -130,11 +133,12 @@
                                     </button>
                                 </td>
                             </tr>
+
                             <tr class="hover-row">
                                 <td class="px-4 py-3 text-[#008000]">Dewi</td>
                                 <td class="px-4 py-3 text-[#008000] font-medium">Rp3.200.000</td>
                                 <td class="px-4 py-3 text-[#008000]">
-                                    <a href="riwayat_adopter.html?nama=Bambang" class="btn-action btn-detail">
+                                    <a href="{% url 'adopsi:riwayat_adopter' adopter_id=3 %}" class="btn-action btn-detail">
                                         Lihat Detail
                                     </a>
                                 </td>
@@ -144,11 +148,12 @@
                                     </button>
                                 </td>
                             </tr>
+
                             <tr class="hover-row">
                                 <td class="px-4 py-3 text-[#008000]">Eko</td>
                                 <td class="px-4 py-3 text-[#008000] font-medium">Rp2.800.000</td>
                                 <td class="px-4 py-3 text-[#008000]">
-                                    <a href="riwayat_adopter.html?nama=Bambang" class="btn-action btn-detail">
+                                    <a href="{% url 'adopsi:riwayat_adopter' adopter_id=4 %}" class="btn-action btn-detail">
                                         Lihat Detail
                                     </a>
                                 </td>
@@ -158,11 +163,12 @@
                                     </button>
                                 </td>
                             </tr>
+
                             <tr class="hover-row">
                                 <td class="px-4 py-3 text-[#008000]">Fajar</td>
                                 <td class="px-4 py-3 text-[#008000] font-medium">Rp2.500.000</td>
                                 <td class="px-4 py-3 text-[#008000]">
-                                    <a href="riwayat_adopter.html?nama=Bambang" class="btn-action btn-detail">
+                                    <a href="{% url 'adopsi:riwayat_adopter' adopter_id=5 %}" class="btn-action btn-detail">
                                         Lihat Detail
                                     </a>
                                 </td>
@@ -185,6 +191,7 @@
     </div>
 
     <script>
+        // Fungsi untuk handle delete
         document.querySelectorAll('.btn-delete').forEach(button => {
             button.addEventListener('click', function() {
                 const confirmDelete = confirm('Apakah Anda yakin ingin menghapus data ini?');

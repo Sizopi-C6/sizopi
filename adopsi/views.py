@@ -9,5 +9,5 @@ def program_adopsi_pengunjung(request):
 def daftar_adopter(request):
     return render(request, 'daftar_adopter.html')
 
-def riwayat_adopter(request):
-    return render(request, 'riwayat_adopter.html')
+def riwayat_adopter(request, adopter_id):
+    return render(request, 'riwayat_adopter.html', {'adopter_id': adopter_id})

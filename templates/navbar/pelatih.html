@@ -1,0 +1,74 @@
+{% load static %}
+<style>
+    /* CSS Umum Navbar */
+    .navbar {
+        background: #2c3e50;
+        padding: 1rem 2rem;
+        font-family: 'Segoe UI', sans-serif;
+    }
+    .navbar-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .navbar-brand {
+        color: white;
+        font-weight: bold;
+        text-decoration: none;
+        font-size: 1.5rem;
+    }
+    .navbar-menu {
+        display: flex;
+        gap: 1.5rem;
+    }
+    .navbar-item {
+        color: #ecf0f1;
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        transition: all 0.3s;
+    }
+    .navbar-item:hover {
+        background: #34495e;
+    }
+    .navbar-item.cta {
+        background: #e74c3c;
+    }
+    .navbar-item.cta:hover {
+        background: #c0392b;
+    }
+    .navbar-brand {
+        display: flex;
+        align-items: center;
+        color: white;
+        font-weight: bold;
+        text-decoration: none;
+        font-size: 1.5rem;
+    }
+    .navbar-logo {
+        height: 40px;
+        margin-right: 10px;
+    }
+    </style>
+    
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-brand">
+                <img src="{% static 'images/lion.png' %}" alt="Logo" class="navbar-logo">
+                <span>SIZOPI</span>
+            </a>
+            
+            <div class="navbar-menu">
+                <a href="/dashboard" class="navbar-item">Dashboard</a>
+                <a href="/jadwal-pertunjukan" class="navbar-item">Jadwal Pertunjukan</a>
+            </div>
+            
+            <div class="navbar-menu">
+                <a href="/profile" class="navbar-item">Profil</a>
+                <a href="/logout" class="navbar-item cta">Logout</a>
+            </div>
+        </div>
+    </nav>
+    

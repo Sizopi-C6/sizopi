@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+  
+{% block meta %}
+<title>SIZOPI - C6</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+  
+  .btn-primary {
+    transition: all 0.3s ease;
+  }
+  
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 128, 0, 0.25);
+  }
+  
+  .btn-secondary {
+    transition: all 0.3s ease;
+  }
+  
+  .btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 128, 0, 0.15);
+  }
+  
+  .card {
+    background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
+  }
+  
+  .logo-pulse {
+    animation: pulse 4s infinite;
+  }
+  
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+    100% { transform: scale(1); }
+  }
+</style>
+{% endblock meta %}
+
+{% block content %}
+<div class="bg-[#e8f4ea] min-h-screen flex flex-col font-[Poppins]">
+  {% include 'navbar/guest.html' %}
+  
+  <!-- Konten Utama -->
+  <main class="flex-grow flex items-center justify-center p-4">
+    <div class="w-full max-w-md p-1">
+      <div class="card p-10 rounded-2xl shadow-lg text-center border border-[#c8e1cc]">
+        <div class="logo-pulse">
+          <img src="{% static 'images/lion.png' %}" alt="lion" class="w-64 h-64 mx-auto mb-4">
+        </div>
+        
+        <h1 class="text-4xl font-bold text-[#008000] mb-3">SIZOPI - C6</h1>
+        <h2 class="text-xl font-medium text-[#008000]/80 mb-10">Sistem Informasi Zoo Pintar</h2>
+
+        <div class="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4 justify-center">
+          <a href="/login/" class="btn-primary px-8 py-3 bg-[#008000] text-white font-semibold rounded-lg hover:bg-[#006400] focus:outline-none focus:ring-2 focus:ring-[#008000] focus:ring-opacity-50">
+            Login
+          </a>
+          <a href="/register-pilih/" class="btn-secondary px-8 py-3 bg-white text-[#008000] font-semibold rounded-lg border-2 border-[#008000] hover:bg-[#e0f0e3] focus:outline-none focus:ring-2 focus:ring-[#008000] focus:ring-opacity-50">
+            Register
+          </a>
+        </div>
+      </div>
+      
+      <p class="text-center text-[#008000]/60 mt-6 text-sm">
+        © 2025 SIZOPI. All rights reserved.
+      </p>
+    </div>
+  </main>
+</div>
+{% endblock content %}

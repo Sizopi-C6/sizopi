@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('', include('data_satwa_habitat.urls')),
+    path('', include('authentication.urls')),
     path('admin/', admin.site.urls),
+    path('data-satwa-habitat/', include('data_satwa_habitat.urls')),
 ]

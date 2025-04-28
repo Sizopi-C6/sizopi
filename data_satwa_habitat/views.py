@@ -18,7 +18,7 @@ data_satwa = [
         "tanggal_lahir": "2015-05-31",
         "status_kesehatan": "Sehat",
         "nama_habitat": "Savannah Besar",
-        "url_foto": "https://example.com/manny.jpg"
+        "url_foto": "https://upload.wikimedia.org/wikipedia/commons/3/37/African_Bush_Elephant.jpg"
     },
     {
         "id": "64a99631-3623-48ef-90c6-ad2df48a141a",
@@ -28,7 +28,7 @@ data_satwa = [
         "tanggal_lahir": "2015-10-28",
         "status_kesehatan": "Dalam Pemantauan",
         "nama_habitat": "Hutan Tropis",
-        "url_foto": "https://example.com/sherekhan.jpg"
+        "url_foto": "https://upload.wikimedia.org/wikipedia/commons/0/06/Tigre_de_Sumatra.jpg"
     },
     {
         "id": "bcce867f-2b20-4da1-9105-91cb5ba64988",
@@ -38,7 +38,7 @@ data_satwa = [
         "tanggal_lahir": "2016-03-26",
         "status_kesehatan": "Sehat",
         "nama_habitat": "Hutan Tropis",
-        "url_foto": "https://example.com/baloo.jpg"
+        "url_foto": "https://upload.wikimedia.org/wikipedia/commons/e/e2/Grizzlybear55.jpg"
     },
     {
         "id": "29c035c7-a531-473b-9de9-f6dae2bde6f6",
@@ -48,7 +48,7 @@ data_satwa = [
         "tanggal_lahir": "2016-08-23",
         "status_kesehatan": "Sakit",
         "nama_habitat": "Hutan Tropis",
-        "url_foto": "https://example.com/rajah.jpg"
+        "url_foto": "https://upload.wikimedia.org/wikipedia/commons/1/1c/Tigress_at_Jim_Corbett_National_Park.jpg"
     },
     {
         "id": "5f2b4591-7a02-4e96-a95c-074b1719eba8",
@@ -58,7 +58,7 @@ data_satwa = [
         "tanggal_lahir": "2017-01-20",
         "status_kesehatan": "Sehat",
         "nama_habitat": "Gurun Panas",
-        "url_foto": "https://example.com/sahara.jpg"
+        "url_foto": "https://upload.wikimedia.org/wikipedia/commons/b/b7/Camel_in_Mongolia.jpg"
     }
 ]
 
@@ -114,12 +114,12 @@ def find_satwa_by_id(satwa_id):
 def delete_satwa(request, id):
     satwa = find_satwa_by_id(id)
     if not satwa:
-        return redirect('data_satwa_habitat:list_satwa')
+        return redirect('data_satwa_habitat:show_list_satwa')
     
     if request.method == 'POST':
-        return redirect('list_satwa')
+        return redirect('data_satwa_habitat:show_list_satwa')
     
-    return redirect('data_satwa_habitat:list_satwa')
+    return redirect('data_satwa_habitat:show_list_satwa')
 
 def list_habitat(request):
     return render(request, 'data_habitat/list_habitat.html', {

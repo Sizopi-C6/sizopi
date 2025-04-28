@@ -5,101 +5,111 @@
   <title>Rekam Medis Hewan</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 p-8">
+<body class="bg-gray-100">
 
-  <div class="max-w-6xl mx-auto bg-white p-6 rounded shadow">
-    <h2 class="text-2xl font-bold text-center mb-4">REKAM MEDIS</h2>
-
-    <div class="text-center mb-6">
-      <a onclick="openModal('tambahModal')" class="text-blue-600 hover:underline cursor-pointer">[+ Tambah Rekam Medis]</a>
-    </div>
-
-    <table class="table-auto w-full border">
-      <thead>
-        <tr class="bg-gray-200">
-          <th class="border px-4 py-2">Tanggal Pemeriksaan</th>
-          <th class="border px-4 py-2">Nama Dokter</th>
-          <th class="border px-4 py-2">Status Kesehatan</th>
-          <th class="border px-4 py-2">Diagnosa</th>
-          <th class="border px-4 py-2">Pengobatan</th>
-          <th class="border px-4 py-2">Catatan Tindak Lanjut</th>
-          <th class="border px-4 py-2">Aksi</th>
-        </tr>
-      </thead>
-      <tbody id="rekamMedisTable">
-        <!-- Data dummy pertama -->
-        <tr>
-          <td class="border px-4 py-2">2025-04-01</td>
-          <td class="border px-4 py-2">Dr. Siti Aminah</td>
-          <td class="border px-4 py-2">Sakit</td>
-          <td class="border px-4 py-2">Infeksi saluran pernapasan</td>
-          <td class="border px-4 py-2">Antibiotik selama 7 hari</td>
-          <td class="border px-4 py-2">Evaluasi kondisi, perbaikan ventilasi kandang.</td>
-          <td class="border px-4 py-2">
-            <a onclick="openEditModal(this)" class="text-blue-600 hover:underline">[Edit]</a>
-            <a onclick="openDeleteModal(this)" class="text-red-600 hover:underline ml-2">[Hapus]</a>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+<header class="fixed w-full">
+  <div class="flex justify-center">
+    <button class="bg-green-600 text-white px-4 py-2 rounded ml-4 mt-4 " onclick="openModal('tambahModal')"> Tambah Rekam Medis
+    </button>
   </div>
+</header>
 
-  <!-- Modal Tambah -->
-  <div id="tambahModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-    <div class="bg-white p-6 rounded w-96">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-semibold">Form Pencatatan Rekam Medis</h3>
-        <button onclick="closeModal('tambahModal')">&times;</button>
+<main class="pt-24 px-4">
+  <div class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow">
+    <h2 class="text-4xl font-extrabold leading-none tracking-tight md:text-5xl xl:text-5xl font-bold text-center mb-6 text-green-600">REKAM MEDIS</h2>
+    <div class="overflow-x-auto">
+      <table class="table-auto w-full text-sm text-left">
+        <thead class="text-xs text-gray-700 uppercase bg-[#e8f4ea]">
+          <tr>
+            <th class="px-6 py-3">Tanggal Pemeriksaan</th>
+            <th class="px-6 py-3">Nama Dokter</th>
+            <th class="px-6 py-3">Status Kesehatan</th>
+            <th class="px-6 py-3">Diagnosa</th>
+            <th class="px-6 py-3">Pengobatan</th>
+            <th class="px-6 py-3">Catatan Tindak Lanjut</th>
+            <th class="px-6 py-3">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="rekamMedisTable" class="bg-white divide-y divide-gray-200">
+          <tr>
+            <td class="px-6 py-4">2025-04-01</td>
+            <td class="px-6 py-4">Dr. Siti Aminah</td>
+            <td class="px-6 py-4">Sakit</td>
+            <td class="px-6 py-4">Infeksi saluran pernapasan</td>
+            <td class="px-6 py-4">Antibiotik selama 7 hari</td>
+            <td class="px-6 py-4">Evaluasi kondisi, perbaikan ventilasi kandang.</td>
+            <td class="px-6 py-4">
+              <div class="flex justify-center">
+                <button class="bg-green-600 text-white px-4 py-2 rounded mt-2 " onclick="openEditModal(this)"> Edit
+                </button>
+
+                <button class="bg-red-600 text-white px-4 py-2 rounded ml-2 mt-2 " onclick="openDeleteModal(this)"> Hapus
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<!-- Modal Tambah -->
+<div id="tambahModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+  <div class="bg-white p-6 rounded-lg w-96">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-bold">Form Pencatatan Rekam Medis</h3>
+      <button onclick="closeModal('tambahModal')" class="text-xl">&times;</button>
+    </div>
+    <form id="formTambah">
+      <input type="date" name="tanggal" class="w-full mb-3 border p-2 rounded" required>
+      <input type="text" name="nama_dokter" placeholder="Nama Dokter" class="w-full mb-3 border p-2 rounded" required>
+      <select name="status" class="w-full mb-3 border p-2 rounded" onchange="toggleSakitFields(this.value)">
+        <option value="Sehat">Sehat</option>
+        <option value="Sakit">Sakit</option>
+      </select>
+      <div id="sakitFields" class="hidden">
+        <input type="text" name="diagnosa" placeholder="Diagnosa" class="w-full mb-3 border p-2 rounded">
+        <input type="text" name="pengobatan" placeholder="Pengobatan" class="w-full mb-3 border p-2 rounded">
       </div>
-      <form id="formTambah">
-        <input type="date" name="tanggal" class="w-full mb-2 border p-2" required>
-        <input type="text" name="nama_dokter" placeholder="Nama Dokter" class="w-full mb-2 border p-2" required>
-        <select name="status" class="w-full mb-2 border p-2" onchange="toggleSakitFields(this.value)">
-          <option value="Sehat">Sehat</option>
-          <option value="Sakit">Sakit</option>
-        </select>
-        <div id="sakitFields" class="hidden">
-          <input type="text" name="diagnosa" placeholder="Diagnosa" class="w-full mb-2 border p-2">
-          <input type="text" name="pengobatan" placeholder="Pengobatan" class="w-full mb-2 border p-2">
-        </div>
-        <div class="flex justify-end gap-2">
-          <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Simpan</button>
-          <button type="button" onclick="closeModal('tambahModal')" class="bg-gray-400 text-white px-4 py-2 rounded">Batal</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal Edit -->
-  <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-    <div class="bg-white p-6 rounded w-96">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-semibold">Edit Rekam Medis</h3>
-        <button onclick="closeModal('editModal')">&times;</button>
-      </div>
-      <form id="formEdit">
-        <input type="text" name="catatan" placeholder="Catatan Tindak Lanjut" class="w-full mb-2 border p-2">
-        <input type="text" name="diagnosa_baru" placeholder="Diagnosa Baru" class="w-full mb-2 border p-2" required>
-        <input type="text" name="pengobatan_baru" placeholder="Pengobatan Baru" class="w-full mb-2 border p-2" required>
-        <div class="flex justify-end gap-2">
-          <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Simpan</button>
-          <button type="button" onclick="closeModal('editModal')" class="bg-gray-400 text-white px-4 py-2 rounded">Batal</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal Hapus -->
-  <div id="hapusModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-    <div class="bg-white p-6 rounded w-80">
-      <h3 class="text-lg font-semibold mb-4">Hapus Rekam Medis</h3>
-      <p class="mb-4">Apakah anda yakin ingin menghapus rekam medis ini?</p>
       <div class="flex justify-end gap-2">
-        <button onclick="deleteRecord()" class="bg-red-500 text-white px-4 py-2 rounded">YA</button>
-        <button onclick="closeModal('hapusModal')" class="bg-gray-400 text-white px-4 py-2 rounded">TIDAK</button>
+        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Simpan</button>
+        <button type="button" onclick="closeModal('tambahModal')" class="bg-gray-400 text-white px-4 py-2 rounded">Batal</button>
       </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Edit -->
+<div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+  <div class="bg-white p-6 rounded-lg w-96">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-bold">Edit Rekam Medis</h3>
+      <button onclick="closeModal('editModal')" class="text-xl">&times;</button>
+    </div>
+    <form id="formEdit">
+      <input type="text" name="catatan" placeholder="Catatan Tindak Lanjut" class="w-full mb-3 border p-2 rounded">
+      <input type="text" name="diagnosa_baru" placeholder="Diagnosa Baru" class="w-full mb-3 border p-2 rounded" required>
+      <input type="text" name="pengobatan_baru" placeholder="Pengobatan Baru" class="w-full mb-3 border p-2 rounded" required>
+      <div class="flex justify-end gap-2">
+        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Simpan</button>
+        <button type="button" onclick="closeModal('editModal')" class="bg-gray-400 text-white px-4 py-2 rounded">Batal</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Hapus -->
+<div id="hapusModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+  <div class="bg-white p-6 rounded-lg w-80">
+    <h3 class="text-lg font-bold mb-4">Hapus Rekam Medis</h3>
+    <p class="mb-4">Apakah anda yakin ingin menghapus rekam medis ini?</p>
+    <div class="flex justify-end gap-2">
+      <button onclick="deleteRecord()" class="bg-red-600 text-white px-4 py-2 rounded">YA</button>
+      <button onclick="closeModal('hapusModal')" class="bg-gray-400 text-white px-4 py-2 rounded">TIDAK</button>
     </div>
   </div>
+</div>
 
 <script>
 let rowToEdit, rowToDelete;
@@ -114,8 +124,7 @@ function closeModal(id) {
 
 function toggleSakitFields(value) {
   const fields = document.getElementById('sakitFields');
-  if (value === 'Sakit') fields.classList.remove('hidden');
-  else fields.classList.add('hidden');
+  fields.classList.toggle('hidden', value !== 'Sakit');
 }
 
 document.getElementById('formTambah').onsubmit = function(e) {
@@ -125,14 +134,14 @@ document.getElementById('formTambah').onsubmit = function(e) {
   const newRow = table.insertRow();
 
   newRow.innerHTML = `
-    <td class="border px-4 py-2">${form.tanggal.value}</td>
-    <td class="border px-4 py-2">${form.nama_dokter.value}</td>
-    <td class="border px-4 py-2">${form.status.value}</td>
-    <td class="border px-4 py-2">${form.diagnosa.value || '-'}</td>
-    <td class="border px-4 py-2">${form.pengobatan.value || '-'}</td>
-    <td class="border px-4 py-2">-</td>
-    <td class="border px-4 py-2">
-      <a onclick="openEditModal(this)" class="text-blue-600 hover:underline">[Edit]</a>
+    <td class="px-6 py-4">${form.tanggal.value}</td>
+    <td class="px-6 py-4">${form.nama_dokter.value}</td>
+    <td class="px-6 py-4">${form.status.value}</td>
+    <td class="px-6 py-4">${form.diagnosa.value || '-'}</td>
+    <td class="px-6 py-4">${form.pengobatan.value || '-'}</td>
+    <td class="px-6 py-4">-</td>
+    <td class="px-6 py-4">
+      <a onclick="openEditModal(this)" class="text-green-600 hover:underline">[Edit]</a>
       <a onclick="openDeleteModal(this)" class="text-red-600 hover:underline ml-2">[Hapus]</a>
     </td>
   `;

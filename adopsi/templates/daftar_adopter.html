@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Adopter - SIZOPI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        
+        .card {
+            background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #c8e1cc;
+        }
+        
+        .table-header {
+            background-color: rgba(0, 128, 0, 0.08);
+        }
+        
+        .hover-row:hover {
+            background-color: rgba(0, 128, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-action {
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+        
+        .btn-delete {
+            color: #dc2626;
+            background-color: #fee2e2;
+        }
+        
+        .btn-delete:hover {
+            background-color: #fecaca;
+        }
+        
+        .btn-detail {
+            color: #008000;
+            background-color: #dcfce7;
+        }
+        
+        .btn-detail:hover {
+            background-color: #bbf7d0;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-[#e8f4ea]" style="font-family: 'Poppins', sans-serif;">
+    <div class="p-8">
+        <div class="w-full max-w-6xl mx-auto">
+            <!-- Header Section -->
+            <div class="card p-8 mb-8">
+                <h1 class="text-3xl font-bold text-[#008000] mb-4">Manajemen Data Adopter</h1>
+            </div>
+
+            <!-- Contributors -->
+            <div class="card p-6 mb-8">
+                <h2 class="text-2xl font-semibold text-[#008000] mb-4">Adopter dengan Total Kontribusi Tertinggi dalam Setahun Terakhir</h2>
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center bg-white p-4 rounded-lg hover:shadow-md transition-all">
+                        <span class="font-medium text-[#008000]">1. Bambang</span>
+                        <span class="text-[#008000] font-medium">Rp5.000.000</span>
+                    </div>
+                    <div class="flex justify-between items-center bg-white p-4 rounded-lg hover:shadow-md transition-all">
+                        <span class="font-medium text-[#008000]">2. Cindy</span>
+                        <span class="text-[#008000] font-medium">Rp3.500.000</span>
+                    </div>
+                    <div class="flex justify-between items-center bg-white p-4 rounded-lg hover:shadow-md transition-all">
+                        <span class="font-medium text-[#008000]">3. Dewi</span>
+                        <span class="text-[#008000] font-medium">Rp3.200.000</span>
+                    </div>
+                    <div class="flex justify-between items-center bg-white p-4 rounded-lg hover:shadow-md transition-all">
+                        <span class="font-medium text-[#008000]">4. Eko</span>
+                        <span class="text-[#008000] font-medium">Rp2.800.000</span>
+                    </div>
+                    <div class="flex justify-between items-center bg-white p-4 rounded-lg hover:shadow-md transition-all">
+                        <span class="font-medium text-[#008000]">5. Fajar</span>
+                        <span class="text-[#008000] font-medium">Rp2.500.000</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Adopters -->
+            <div class="card p-6">
+                <h2 class="text-2xl font-semibold text-[#008000] mb-6">Daftar Adopter</h2>
+                
+                <div class="overflow-x-auto rounded-lg border border-[#c8e1cc]">
+                    <table class="w-full">
+                        <thead class="table-header">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Nama Adopter</th>
+                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Total Kontribusi</th>
+                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Riwayat Adopsi</th>
+                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#008000]/20 bg-white">
+                            <tr class="hover-row">
+                                <td class="px-4 py-3 text-[#008000]">Bambang</td>
+                                <td class="px-4 py-3 text-[#008000] font-medium">Rp5.000.000</td>
+                                <td class="px-4 py-3 text-[#008000]">
+                                    <a href="riwayat_adopter.html?nama=Bambang" class="btn-action btn-detail">
+                                        Lihat Detail
+                                    </a>
+                                </td>
+                                <td class="px-4 py-3 space-x-2">
+                                    <button class="btn-action btn-delete">
+                                        Hapus
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="hover-row">
+                                <td class="px-4 py-3 text-[#008000]">Cindy</td>
+                                <td class="px-4 py-3 text-[#008000] font-medium">Rp3.500.000</td>
+                                <td class="px-4 py-3 text-[#008000]">
+                                    <a href="riwayat_adopter.html?nama=Bambang" class="btn-action btn-detail">
+                                        Lihat Detail
+                                    </a>
+                                </td>
+                                <td class="px-4 py-3 space-x-2">
+                                    <button class="btn-action btn-delete">
+                                        Hapus
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="hover-row">
+                                <td class="px-4 py-3 text-[#008000]">Dewi</td>
+                                <td class="px-4 py-3 text-[#008000] font-medium">Rp3.200.000</td>
+                                <td class="px-4 py-3 text-[#008000]">
+                                    <a href="riwayat_adopter.html?nama=Bambang" class="btn-action btn-detail">
+                                        Lihat Detail
+                                    </a>
+                                </td>
+                                <td class="px-4 py-3 space-x-2">
+                                    <button class="btn-action btn-delete">
+                                        Hapus
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="hover-row">
+                                <td class="px-4 py-3 text-[#008000]">Eko</td>
+                                <td class="px-4 py-3 text-[#008000] font-medium">Rp2.800.000</td>
+                                <td class="px-4 py-3 text-[#008000]">
+                                    <a href="riwayat_adopter.html?nama=Bambang" class="btn-action btn-detail">
+                                        Lihat Detail
+                                    </a>
+                                </td>
+                                <td class="px-4 py-3 space-x-2">
+                                    <button class="btn-action btn-delete">
+                                        Hapus
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="hover-row">
+                                <td class="px-4 py-3 text-[#008000]">Fajar</td>
+                                <td class="px-4 py-3 text-[#008000] font-medium">Rp2.500.000</td>
+                                <td class="px-4 py-3 text-[#008000]">
+                                    <a href="riwayat_adopter.html?nama=Bambang" class="btn-action btn-detail">
+                                        Lihat Detail
+                                    </a>
+                                </td>
+                                <td class="px-4 py-3 space-x-2">
+                                    <button class="btn-action btn-delete">
+                                        Hapus
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="mt-8 text-center text-sm text-[#008000]/60">
+                © 2025 SIZOPI. All rights reserved.
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.btn-delete').forEach(button => {
+            button.addEventListener('click', function() {
+                const confirmDelete = confirm('Apakah Anda yakin ingin menghapus data ini?');
+                if(confirmDelete) {
+                    const row = this.closest('tr');
+                    row.remove();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

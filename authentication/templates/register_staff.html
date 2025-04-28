@@ -1,67 +1,221 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <title>Register Staff</title>
-</head>
-<body>
-    <h1>Form Registrasi Staff</h1>
-
-    <form method="POST" action="/register-staff/">
-        {% csrf_token %}
-        <label>Username:</label><br>
-        <input type="text" name="username" required><br><br>
-
-        <label>Password:</label><br>
-        <input type="password" name="password" required><br><br>
-
-        <label>Konfirmasi Password:</label><br>
-        <input type="password" name="konfirmasi_password" required><br><br>
-
-        <label>Nama Depan:</label><br>
-        <input type="text" name="nama_depan" required><br><br>
-
-        <label>Nama Tengah (opsional):</label><br>
-        <input type="text" name="nama_tengah"><br><br>
-
-        <label>Nama Belakang:</label><br>
-        <input type="text" name="nama_belakang" required><br><br>
-
-        <label>Email:</label><br>
-        <input type="email" name="email" required><br><br>
-
-        <label>Nomor Telepon:</label><br>
-        <input type="text" name="nomor_telepon" required><br><br>
-
-        <label>Peran:</label><br>
-        <select name="peran" required onchange="generateIdStaf(this)">
-            <option value="">-- Pilih Peran --</option>
-            <option value="Penjaga Hewan">Penjaga Hewan (PJHXXX)</option>
-            <option value="Staf Administrasi">Staf Administrasi (ADMXXX)</option>
-            <option value="Pelatih Pertunjukan">Pelatih Pertunjukan (PLPXXX)</option>
-        </select><br><br>
-
-        <label>ID Staff (Auto Generated):</label><br>
-        <input type="text" id="id_staf" name="id_staf" readonly><br><br>
-
-        <button type="submit">DAFTAR</button>
-    </form>
-
-    <a href="/register-pilih/">Kembali</a>
-
-    <script>
-    function generateIdStaf(select) {
-        var idInput = document.getElementById('id_staf');
-        if (select.value == "Penjaga Hewan") {
-            idInput.value = "PJH" + Math.floor(100 + Math.random() * 900);
-        } else if (select.value == "Staf Administrasi") {
-            idInput.value = "ADM" + Math.floor(100 + Math.random() * 900);
-        } else if (select.value == "Pelatih Pertunjukan") {
-            idInput.value = "PLP" + Math.floor(100 + Math.random() * 900);
-        } else {
-            idInput.value = "";
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register Staff - SIZOPI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'Poppins', sans-serif;
     }
-    </script>
+    
+    .btn-primary {
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 128, 0, 0.25);
+    }
+    
+    input:focus, select:focus, textarea:focus {
+      box-shadow: 0 0 0 3px rgba(0, 128, 0, 0.2);
+      border-color: #008000;
+      outline: none;
+    }
+    
+    .card {
+      background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
+    }
+  </style>
+</head>
+<body class="bg-[#e8f4ea] min-h-screen py-8">
+  <div class="container mx-auto px-4 max-w-3xl">
+    <div class="card p-8 rounded-xl shadow-lg border border-[#c8e1cc]">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-[#008000] mb-2">Form Registrasi Staff</h1>
+        <p class="text-[#008000]/70">Silakan lengkapi data di bawah ini untuk mendaftar sebagai Staff</p>
+      </div>
+      
+      <form method="POST" action="/register-staff/" class="space-y-5">
+        {% csrf_token %}
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <!-- Username -->
+          <div class="space-y-1">
+            <label for="username" class="block text-[#006400] font-medium">Username:</label>
+            <input 
+              type="text" 
+              id="username" 
+              name="username" 
+              required
+              class="w-full px-4 py-2 rounded-lg bg-white border border-[#b8d8be]"
+              placeholder="Username Anda"
+            >
+          </div>
+          
+          <!-- Email -->
+          <div class="space-y-1">
+            <label for="email" class="block text-[#006400] font-medium">Email:</label>
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              required
+              class="w-full px-4 py-2 rounded-lg bg-white border border-[#b8d8be]"
+              placeholder="email@contoh.com"
+            >
+          </div>
+          
+          <!-- Password -->
+          <div class="space-y-1">
+            <label for="password" class="block text-[#006400] font-medium">Password:</label>
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              required
+              class="w-full px-4 py-2 rounded-lg bg-white border border-[#b8d8be]"
+              placeholder="Masukkan password"
+            >
+          </div>
+          
+          <!-- Konfirmasi Password -->
+          <div class="space-y-1">
+            <label for="konfirmasi_password" class="block text-[#006400] font-medium">Konfirmasi Password:</label>
+            <input 
+              type="password" 
+              id="konfirmasi_password" 
+              name="konfirmasi_password" 
+              required
+              class="w-full px-4 py-2 rounded-lg bg-white border border-[#b8d8be]"
+              placeholder="Konfirmasi password"
+            >
+          </div>
+        </div>
+        
+        <hr class="border-[#b8d8be]">
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <!-- Nama Depan -->
+          <div class="space-y-1">
+            <label for="nama_depan" class="block text-[#006400] font-medium">Nama Depan:</label>
+            <input 
+              type="text" 
+              id="nama_depan" 
+              name="nama_depan" 
+              required
+              class="w-full px-4 py-2 rounded-lg bg-white border border-[#b8d8be]"
+              placeholder="Nama depan"
+            >
+          </div>
+          
+          <!-- Nama Tengah -->
+          <div class="space-y-1">
+            <label for="nama_tengah" class="block text-[#006400] font-medium">Nama Tengah (opsional):</label>
+            <input 
+              type="text" 
+              id="nama_tengah" 
+              name="nama_tengah"
+              class="w-full px-4 py-2 rounded-lg bg-white border border-[#b8d8be]"
+              placeholder="Nama tengah"
+            >
+          </div>
+          
+          <!-- Nama Belakang -->
+          <div class="space-y-1">
+            <label for="nama_belakang" class="block text-[#006400] font-medium">Nama Belakang:</label>
+            <input 
+              type="text" 
+              id="nama_belakang" 
+              name="nama_belakang" 
+              required
+              class="w-full px-4 py-2 rounded-lg bg-white border border-[#b8d8be]"
+              placeholder="Nama belakang"
+            >
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <!-- Nomor Telepon -->
+          <div class="space-y-1">
+            <label for="nomor_telepon" class="block text-[#006400] font-medium">Nomor Telepon:</label>
+            <input 
+              type="text" 
+              id="nomor_telepon" 
+              name="nomor_telepon" 
+              required
+              class="w-full px-4 py-2 rounded-lg bg-white border border-[#b8d8be]"
+              placeholder="08xxxxxxxxxx"
+            >
+          </div>
+          
+          <!-- Peran -->
+          <div class="space-y-1">
+            <label for="peran" class="block text-[#006400] font-medium">Peran:</label>
+            <select 
+              id="peran" 
+              name="peran" 
+              required 
+              onchange="generateIdStaf(this)"
+              class="w-full px-4 py-2 rounded-lg bg-white border border-[#b8d8be]"
+            >
+              <option value="">-- Pilih Peran --</option>
+              <option value="Penjaga Hewan">Penjaga Hewan (PJHXXX)</option>
+              <option value="Staf Administrasi">Staf Administrasi (ADMXXX)</option>
+              <option value="Pelatih Pertunjukan">Pelatih Pertunjukan (PLPXXX)</option>
+            </select>
+          </div>
+        </div>
+        
+        <!-- ID Staff -->
+        <div class="space-y-1">
+          <label for="id_staf" class="block text-[#006400] font-medium">ID Staff (Auto Generated):</label>
+          <input 
+            type="text" 
+            id="id_staf" 
+            name="id_staf"
+            readonly
+            class="w-full px-4 py-2 rounded-lg bg-[#e0f0e3] border border-[#b8d8be] text-gray-600"
+            placeholder="Pilih peran terlebih dahulu"
+          >
+        </div>
+        
+        <!-- Submit Button -->
+        <div class="pt-4">
+          <button 
+            type="submit" 
+            class="btn-primary w-full px-6 py-3 bg-[#008000] text-white font-semibold rounded-lg hover:bg-[#006400]"
+          >
+            DAFTAR
+          </button>
+        </div>
+      </form>
+      
+      <div class="mt-6 text-center">
+        <a href="/register-pilih/" class="inline-block text-[#008000] hover:text-[#006400] hover:underline">
+          Kembali ke Pilihan Registrasi
+        </a>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    function generateIdStaf(select) {
+      var idInput = document.getElementById('id_staf');
+      if (select.value == "Penjaga Hewan") {
+        idInput.value = "PJH" + Math.floor(100 + Math.random() * 900);
+      } else if (select.value == "Staf Administrasi") {
+        idInput.value = "ADM" + Math.floor(100 + Math.random() * 900);
+      } else if (select.value == "Pelatih Pertunjukan") {
+        idInput.value = "PLP" + Math.floor(100 + Math.random() * 900);
+      } else {
+        idInput.value = "";
+      }
+    }
+  </script>
 </body>
 </html>

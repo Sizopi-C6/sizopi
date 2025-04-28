@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Adopter - SIZOPI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        
+        .card {
+            background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #c8e1cc;
+        }
+        
+        .table-header {
+            background-color: rgba(0, 128, 0, 0.08);
+        }
+        
+        .hover-row:hover {
+            background-color: rgba(0, 128, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-action {
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+        
+        .btn-delete {
+            color: #dc2626;
+            background-color: #fee2e2;
+        }
+        
+        .btn-delete:hover {
+            background-color: #fecaca;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-[#e8f4ea]" style="font-family: 'Poppins', sans-serif;">
+    <div class="p-8">
+        <div class="w-full max-w-6xl mx-auto">
+            <!-- Tombol Kembali (di luar card) -->
+            <a href="{% url 'adopsi:daftar_adopter' %}" class="text-[#008000] hover:text-[#006400] flex items-center mb-8">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                </svg>
+                Kembali
+            </a>
+
+            <!-- Judul dalam card yang ditengah -->
+            <div class="card p-8 mb-8">
+                <h1 class="text-3xl font-bold text-[#008000] text-center">Riwayat Adopsi</h1>
+            </div>
+
+            <!-- Detail Adopter -->
+            <div class="card p-6 mb-8">
+                <div class="bg-white rounded-lg p-6 shadow-sm">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-[#008000]">
+                        {% if adopter_id == 1 %}
+                        <div>
+                            <p class="font-medium">Nama Adopter:</p>
+                            <p>Bambang Susanto</p>
+                        </div>
+                        <div>
+                            <p class="font-medium">Alamat:</p>
+                            <p>Jl. Merdeka No. 123, Jakarta</p>
+                        </div>
+                        <div>
+                            <p class="font-medium">Kontak:</p>
+                            <p>0812-3456-7890</p>
+                        </div>
+                        {% elif adopter_id == 2 %}
+                        <div>
+                            <p class="font-medium">Nama Adopter:</p>
+                            <p>Cindy Wijaya</p>
+                        </div>
+                        <div>
+                            <p class="font-medium">Alamat:</p>
+                            <p>Jl. Sudirman No. 456, Bandung</p>
+                        </div>
+                        <div>
+                            <p class="font-medium">Kontak:</p>
+                            <p>0813-7890-1234</p>
+                        </div>
+                        {% elif adopter_id == 3 %}
+                        <div>
+                            <p class="font-medium">Nama Adopter:</p>
+                            <p>Dewi Lestari</p>
+                        </div>
+                        <div>
+                            <p class="font-medium">Alamat:</p>
+                            <p>Jl. Gatot Subroto No. 789, Surabaya</p>
+                        </div>
+                        <div>
+                            <p class="font-medium">Kontak:</p>
+                            <p>0814-1234-5678</p>
+                        </div>
+                        {% elif adopter_id == 4 %}
+                        <div>
+                            <p class="font-medium">Nama Adopter:</p>
+                            <p>Eko Prasetyo</p>
+                        </div>
+                        <div>
+                            <p class="font-medium">Alamat:</p>
+                            <p>Jl. Ahmad Yani No. 321, Yogyakarta</p>
+                        </div>
+                        <div>
+                            <p class="font-medium">Kontak:</p>
+                            <p>0815-5678-9012</p>
+                        </div>
+                        {% elif adopter_id == 5 %}
+                        <div>
+                            <p class="font-medium">Nama Adopter:</p>
+                            <p>Fajar Nugraha</p>
+                        </div>
+                        <div>
+                            <p class="font-medium">Alamat:</p>
+                            <p>Jl. Diponegoro No. 654, Semarang</p>
+                        </div>
+                        <div>
+                            <p class="font-medium">Kontak:</p>
+                            <p>0816-9012-3456</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabel Riwayat -->
+            <div class="card p-6">
+                <h2 class="text-2xl font-semibold text-[#008000] mb-6">Riwayat Adopsi</h2>
+                
+                <div class="overflow-x-auto rounded-lg border border-[#c8e1cc]">
+                    <table class="w-full">
+                        <thead class="table-header">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Nama Hewan</th>
+                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Jenis</th>
+                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Tanggal Mulai</th>
+                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Tanggal Berakhir</th>
+                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Jumlah</th>
+                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Status/Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#008000]/20 bg-white">
+                            {% if adopter_id == 1 %}
+                            <tr class="hover-row">
+                                <td class="px-4 py-3 text-[#008000]">Melly</td>
+                                <td class="px-4 py-3 text-[#008000]">Gajah</td>
+                                <td class="px-4 py-3 text-[#008000]">2025-02-26</td>
+                                <td class="px-4 py-3 text-[#008000]">2025-08-26</td>
+                                <td class="px-4 py-3 text-[#008000] font-medium">Rp850.000</td>
+                                <td class="px-4 py-3">
+                                    <span class="status-badge bg-green-100 text-green-700">
+                                        Sedang Berlangsung
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr class="hover-row">
+                                <td class="px-4 py-3 text-[#008000]">Simba</td>
+                                <td class="px-4 py-3 text-[#008000]">Singa</td>
+                                <td class="px-4 py-3 text-[#008000]">2024-07-10</td>
+                                <td class="px-4 py-3 text-[#008000]">2024-10-10</td>
+                                <td class="px-4 py-3 text-[#008000] font-medium">Rp500.000</td>
+                                <td class="px-4 py-3">
+                                    <button class="btn-action btn-delete">
+                                        Hapus
+                                    </button>
+                                </td>
+                            </tr>
+                            {% elif adopter_id == 2 %}
+                            <tr class="hover-row">
+                                <td class="px-4 py-3 text-[#008000]">Nala</td>
+                                <td class="px-4 py-3 text-[#008000]">Zebra</td>
+                                <td class="px-4 py-3 text-[#008000]">2023-12-12</td>
+                                <td class="px-4 py-3 text-[#008000]">2024-12-12</td>
+                                <td class="px-4 py-3 text-[#008000] font-medium">Rp1.200.000</td>
+                                <td class="px-4 py-3">
+                                    <button class="btn-action btn-delete">
+                                        Hapus
+                                    </button>
+                                </td>
+                            </tr>
+                            {% elif adopter_id == 3 %}
+                            <tr class="hover-row">
+                                <td class="px-4 py-3 text-[#008000]">Milo</td>
+                                <td class="px-4 py-3 text-[#008000]">Orangutan</td>
+                                <td class="px-4 py-3 text-[#008000]">2025-03-15</td>
+                                <td class="px-4 py-3 text-[#008000]">2025-09-15</td>
+                                <td class="px-4 py-3 text-[#008000] font-medium">Rp950.000</td>
+                                <td class="px-4 py-3">
+                                    <span class="status-badge bg-green-100 text-green-700">
+                                        Sedang Berlangsung
+                                    </span>
+                                </td>
+                            </tr>
+                            {% elif adopter_id == 4 %}
+                            <tr class="hover-row">
+                                <td class="px-4 py-3 text-[#008000]">Kiko</td>
+                                <td class="px-4 py-3 text-[#008000]">Badak</td>
+                                <td class="px-4 py-3 text-[#008000]">2024-11-01</td>
+                                <td class="px-4 py-3 text-[#008000]">2025-05-01</td>
+                                <td class="px-4 py-3 text-[#008000] font-medium">Rp1.100.000</td>
+                                <td class="px-4 py-3">
+                                    <button class="btn-action btn-delete">
+                                        Hapus
+                                    </button>
+                                </td>
+                            </tr>
+                            {% elif adopter_id == 5 %}
+                            <tr class="hover-row">
+                                <td class="px-4 py-3 text-[#008000]">Luna</td>
+                                <td class="px-4 py-3 text-[#008000]">Harimau</td>
+                                <td class="px-4 py-3 text-[#008000]">2025-01-20</td>
+                                <td class="px-4 py-3 text-[#008000]">2025-07-20</td>
+                                <td class="px-4 py-3 text-[#008000] font-medium">Rp1.500.000</td>
+                                <td class="px-4 py-3">
+                                    <span class="status-badge bg-green-100 text-green-700">
+                                        Sedang Berlangsung
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fungsi untuk handle delete riwayat
+        document.querySelectorAll('.btn-delete').forEach(button => {
+            button.addEventListener('click', function() {
+                const confirmDelete = confirm('Apakah Anda yakin ingin menghapus riwayat ini?');
+                if(confirmDelete) {
+                    const row = this.closest('tr');
+                    row.remove();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

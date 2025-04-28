@@ -1,3 +1,4 @@
 from django.shortcuts import render
 
-# Create your views here.
+def program_adopsi_admin(request):
+    return render(request, 'adopsi_admin.html')

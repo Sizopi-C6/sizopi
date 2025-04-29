@@ -9,6 +9,15 @@ def form_adopsi_hewan(request):
 def program_adopsi_pengunjung(request):
     return render(request, 'adopsi_pengunjung.html')
 
+def sertifikat_adopsi(request):
+    return render(request, 'sertifikat_adopsi.html')
+
+def laporan_kondisi_hewan(request):
+    return render(request, 'laporan_kondisi_hewan.html')
+
+def perpanjang_periode(request):
+    return render(request, 'perpanjang_periode.html')
+
 def daftar_adopter(request):
     return render(request, 'daftar_adopter.html')
 

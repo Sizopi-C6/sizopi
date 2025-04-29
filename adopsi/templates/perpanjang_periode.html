@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+    <title>Perpanjang Periode Adopsi Satwa</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        
+        .card-gradient {
+            background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
+            border: 1px solid #c8e1cc;
+        }
+        
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            border: 3px solid #008000;
+            border-radius: 15px;
+            background-color: #fff;
+            box-shadow: 0 10px 25px rgba(0, 100, 0, 0.15);
+        }
+        
+        .form-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .form-body {
+            margin-bottom: 30px;
+        }
+        
+        .form-footer {
+            text-align: center;
+            margin-top: 40px;
+        }
+        
+        .input-field {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #c8e1cc;
+            border-radius: 8px;
+            background-color: #f9fbf9;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: #008000;
+            box-shadow: 0 0 0 2px rgba(0, 128, 0, 0.1);
+        }
+        
+        .btn-primary {
+            background-color: #008000;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: #006400;
+        }
+        
+        .btn-secondary {
+            background-color: #f0f0f0;
+            color: #008000;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e0e0e0;
+        }
+    </style>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar/pengunjung_sebagai_adopter.html' %}
+<div class="bg-[#e8f4ea] min-h-screen flex flex-col items-center font-[Poppins] p-8">
+    <div class="w-full max-w-6xl">
+        <!-- Breadcrumb -->
+        <div class="mb-6">
+            <a href="#" class="text-[#008000] hover:text-[#006400]">Program Adopsi</a>
+            <span class="mx-2 text-[#008000]/60">></span>
+            <span class="text-[#008000]/80">Perpanjang Periode Adopsi Satwa</span>
+        </div>
+
+        <!-- Form Perpanjang Adopsi -->
+        <div class="form-container">
+            <div class="form-header">
+                <h1 class="text-3xl font-bold text-[#008000] mb-2">PERPANJANG PERIODE ADOPSI SATWA</h1>
+                <div class="w-1/2 mx-auto border-b-2 border-[#008000] my-4"></div>
+            </div>
+
+            <form method="POST" action="" class="form-body">
+                {% csrf_token %}
+                <input type="hidden" name="animal_id" value="{{ animal_id }}">
+                
+                <!-- Form individu -->
+                <div id="formIndividu" class="space-y-6 mt-8">
+                    <p class="text-[#008000] text-base">Pihak di bawah ini,</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-[#008000] mb-2">Nama</label>
+                            <input type="text" name="nama" value="Budi Santoso" class="input-field" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-[#008000] mb-2">NIK</label>
+                            <input type="text" name="nik" value="3175021509880002" class="input-field" readonly>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-[#008000] mb-2">Alamat</label>
+                        <textarea name="alamat" class="input-field" readonly>Jl. Merdeka No. 123, RT 05/RW 07, Kelurahan Sukamaju, Jakarta Selatan</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-[#008000] mb-2">Nomor Telepon</label>
+                        <input type="tel" name="telepon" value="081234567890" class="input-field" readonly>
+                    </div>
+                    
+                    <p class="text-[#008000] text-base">(selanjutnya disebut sebagai Adopter)</p>
+                </div>
+
+                <!-- Form organisasi -->
+                <div id="formOrganisasi" class="space-y-6 mt-8 hidden">
+                    <p class="text-[#008000] text-base">Pihak di bawah ini, selaku organisasi/perusahaan</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-[#008000] mb-2">Nama Organisasi</label>
+                            <input type="text" name="nama_organisasi" value="PT Sejahtera Bersama" class="input-field" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-[#008000] mb-2">NPP</label>
+                            <input type="text" name="npp" value="09.753.124.5-091.000" class="input-field" readonly>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-[#008000] mb-2">Alamat</label>
+                        <textarea name="alamat_org" class="input-field" readonly>Gedung Menara Tinggi Lt. 15, Jl. Sudirman No. 45, Jakarta Pusat</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-[#008000] mb-2">Kontak</label>
+                        <input type="tel" name="telepon_org" value="021-5553214" class="input-field" readonly>
+                    </div>
+                    
+                    <p class="text-[#008000] text-base">(selanjutnya disebut sebagai Adopter)</p>
+                </div>
+
+                <div class="my-8">
+                    <p class="text-[#008000] text-base">dengan ini menyatakan kepedulian dan minat untuk lanjut mengadopsi secara simbolis satwa</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
+                        <div>
+                            <label class="block text-sm font-medium text-[#008000] mb-2">Nama Hewan</label>
+                            <input type="text" name="nama_hewan" value="Simba" class="input-field" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-[#008000] mb-2">Jenis Hewan</label>
+                            <input type="text" name="jenis_hewan" value="Singa (Panthera leo)" class="input-field" readonly>
+                        </div>
+                    </div>
+
+                    <p class="text-[#008000] text-base mb-6">Adopter juga bersedia memberikan kontribusi finansial kepada pihak taman sadari sebagai dukungan untuk pemeliharaan satwa:</p>
+
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-[#008000] mb-2">Nominal Kontribusi (Rp)</label>
+                        <textarea name="nominal_org" class="input-field" readonly>Rp2.500.000</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-[#008000] mb-2">Perpanjang Periode Selama</label>
+                        <select name="periode" required class="input-field">
+                            <option value="3">3 Bulan</option>
+                            <option value="6">6 Bulan</option>
+                            <option value="12">12 Bulan</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-footer flex justify-center space-x-6">
+                    <a href="#" class="btn-secondary">
+                        Batal
+                    </a>
+                    <a href="#" class="btn-primary">
+                        Submit Form
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-10 text-center text-sm text-[#008000]/60">
+            © 2025 SIZOPI. All rights reserved.
+        </footer>
+    </div>
+</div>
+
+<script>
+    function toggleForms(userType) {
+        const formIndividu = document.getElementById('formIndividu');
+        const formOrganisasi = document.getElementById('formOrganisasi');
+        
+        if (userType === 'individu') {
+            formIndividu.classList.remove('hidden');
+            formOrganisasi.classList.add('hidden');
+        } else if (userType === 'organisasi') {
+            formIndividu.classList.add('hidden');
+            formOrganisasi.classList.remove('hidden');
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const userType = urlParams.get('user_type') || 'individu';
+        toggleForms(userType);
+    });
+</script>
+{% endblock %}

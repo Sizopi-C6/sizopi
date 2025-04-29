@@ -207,17 +207,18 @@
       </div>
     </div>
   </div>
-  <!-- Footer -->
-  <footer class="mt-8 text-center text-sm text-[#008000]/60">
-    © 2025 SIZOPI. All rights reserved.
-  </footer>
 </div>
+
+<!-- Footer -->
+<footer class="mt-8 text-center text-sm text-[#008000]/60">
+  © 2025 SIZOPI. All rights reserved.
+</footer>
 
 <!-- Modal -->
 <div id="hapusModal">
   <div class="modal-content">
-    <h2>HAPUS ATRAKSI</h2>
-    <p>Apakah anda yakin ingin menghapus atraksi ini?</p>
+    <h2>HAPUS WAHANA</h2>
+    <p>Apakah anda yakin ingin menghapus wahana ini?</p>
     <div class="modal-buttons">
       <button type="button" onclick="konfirmasiHapus()" 
               class="btn-primary px-6 py-3 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] transition duration-200 shadow-md">
@@ -232,10 +233,10 @@
 </div>
 
 <script>
-  let atraksiYangDihapus = null;
+  let wahanaYangDihapus = null;
 
-  function bukaModal(namaAtraksi) {
-    atraksiYangDihapus = namaAtraksi;
+  function bukaModal(namaWahana) {
+    wahanaYangDihapus = namaWahana;
     document.getElementById("hapusModal").style.display = "flex";
   }
 
@@ -244,7 +245,7 @@
   }
 
   function konfirmasiHapus() {
-    if (atraksiYangDihapus) {
+    if (wahanaYangDihapus) {
       window.location.href = "";
     } else {
       window.location.href = "";

@@ -1,7 +1,7 @@
 from django.shortcuts import render
 
 def dashboard_view(request):
-    user_role = 'Staf Administrasi'
+    user_role = 'Pengunjung'
     data_umum = {
         'nama_depan': 'John',
         'nama_tengah': 'Michael',

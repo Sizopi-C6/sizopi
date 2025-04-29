@@ -135,13 +135,13 @@
       <div class="navbar-menu" id="mainMenu">
           <a href="/dashboard" class="navbar-item">Dashboard</a>
           <a href="/kelola-pengunjung" class="navbar-item">Kelola Pengunjung</a>
-          <a href="/kelola-adopsi" class="navbar-item">Kelola Adopsi</a>
-          <a href="/kelola-adopter" class="navbar-item">Kelola Adopter</a>
+          <a href="{% url 'adopsi:adopsi_admin' %}" class="navbar-item">Kelola Adopsi</a>
+          <a href="{% url 'adopsi:daftar_adopter' %}" class="navbar-item">Kelola Adopter</a>
       </div>
       
       <div class="navbar-menu" id="profileMenu">
-          <a href="/profile" class="navbar-item">Profil</a>
-          <a href="/logout" class="navbar-item cta">Logout</a>
+          <a href="{% url 'profile_settings' %}" class="navbar-item">Profil</a>
+          <a href="{% url 'logout_view' %}" class="navbar-item cta">Logout</a>
       </div>
   </div>
 </nav>

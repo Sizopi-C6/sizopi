@@ -1,5 +1,4 @@
-from django.http import Http404
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 
 data_reservasi = [
     {
@@ -70,18 +69,3 @@ def staf_edit_reservasi(request, username, nama_atraksi):
         'reservasi': reservasi,
         'atraksi_list': atraksi_list
     })
-
-def hapus_reservasi(request, username, nama_atraksi, tanggal):
-    global data_reservasi
-    before = len(data_reservasi)
-    data_reservasi = [
-        r for r in data_reservasi
-        if not (
-            r['username'] == username and
-            r['nama_atraksi'] == nama_atraksi and
-            r['tanggal'] == tanggal
-        )
-    ]
-    if len(data_reservasi) == before:
-        raise Http404("Reservasi tidak ditemukan.")
-    return redirect('staf_daftar_reservasi')

@@ -220,9 +220,6 @@ def edit_wahana(request, nama_wahana):
 
     wahana = next((item for item in data_edit_wahana if item['nama_wahana'] == nama_wahana), None)
 
-    if not wahana:
-        return render(request, '404.html')
-
     hewan_list = ["Harimau", "Gajah", "Kera", "Burung"]
     pelatih_list = ["Dominic Morgan Dixon", "Zavier Genasis Patel"]
 

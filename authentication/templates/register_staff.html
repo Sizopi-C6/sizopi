@@ -1,8 +1,7 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends 'base.html' %}
+{% load static %}
+  
+{% block meta %}
   <title>Register Staff - SIZOPI</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -31,8 +30,11 @@
       background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
     }
   </style>
-</head>
-<body class="bg-[#e8f4ea] min-h-screen py-8">
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar/guest.html' %}
+<div class="bg-[#e8f4ea] min-h-screen py-8">
   <div class="container mx-auto px-4 max-w-3xl">
     <div class="card p-8 rounded-xl shadow-lg border border-[#c8e1cc]">
       <div class="text-center mb-8">
@@ -217,5 +219,5 @@
       }
     }
   </script>
-</body>
-</html>
+</div>
+{% endblock content %}

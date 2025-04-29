@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+    <title>Program Adopsi Satwa</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        
+        .btn-primary {
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 128, 0, 0.25);
+        }
+        
+        .card-gradient {
+            background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
+            border: 1px solid #c8e1cc;
+        }
+        
+        .animal-card {
+            transition: all 0.3s ease;
+        }
+        
+        .animal-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 100, 0, 0.15);
+        }
+    </style>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar/staff_administrator.html' %}
+<div class="bg-[#e8f4ea] min-h-screen flex flex-col items-center font-[Poppins] p-8">
+    <div class="w-full max-w-6xl">
+        <!-- Header Section -->
+        <div class="card-gradient rounded-2xl shadow-lg p-8 mb-8 text-center">
+            <h1 class="text-4xl font-bold text-[#008000] mb-3">PROGRAM ADOPSI SATWA</h1>
+            <p class="text-xl text-[#008000]/80 mb-6">Bantu mereka dengan cinta dan dukungan Anda</p>
+        </div>
+
+        <!-- Animal Status Section -->
+        <div class="grid gap-6">
+            <h1 class="text-4xl font-bold text-[#008000] mb-3">Pantau Status Adopsi Hewan</h1>
+        </div>
+
+        <!-- Animals Grid -->
+        <section id="hewan" class="mt-8">
+            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+
+                <div class="animal-card bg-white rounded-2xl shadow-md overflow-hidden">
+                    <img src="{% static 'images/jerapah.jpeg' %}" alt="Jerapah" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold text-[#008000] mb-2">Jerapah</h3>
+                        <div class="flex items-center justify-between">
+                            <span class="px-3 py-1 text-sm bg-green-100 text-green-700 rounded-full">
+                                Diadopsi
+                            </span>
+                            <button data-modal-toggle class="text-[#008000] hover:text-[#006400] font-medium">
+                                Lihat Detail →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="animal-card bg-white rounded-2xl shadow-md overflow-hidden">
+                    <img src="{% static 'images/penguin.jpg' %}" alt="Penguin" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold text-[#008000] mb-2">Penguin</h3>
+                        <div class="flex items-center justify-between">
+                            <span class="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-full">
+                                Tidak Diadopsi
+                            </span>
+                            <a href="{% url 'adopsi:form_adopsi_hewan' %}" class="text-[#008000] hover:text-[#006400] font-medium">
+                                Daftarkan Adopter →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="animal-card bg-white rounded-2xl shadow-md overflow-hidden">
+                    <img src="{% static 'images/monyet.jpeg' %}" alt="Monyet" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold text-[#008000] mb-2">Monyet</h3>
+                        <div class="flex items-center justify-between">
+                            <span class="px-3 py-1 text-sm bg-green-100 text-green-700 rounded-full">
+                                Diadopsi
+                            </span>
+                            <button data-modal-toggle class="text-[#008000] hover:text-[#006400] font-medium">
+                                Lihat Detail →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="animal-card bg-white rounded-2xl shadow-md overflow-hidden">
+                    <img src="{% static 'images/koala.jpeg' %}" alt="Koala" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold text-[#008000] mb-2">Koala</h3>
+                        <div class="flex items-center justify-between">
+                            <span class="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-full">
+                                Tidak Diadopsi
+                            </span>
+                            <a href="{% url 'adopsi:form_adopsi_hewan' %}" class="text-[#008000] hover:text-[#006400] font-medium">
+                                Daftarkan Adopter →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Detail Modal -->
+        <div id="detailModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4">
+            <div class="card-gradient rounded-2xl shadow-lg w-full max-w-md">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-2xl font-semibold text-[#008000]">Detail Adopsi Hewan</h3>
+                        <button onclick="toggleDetailModal()" class="text-[#008000] hover:text-[#006400]">
+                            ✕
+                        </button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-[#008000]/80">Nama hewan</label>
+                            <input type="text" value="Jerapah" class="w-full p-2 mt-1 bg-white rounded-lg border border-[#c8e1cc]" disabled>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-[#008000]/80">Jenis hewan</label>
+                            <input type="text" value="Mamalia" class="w-full p-2 mt-1 bg-white rounded-lg border border-[#c8e1cc]" disabled>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-[#008000]/80">Adopter saat ini</label>
+                            <input type="text" value="John Doe" class="w-full p-2 mt-1 bg-white rounded-lg border border-[#c8e1cc]" disabled>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-[#008000]/80">Tanggal mulai</label>
+                                <input type="date" value="2024-03-01" class="w-full p-2 mt-1 bg-white rounded-lg border border-[#c8e1cc]" disabled>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-[#008000]/80">Tanggal akhir</label>
+                                <input type="date" value="2025-03-01" class="w-full p-2 mt-1 bg-white rounded-lg border border-[#c8e1cc]" disabled>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-[#008000]/80">Nominal kontribusi</label>
+                            <div class="relative mt-1">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#008000]">Rp</span>
+                                <input type="text" value="1.500.000" class="w-full pl-8 p-2 bg-white rounded-lg border border-[#c8e1cc]" disabled>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-[#008000]/80">Status Pembayaran</label>
+                            <select class="w-full p-2 mt-1 bg-white rounded-lg border border-[#c8e1cc] focus:ring-2 focus:ring-[#008000]">
+                                <option value="tertunda">Tertunda</option>
+                                <option value="lunas">Lunas</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex justify-between space-x-4">
+                        <button data-confirm-hentikan 
+                            class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                            Hentikan Adopsi
+                        </button>
+                        <button class="px-6 py-2 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors">
+                            Simpan Status
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirmation Modal -->
+        <div id="confirmationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4">
+            <div class="card-gradient rounded-2xl shadow-lg w-full max-w-md">
+                <div class="p-6 text-center">
+                    <div class="flex justify-end mb-2">
+                        <button onclick="toggleModal('confirmationModal')" class="text-[#008000] hover:text-[#006400]">
+                            ✕
+                        </button>
+                    </div>
+                    
+                    <h3 class="text-xl font-semibold text-[#008000] mb-4">Konfirmasi Penghentian Adopsi</h3>
+                    <p class="text-[#008000]/80 mb-6">Apakah Anda yakin ingin menghentikan adopsi ini?</p>
+                    
+                    <div class="flex justify-center space-x-4">
+                        <button onclick="toggleModal('confirmationModal')" 
+                            class="px-6 py-2 bg-gray-100 text-[#008000] rounded-lg hover:bg-gray-200 transition-colors border border-[#c8e1cc]">
+                            Batal
+                        </button>
+                        <button class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                            Iya
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-8 text-center text-sm text-[#008000]/60">
+            © 2025 SIZOPI. All rights reserved.
+        </footer>
+    </div>
+
+    <script>
+        function toggleDetailModal() {
+            const modal = document.getElementById('detailModal');
+            modal.classList.toggle('hidden');
+            modal.classList.toggle('flex');
+        }
+
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.toggle('hidden');
+            modal.classList.toggle('flex');
+        }
+
+        document.querySelectorAll('[data-modal-toggle]').forEach(button => {
+            button.addEventListener('click', toggleDetailModal);
+        });
+
+        document.querySelectorAll('[data-adopsi-trigger]').forEach(button => {
+            button.addEventListener('click', () => toggleModal('formModal'));
+        });
+
+        document.querySelectorAll('[data-confirm-hentikan]').forEach(button => {
+            button.addEventListener('click', () => {
+                toggleModal('detailModal');
+                toggleModal('confirmationModal');
+            });
+        });
+
+    </script>
+</div>
+{% endblock %}

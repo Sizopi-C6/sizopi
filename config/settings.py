@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -27,7 +28,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -38,7 +38,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'authentication',  
+<<<<<<< HEAD
     'kesehatan_hewan'
+=======
+    'data_satwa_habitat',
+    'adopsi',
+>>>>>>> 68b7a3b0e781973b5863dd5aa2f0f9007de42c4f
 ]
 
 MIDDLEWARE = [
@@ -57,7 +62,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -120,7 +125,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 if DEBUG:
     STATICFILES_DIRS = [
-        BASE_DIR / 'static' # merujuk ke /static root project pada mode development
+        BASE_DIR / 'static'
     ]
 else:
     STATIC_ROOT = BASE_DIR / 'static'

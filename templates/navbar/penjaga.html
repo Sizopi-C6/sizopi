@@ -1,0 +1,166 @@
+{% load static %}
+<style>
+  /* CSS Umum Navbar */
+  .navbar {
+      background: #006400;
+      padding: 1rem 2rem;
+      font-family: 'Segoe UI', sans-serif;
+      width: 100%;
+      box-sizing: border-box;
+  }
+  .navbar-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+  }
+  .navbar-brand {
+      display: flex;
+      align-items: center;
+      color: white;
+      font-weight: bold;
+      text-decoration: none;
+      font-size: 1.5rem;
+  }
+  .navbar-logo {
+      height: 40px;
+      margin-right: 10px;
+  }
+  .navbar-menu {
+      display: flex;
+      gap: 1.5rem;
+  }
+  .navbar-item {
+      color: #ecf0f1;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      transition: all 0.3s;
+      white-space: nowrap;
+  }
+  .navbar-item:hover {
+    background: #005000; /* Hijau yang lebih tua untuk hover */
+  }
+  .navbar-item.cta {
+    background: #004d00; /* Hijau tua lebih kontras untuk tombol CTA */
+  }
+  .navbar-item.cta:hover {
+    background: #003b00; /* Hijau yang lebih tua lagi saat hover CTA */
+  }
+  
+  /* Hamburger menu untuk mobile */
+  .menu-toggle {
+      display: none;
+      cursor: pointer;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+  }
+  
+  /* Media Queries untuk Responsive Design */
+  @media screen and (max-width: 960px) {
+      .navbar {
+          padding: 0.8rem 1.5rem;
+      }
+      
+      .navbar-brand {
+          font-size: 1.3rem;
+      }
+      
+      .navbar-menu {
+          gap: 1rem;
+      }
+      
+      .navbar-item {
+          padding: 0.4rem 0.8rem;
+          font-size: 0.9rem;
+      }
+  }
+  
+  @media screen and (max-width: 768px) {
+      .navbar {
+          padding: 0.8rem 1rem;
+      }
+      
+      .menu-toggle {
+          display: block;
+      }
+      
+      .navbar-menu {
+          display: none;
+          width: 100%;
+          flex-direction: column;
+          gap: 0.5rem;
+          margin-top: 1rem;
+      }
+      
+      .navbar-container {
+          flex-wrap: wrap;
+      }
+      
+      .navbar-menu.active {
+          display: flex;
+      }
+      
+      .navbar-item {
+          text-align: center;
+          padding: 0.8rem;
+      }
+      
+      .mobile-nav-container {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          width: 100%;
+      }
+  }
+</style>
+
+<nav class="navbar">
+  <div class="navbar-container">
+      <div class="mobile-nav-container">
+          <a href="/" class="navbar-brand">
+            <img src="{% static 'images/lion.png' %}" alt="Logo" class="navbar-logo">
+            <span>SIZOPI</span>
+          </a>
+          
+          <button class="menu-toggle" id="menuToggle">
+              ☰
+          </button>
+      </div>
+      
+      <div class="navbar-menu" id="mainMenu">
+          <a href="/dashboard" class="navbar-item">Dashboard</a>
+          <a href="/catatan-perawatan" class="navbar-item">Catatan Perawatan</a>
+      </div>
+      
+      <div class="navbar-menu" id="profileMenu">
+          <a href="/profile" class="navbar-item">Profil</a>
+          <a href="/logout" class="navbar-item cta">Logout</a>
+      </div>
+  </div>
+</nav>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const menuToggle = document.getElementById('menuToggle');
+      const mainMenu = document.getElementById('mainMenu');
+      const profileMenu = document.getElementById('profileMenu');
+      
+      menuToggle.addEventListener('click', function() {
+          mainMenu.classList.toggle('active');
+          profileMenu.classList.toggle('active');
+      });
+      
+      // Adjust menu visibility on window resize
+      window.addEventListener('resize', function() {
+          if (window.innerWidth > 768) {
+              mainMenu.classList.remove('active');
+              profileMenu.classList.remove('active');
+          }
+      });
+  });
+</script>

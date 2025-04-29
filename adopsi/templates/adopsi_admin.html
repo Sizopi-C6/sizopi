@@ -1,11 +1,8 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+{% block meta %}
     <title>Program Adopsi Satwa</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
         
@@ -32,9 +29,11 @@
             box-shadow: 0 8px 20px rgba(0, 100, 0, 0.15);
         }
     </style>
-</head>
+{% endblock meta %}
 
-<body class="bg-[#e8f4ea] min-h-screen flex flex-col items-center font-[Poppins] p-8">
+{% block content %}
+{% include 'navbar/staff_administrator.html' %}
+<div class="bg-[#e8f4ea] min-h-screen flex flex-col items-center font-[Poppins] p-8">
     <div class="w-full max-w-6xl">
         <!-- Header Section -->
         <div class="card-gradient rounded-2xl shadow-lg p-8 mb-8 text-center">
@@ -350,5 +349,5 @@
             errorDiv.classList.remove('hidden');
         }
     </script>
-</body>
-</html>
+</div>
+{% endblock %}

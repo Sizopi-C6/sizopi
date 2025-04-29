@@ -1,11 +1,8 @@
-<!DOCTYPE html>
+{% extends 'base.html' %}
 {% load static %}
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+{% block meta %}
     <title>Daftar Adopter - SIZOPI</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
         
@@ -51,8 +48,10 @@
             background-color: #bbf7d0;
         }
     </style>
-</head>
+{% endblock meta %}
 
+{% block content %}
+{% include 'navbar/staff_administrator.html' %}
 <body class="min-h-screen bg-[#e8f4ea]" style="font-family: 'Poppins', sans-serif;">
     <div class="p-8">
         <div class="w-full max-w-6xl mx-auto">
@@ -203,4 +202,4 @@
         });
     </script>
 </body>
-</html>
+{% endblock content %}

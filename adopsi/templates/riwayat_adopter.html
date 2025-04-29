@@ -1,9 +1,7 @@
-<!DOCTYPE html>
+{% extends 'base.html' %}
 {% load static %}
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+{% block meta %}
     <title>Riwayat Adopter - SIZOPI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -49,9 +47,11 @@
             font-weight: 500;
         }
     </style>
-</head>
+{% endblock meta %}
 
-<body class="min-h-screen bg-[#e8f4ea]" style="font-family: 'Poppins', sans-serif;">
+{% block content %}
+{% include 'navbar/staff_administrator.html' %}
+<div class="min-h-screen bg-[#e8f4ea]" style="font-family: 'Poppins', sans-serif;">
     <div class="p-8">
         <div class="w-full max-w-6xl mx-auto">
             <!-- Tombol Kembali (di luar card) -->
@@ -255,5 +255,5 @@
             });
         });
     </script>
-</body>
-</html>
+</div>
+{% endblock content %}

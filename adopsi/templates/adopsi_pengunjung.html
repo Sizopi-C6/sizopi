@@ -1,11 +1,8 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+{% block meta %}
     <title>Program Adopsi Satwa - Pengunjung</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
         
@@ -23,9 +20,11 @@
             box-shadow: 0 8px 20px rgba(0, 100, 0, 0.15);
         }
     </style>
-</head>
+{% endblock meta %}
 
-<body class="bg-[#e8f4ea] min-h-screen flex flex-col items-center font-[Poppins] p-8">
+{% block content %}
+{% include 'navbar/pengunjung_sebagai_adopter.html' %}
+<div class="bg-[#e8f4ea] min-h-screen flex flex-col items-center font-[Poppins] p-8">
     <div class="w-full max-w-6xl">
         <!-- Hero Section -->
         <div class="card-gradient rounded-2xl shadow-lg p-8 mb-8 text-center">
@@ -135,19 +134,19 @@
 
                     <!-- Tombol -->
                     <div class="mt-8 grid grid-cols-2 gap-4">
-                        <button 
-                            data-laporan 
-                            class="py-2 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors"
+                        <a 
+                            href="{% url 'adopsi:laporan_kondisi_hewan' %}" 
+                            class="py-2 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors text-center"
                         >
                             Pantau Kondisi Hewan
-                        </button>
+                        </a>
 
-                        <button 
-                            data-sertifikat 
-                            class="py-2 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors"
+                        <a 
+                            href="{% url 'adopsi:sertifikat_adopsi' %}" 
+                            class="py-2 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors text-center"
                         >
                             Lihat Sertifikat Adopsi
-                        </button>
+                        </a>
 
                         <button 
                             data-berhenti 
@@ -156,12 +155,19 @@
                             Berhenti Adopsi
                         </button>
 
-                        <button 
-                            data-perpanjang 
-                            class="py-2 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors"
-                        >
-                            Perpanjang Periode
-                        </button>
+
+                        <form action="{% url 'adopsi:perpanjang_periode' %}" method="GET">
+                            <input type="hidden" name="animal_id" value="1">
+                            <input type="hidden" name="animal_name" value="Jerapah">
+                            <input type="hidden" name="animal_type" value="Mamalia">
+                            <button 
+                                type="submit"
+                                class="w-full py-2 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors"
+                            >
+                                Perpanjang Periode
+                            </button>
+                        </form>
+                        
                     </div>
                 </div>
             </div>
@@ -176,155 +182,6 @@
 
             document.querySelectorAll('[data-info-modal]').forEach(button => {
                 button.addEventListener('click', () => toggleModal('infoModal'));
-            });
-        </script>
-
-        <!-- Modal Sertifikat -->
-        <div id="sertifikatModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4">
-            <div class="card-gradient rounded-2xl shadow-lg w-full max-w-2xl">
-                <div class="p-8 text-center">
-
-                    <div class="flex justify-end mb-2">
-                        <button onclick="toggleModal('sertifikatModal')" class="text-[#008000] hover:text-[#006400]">
-                            ✕
-                        </button>
-                    </div>
-                    
-                    <div class="border-2 border-[#008000] rounded-lg p-6">
-                        <h2 class="text-3xl font-bold text-[#008000] mb-6">Sertifikat Adopsi Satwa</h2>
-                        
-                        <div class="space-y-6 text-[#008000]">
-                            <p class="text-lg">
-                                Sertifikat ini diberikan kepada<br>
-                                <span class="text-xl font-semibold">John Doe</span><br>
-                                yang telah mengadopsi satwa
-                            </p>
-                            
-                            <div class="flex items-center justify-center space-x-4">
-                                <div class="text-left">
-                                    <p class="font-semibold">Mamalia</p>
-                                    <p>"Jerapah"</p>
-                                </div>
-                            </div>
-                            
-                            <p class="text-lg">
-                                di Taman Safari secara simbolis dari<br>
-                                <span class="font-semibold">1 Maret 2024</span> hingga <span class="font-semibold">1 Maret 2025</span>
-                            </p>
-                            
-                            <p class="mt-6 italic">
-                                Kami sangat berterima kasih atas kepedulian dan kontribusi Anda<br>
-                                terhadap kelestarian satwa di Taman Safari
-                            </p>
-                        </div>
-                        
-                        <div class="mt-8 flex justify-center">
-                            <button 
-                                onclick="toggleModal('sertifikatModal')" 
-                                class="px-8 py-2 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors"
-                            >
-                                Kembali
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <script>
-            document.querySelectorAll('[data-sertifikat]').forEach(button => {
-                button.addEventListener('click', () => {
-                    toggleModal('infoModal');
-                    toggleModal('sertifikatModal');
-                });
-            });
-        </script>
-
-        <!-- Modal Laporan -->
-        <div id="laporanModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4">
-            <div class="card-gradient rounded-2xl shadow-lg w-full max-w-6xl">
-                <div class="p-6">
-
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-[#008000]">Laporan Kondisi Satwa</h2>
-                        <button onclick="toggleModal('laporanModal')" class="text-[#008000] hover:text-[#006400]">
-                            ✕
-                        </button>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <div class="md:col-span-1">
-                            <img src="{% static 'images/jerapah.jpeg' %}" alt="Hewan" class="w-full h-64 object-cover rounded-lg">
-                        </div>
-                        <div class="md:col-span-2 space-y-3">
-                            <div>
-                                <label class="text-sm text-[#008000]/80">Nama:</label>
-                                <p class="font-semibold text-[#008000]">Jerapah</p>
-                            </div>
-                            <div>
-                                <label class="text-sm text-[#008000]/80">Jenis:</label>
-                                <p class="text-[#008000]">Mamalia</p>
-                            </div>
-                            <div>
-                                <label class="text-sm text-[#008000]/80">Habitat:</label>
-                                <p class="text-[#008000]">Savana Afrika</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Tabel Rekam Medis -->
-                    <div class="overflow-x-auto">
-                        <h3 class="text-lg font-semibold text-[#008000] mb-4">Rekam Medis Satwa</h3>
-                        <div class="min-w-[800px]">
-
-                            <div class="grid grid-cols-6 gap-4 bg-[#008000]/10 p-2 rounded-t-lg">
-                                <div class="font-medium text-[#008000]">Tanggal Pemeriksaan</div>
-                                <div class="font-medium text-[#008000]">Nama Dokter</div>
-                                <div class="font-medium text-[#008000]">Status Kesehatan</div>
-                                <div class="font-medium text-[#008000]">Diagnosa</div>
-                                <div class="font-medium text-[#008000]">Pengobatan</div>
-                                <div class="font-medium text-[#008000]">Catatan Tindak Lanjut</div>
-                            </div>
-
-                            <div class="divide-y divide-[#008000]/20">
-
-                                <div class="grid grid-cols-6 gap-4 p-2 hover:bg-[#008000]/5">
-                                    <div>2025-04-01</div>
-                                    <div>Dr. Siti Aminah</div>
-                                    <div class="text-red-600">Sakit</div>
-                                    <div>Infeksi saluran pernapasan</div>
-                                    <div>Antibiotik selama 7 hari</div>
-                                    <div class="text-sm">Evaluasi kondisi, perbaikan ventilasi kandang</div>
-                                </div>
-                                
-                                <div class="grid grid-cols-6 gap-4 p-2 hover:bg-[#008000]/5">
-                                    <div>2025-04-15</div>
-                                    <div>Dr. Budi Santoso</div>
-                                    <div class="text-green-600">Sehat</div>
-                                    <div>-</div>
-                                    <div>-</div>
-                                    <div class="text-sm">Kondisi stabil, monitoring rutin</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Tombol -->
-                    <div class="mt-6 flex justify-end">
-                        <button 
-                            onclick="toggleModal('laporanModal')" 
-                            class="px-6 py-2 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors"
-                        >
-                            Kembali
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <script>
-            document.querySelectorAll('[data-laporan]').forEach(button => {
-                button.addEventListener('click', () => toggleModal('laporanModal'));
             });
         </script>
 
@@ -514,5 +371,5 @@
             © 2025 SIZOPI. All rights reserved.
         </footer>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

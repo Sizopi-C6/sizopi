@@ -41,13 +41,13 @@
       white-space: nowrap;
   }
   .navbar-item:hover {
-    background: #005000; /* Hijau yang lebih tua untuk hover */
+      background: #005000; /* Hijau yang lebih tua untuk hover */
   }
   .navbar-item.cta {
-    background: #004d00; /* Hijau tua lebih kontras untuk tombol CTA */
+      background: #004d00; /* Hijau tua lebih kontras untuk tombol CTA */
   }
   .navbar-item.cta:hover {
-    background: #003b00; /* Hijau yang lebih tua lagi saat hover CTA */
+      background: #003b00; /* Hijau yang lebih tua lagi saat hover CTA */
   }
   
   /* Hamburger menu untuk mobile */
@@ -123,8 +123,8 @@
   <div class="navbar-container">
       <div class="mobile-nav-container">
           <a href="/" class="navbar-brand">
-            <img src="{% static 'images/lion.png' %}" alt="Logo" class="navbar-logo">
-            <span>SIZOPI</span>
+              <img src="{% static 'images/lion.png' %}" alt="Logo" class="navbar-logo">
+              <span>SIZOPI</span>
           </a>
           
           <button class="menu-toggle" id="menuToggle">
@@ -134,7 +134,9 @@
       
       <div class="navbar-menu" id="mainMenu">
           <a href="/dashboard" class="navbar-item">Dashboard</a>
-          <a href="/catatan-perawatan" class="navbar-item">Catatan Perawatan</a>
+          <a href="/kelola-pengunjung" class="navbar-item">Kelola Pengunjung</a>
+          <a href="/kelola-adopsi" class="navbar-item">Kelola Adopsi</a>
+          <a href="/kelola-adopter" class="navbar-item">Kelola Adopter</a>
       </div>
       
       <div class="navbar-menu" id="profileMenu">

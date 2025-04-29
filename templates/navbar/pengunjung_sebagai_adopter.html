@@ -3,10 +3,9 @@
   /* CSS Umum Navbar */
   .navbar {
       background: #006400;
-      padding: 1rem 2rem;
+      padding: 0.8rem 1.5rem;
       font-family: 'Segoe UI', sans-serif;
       width: 100%;
-      box-sizing: border-box;
   }
   .navbar-container {
       display: flex;
@@ -30,24 +29,27 @@
   }
   .navbar-menu {
       display: flex;
-      gap: 1.5rem;
+      gap: 1rem;
   }
   .navbar-item {
       color: #ecf0f1;
       text-decoration: none;
-      padding: 0.5rem 1rem;
+      padding: 0.5rem 0.8rem;
       border-radius: 4px;
       transition: all 0.3s;
       white-space: nowrap;
   }
   .navbar-item:hover {
-    background: #005000; /* Hijau yang lebih tua untuk hover */
+      background: #005000;
   }
   .navbar-item.cta {
-    background: #004d00; /* Hijau tua lebih kontras untuk tombol CTA */
+      background: #004d00;
   }
   .navbar-item.cta:hover {
-    background: #003b00; /* Hijau yang lebih tua lagi saat hover CTA */
+      background: #003b00;
+  }
+  .hidden {
+      display: none;
   }
   
   /* Hamburger menu untuk mobile */
@@ -62,8 +64,8 @@
   
   /* Media Queries untuk Responsive Design */
   @media screen and (max-width: 960px) {
-      .navbar {
-          padding: 0.8rem 1.5rem;
+      .navbar-container {
+          flex-wrap: wrap;
       }
       
       .navbar-brand {
@@ -71,11 +73,11 @@
       }
       
       .navbar-menu {
-          gap: 1rem;
+          gap: 0.5rem;
       }
       
       .navbar-item {
-          padding: 0.4rem 0.8rem;
+          padding: 0.4rem 0.6rem;
           font-size: 0.9rem;
       }
   }
@@ -120,47 +122,48 @@
 </style>
 
 <nav class="navbar">
-  <div class="navbar-container">
-      <div class="mobile-nav-container">
-          <a href="/" class="navbar-brand">
-            <img src="{% static 'images/lion.png' %}" alt="Logo" class="navbar-logo">
-            <span>SIZOPI</span>
-          </a>
-          
-          <button class="menu-toggle" id="menuToggle">
-              ☰
-          </button>
-      </div>
-      
-      <div class="navbar-menu" id="mainMenu">
-          <a href="/dashboard" class="navbar-item">Dashboard</a>
-          <a href="/catatan-perawatan" class="navbar-item">Catatan Perawatan</a>
-      </div>
-      
-      <div class="navbar-menu" id="profileMenu">
-          <a href="/profile" class="navbar-item">Profil</a>
-          <a href="/logout" class="navbar-item cta">Logout</a>
-      </div>
-  </div>
+    <div class="navbar-container">
+        <div class="mobile-nav-container">
+            <a href="/" class="navbar-brand">
+                <img src="{% static 'images/lion.png' %}" alt="Logo" class="navbar-logo">
+                <span>SIZOPI</span>
+            </a>
+            
+            <button class="menu-toggle" id="menuToggle">
+                ☰
+            </button>
+        </div>
+        
+        <div class="navbar-menu" id="mainMenu">
+            <a href="/dashboard" class="navbar-item">Dashboard</a>
+            <a href="/informasi-kebun" class="navbar-item">Informasi Kebun Binatang</a>
+            <a href="/hewan-adopsi" id="adopsi-link" class="navbar-item hidden">Hewan Adopsi</a>
+        </div>
+        
+        <div class="navbar-menu" id="profileMenu">
+            <a href="/profile" class="navbar-item">Profil</a>
+            <a href="/logout" class="navbar-item cta">Logout</a>
+        </div>
+    </div>
 </nav>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-      const menuToggle = document.getElementById('menuToggle');
-      const mainMenu = document.getElementById('mainMenu');
-      const profileMenu = document.getElementById('profileMenu');
-      
-      menuToggle.addEventListener('click', function() {
-          mainMenu.classList.toggle('active');
-          profileMenu.classList.toggle('active');
-      });
-      
-      // Adjust menu visibility on window resize
-      window.addEventListener('resize', function() {
-          if (window.innerWidth > 768) {
-              mainMenu.classList.remove('active');
-              profileMenu.classList.remove('active');
-          }
-      });
-  });
+    document.addEventListener('DOMContentLoaded', function() {
+        const menuToggle = document.getElementById('menuToggle');
+        const mainMenu = document.getElementById('mainMenu');
+        const profileMenu = document.getElementById('profileMenu');
+        
+        menuToggle.addEventListener('click', function() {
+            mainMenu.classList.toggle('active');
+            profileMenu.classList.toggle('active');
+        });
+        
+        // Adjust menu visibility on window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                mainMenu.classList.remove('active');
+                profileMenu.classList.remove('active');
+            }
+        });
+    });
 </script>

@@ -1,0 +1,340 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+    <title>Form Adopsi Hewan</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        
+        .btn-primary {
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 128, 0, 0.25);
+        }
+        
+        .card-gradient {
+            background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
+            border: 1px solid #c8e1cc;
+        }
+        
+        .form-control:focus {
+            border-color: #008000;
+            box-shadow: 0 0 0 0.2rem rgba(0, 128, 0, 0.25);
+        }
+    </style>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar/staff_administrator.html' %}
+<div class="bg-[#e8f4ea] min-h-screen flex flex-col items-center font-[Poppins] p-8">
+    <div class="w-full max-w-4xl">
+        <!-- Header Section -->
+        <div class="card-gradient rounded-2xl shadow-lg p-8 mb-8 text-center">
+            <h1 class="text-4xl font-bold text-[#008000] mb-3">FORM ADOPSI HEWAN</h1>
+        </div>
+
+        <!-- Verifikasi Akun Form -->
+        <div id="verifikasiForm" class="card-gradient rounded-2xl shadow-lg p-8 mb-8">
+            <h2 class="text-2xl font-semibold text-[#008000] mb-6">Pendataan Adopter</h2>
+            
+            <form id="verifikasiAkunForm">
+                <div class="mb-6">
+                    <label for="username" class="block text-sm font-medium text-[#008000]/80 mb-2">Username Calon Adopter</label>
+                    <input type="text" id="username" name="username" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-[#008000]/80 mb-2">Tipe Adopter</label>
+                    <div class="flex space-x-6">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="tipe" value="individu" checked 
+                                class="text-[#008000] focus:ring-[#008000] h-5 w-5">
+                            <span class="ml-2 text-lg">Individu</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="tipe" value="organisasi"
+                                class="text-[#008000] focus:ring-[#008000] h-5 w-5">
+                            <span class="ml-2 text-lg">Organisasi</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="errorMessage" class="mb-4 text-red-500 text-sm hidden"></div>
+
+                <div class="flex justify-end space-x-4">
+                    <a href="{% url 'adopsi:adopsi_admin' %}" 
+                        class="px-6 py-3 bg-gray-100 text-[#008000] rounded-lg hover:bg-gray-200 transition-colors">
+                        Batal
+                    </a>
+                    <button type="button" onclick="verifikasiAkun()" 
+                        class="px-6 py-3 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors">
+                        Verifikasi Akun
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Form Individu  -->
+        <div id="formIndividu" class="card-gradient rounded-2xl shadow-lg p-8 mb-8 hidden">
+            <h2 class="text-2xl font-semibold text-[#008000] mb-6">FORM ADOPSI SATWA</h2>
+            
+            <form id="adopsiIndividuForm">
+                <div class="mb-6">
+                    <p class="mb-4">Pihak di bawah ini,</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="nama_individu" class="block text-sm font-medium text-[#008000]/80 mb-2">Nama</label>
+                            <input type="text" id="nama_individu" name="nama" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                            <p class="text-xs text-gray-500 mt-1">(Nama depan di pengguna/boleh juga dijadikan isian)</p>
+                        </div>
+                        
+                        <div>
+                            <label for="nik" class="block text-sm font-medium text-[#008000]/80 mb-2">NIK</label>
+                            <input type="text" id="nik" name="nik" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="alamat" class="block text-sm font-medium text-[#008000]/80 mb-2">Alamat</label>
+                            <textarea id="alamat" name="alamat" rows="3" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]"></textarea>
+                            <p class="text-xs text-gray-500 mt-1">(Alamat di pengunjung)</p>
+                        </div>
+                        
+                        <div>
+                            <label for="telepon" class="block text-sm font-medium text-[#008000]/80 mb-2">Nomor Telepon</label>
+                            <input type="tel" id="telepon" name="telepon" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                            <p class="text-xs text-gray-500 mt-1">(No telepon di pengguna)</p>
+                        </div>
+                    </div>
+                    
+                    <p class="mb-4">(selanjutnya disebut sebagai Adopter)</p>
+                    <p class="mb-4">dengan ini menyatakan kepedulian dan minat untuk mengadopsi secara simbolis satwa</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="nama_hewan" class="block text-sm font-medium text-[#008000]/80 mb-2">Nama Hewan</label>
+                            <input type="text" id="nama_hewan" name="nama_hewan" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                            <p class="text-xs text-gray-500 mt-1">(Kalau ada)</p>
+                        </div>
+                        
+                        <div>
+                            <label for="jenis_hewan" class="block text-sm font-medium text-[#008000]/80 mb-2">Jenis Hewan</label>
+                            <input type="text" id="jenis_hewan" name="jenis_hewan" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                        </div>
+                    </div>
+                    
+                    <p class="mb-4">Adopter juga bersedia memberikan kontribusi finansial kepada pihak taman safari sebagai dukungan untuk pemeliharaan satwa:</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="nominal" class="block text-sm font-medium text-[#008000]/80 mb-2">Nominal</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#008000]">Rp</span>
+                                <input type="text" id="nominal" name="nominal" class="w-full pl-10 p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="periode" class="block text-sm font-medium text-[#008000]/80 mb-2">Untuk periode adopsi selama</label>
+                            <select id="periode" name="periode" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                                <option value="3">3 bulan</option>
+                                <option value="6">6 bulan</option>
+                                <option value="12">12 bulan</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-4 mt-8">
+                    <button type="button" onclick="showVerifikasiForm()" 
+                        class="px-6 py-3 bg-gray-100 text-[#008000] rounded-lg hover:bg-gray-200 transition-colors">
+                        Batal
+                    </button>
+                    <button type="button" onclick="submitForm('individu')" 
+                        class="px-6 py-3 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors">
+                        Submit Form
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Form Organisasi -->
+        <div id="formOrganisasi" class="card-gradient rounded-2xl shadow-lg p-8 mb-8 hidden">
+            <h2 class="text-2xl font-semibold text-[#008000] mb-6">FORM ADOPSI SATWA</h2>
+            
+            <form id="adopsiOrganisasiForm">
+                <div class="mb-6">
+                    <p class="mb-4">Pihak di bawah ini, selaku organisasi/perusahaan</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="nama_organisasi" class="block text-sm font-medium text-[#008000]/80 mb-2">Nama</label>
+                            <input type="text" id="nama_organisasi" name="nama" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                        </div>
+                        
+                        <div>
+                            <label for="npp" class="block text-sm font-medium text-[#008000]/80 mb-2">NPP</label>
+                            <input type="text" id="npp" name="npp" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="alamat_org" class="block text-sm font-medium text-[#008000]/80 mb-2">Alamat</label>
+                            <textarea id="alamat_org" name="alamat" rows="3" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]"></textarea>
+                            <p class="text-xs text-gray-500 mt-1">(Alamat di pengunjung)</p>
+                        </div>
+                        
+                        <div>
+                            <label for="kontak" class="block text-sm font-medium text-[#008000]/80 mb-2">Kontak</label>
+                            <input type="tel" id="kontak" name="kontak" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                            <p class="text-xs text-gray-500 mt-1">(No telepon di pengguna)</p>
+                        </div>
+                    </div>
+                    
+                    <p class="mb-4">(selanjutnya disebut sebagai Adopter)</p>
+                    <p class="mb-4">dengan ini menyatakan kepedulian dan minat untuk mengadopsi secara simbolis satwa</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="nama_hewan_org" class="block text-sm font-medium text-[#008000]/80 mb-2">Nama Hewan</label>
+                            <input type="text" id="nama_hewan_org" name="nama_hewan" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                            <p class="text-xs text-gray-500 mt-1">(Kalau ada)</p>
+                        </div>
+                        
+                        <div>
+                            <label for="jenis_hewan_org" class="block text-sm font-medium text-[#008000]/80 mb-2">Jenis Hewan</label>
+                            <input type="text" id="jenis_hewan_org" name="jenis_hewan" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                        </div>
+                    </div>
+                    
+                    <p class="mb-4">Adopter juga bersedia memberikan kontribusi finansial kepada pihak taman safari sebagai dukungan untuk pemeliharaan satwa:</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="nominal_org" class="block text-sm font-medium text-[#008000]/80 mb-2">Nominal</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#008000]">Rp</span>
+                                <input type="text" id="nominal_org" name="nominal" class="w-full pl-10 p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="periode_org" class="block text-sm font-medium text-[#008000]/80 mb-2">Untuk periode adopsi selama</label>
+                            <select id="periode_org" name="periode" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                                <option value="3">3 bulan</option>
+                                <option value="6">6 bulan</option>
+                                <option value="12">12 bulan</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-4 mt-8">
+                    <button type="button" onclick="showVerifikasiForm()" 
+                        class="px-6 py-3 bg-gray-100 text-[#008000] rounded-lg hover:bg-gray-200 transition-colors">
+                        Batal
+                    </button>
+                    <button type="button" onclick="submitForm('organisasi')" 
+                        class="px-6 py-3 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors">
+                        Submit Form
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-8 text-center text-sm text-[#008000]/60">
+            © 2025 SIZOPI. All rights reserved.
+        </footer>
+    </div>
+
+    <script>
+        function verifikasiAkun() {
+            const username = document.getElementById('username').value;
+            const tipe = document.querySelector('input[name="tipe"]:checked').value;
+            
+            if(username === '') {
+                showError('Username harus diisi');
+                return;
+            }
+            
+            // Simulasi verifikasi akun
+            setTimeout(() => {
+                const userExists = true;
+
+                if (userExists) {
+                    document.getElementById('verifikasiForm').classList.add('hidden');
+                    
+                    if(tipe === 'individu') {
+                        document.getElementById('formIndividu').classList.remove('hidden');
+                    } else {
+                        document.getElementById('formOrganisasi').classList.remove('hidden');
+                    }
+                } else {
+                    showError('Username tidak ditemukan');
+                }
+            }, 500);
+        }
+
+        function showVerifikasiForm() {
+            document.getElementById('formIndividu').classList.add('hidden');
+            document.getElementById('formOrganisasi').classList.add('hidden');
+            document.getElementById('verifikasiForm').classList.remove('hidden');
+        }
+
+        function submitForm(type) {
+            let form;
+            if (type === 'individu') {
+                form = document.getElementById('adopsiIndividuForm');
+            } else {
+                form = document.getElementById('adopsiOrganisasiForm');
+            }
+            
+            const requiredFields = form.querySelectorAll('input[type="text"], input[type="tel"], textarea');
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                if (field.value === '') {
+                    field.classList.add('border-red-500');
+                    isValid = false;
+                } else {
+                    field.classList.remove('border-red-500');
+                }
+            });
+            
+            if (!isValid) {
+                alert('Mohon lengkapi semua field yang diperlukan');
+                return;
+            }
+            
+            let nominal;
+            if (type === 'individu') {
+                nominal = document.getElementById('nominal').value;
+            } else {
+                nominal = document.getElementById('nominal_org').value;
+            }
+            
+            const nominalValue = Number(nominal.replace(/[^0-9]/g, ''));
+            if (isNaN(nominalValue) || nominalValue <= 0) {
+                alert('Nominal kontribusi harus lebih besar dari 0');
+                return;
+            }
+            
+            alert('Data berhasil disimpan! Status pembayaran: Tertunda');
+            window.location.href = "{% url 'adopsi:adopsi_admin' %}";
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+    </script>
+</div>
+{% endblock %}

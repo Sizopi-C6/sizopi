@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+    <title>Sertifikat Adopsi Satwa</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        
+        .card-gradient {
+            background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
+            border: 1px solid #c8e1cc;
+        }
+        
+        .certificate-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            border: 3px solid #008000;
+            border-radius: 15px;
+            background-color: #fff;
+            box-shadow: 0 10px 25px rgba(0, 100, 0, 0.15);
+        }
+        
+        .certificate-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .certificate-body {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .certificate-footer {
+            text-align: center;
+            margin-top: 40px;
+            font-style: italic;
+        }
+        
+        .signature-area {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 60px;
+        }
+        
+        .signature-box {
+            text-align: center;
+            width: 200px;
+        }
+        
+        .signature-line {
+            width: 100%;
+            border-bottom: 1px solid #008000;
+            margin-bottom: 5px;
+        }
+    </style>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar/pengunjung_sebagai_adopter.html' %}
+<div class="bg-[#e8f4ea] min-h-screen flex flex-col items-center font-[Poppins] p-8">
+    <div class="w-full max-w-6xl">
+        <!-- Breadcrumb -->
+        <div class="mb-6">
+            <a href="{% url 'adopsi:adopsi_pengunjung' %}" class="text-[#008000] hover:text-[#006400]">Program Adopsi</a>
+            <span class="mx-2 text-[#008000]/60">></span>
+            <span class="text-[#008000]/80">Sertifikat Adopsi Satwa</span>
+        </div>
+        
+        <!-- Certificate Section -->
+        <div class="certificate-container bg-white">
+            <div class="certificate-header">
+                <h1 class="text-3xl font-bold text-[#008000] mb-2">Sertifikat Adopsi Satwa</h1>
+                <div class="w-1/2 mx-auto border-b-2 border-[#008000] my-4"></div>
+            </div>
+            
+            <div class="certificate-body text-[#008000]">
+                <p class="text-lg mb-6">
+                    Sertifikat ini diberikan kepada<br>
+                    <span class="text-xl font-semibold">John Doe</span><br>
+                    yang telah mengadopsi satwa
+                </p>
+                
+                <div class="flex items-center justify-center space-x-4 mb-6">
+                    <div class="text-center">
+                        <p class="font-semibold">Mamalia</p>
+                        <p>"Jerapah"</p>
+                    </div>
+                </div>
+                
+                <p class="text-lg">
+                    di Taman Safari secara simbolis dari<br>
+                    <span class="font-semibold">1 Maret 2024</span> hingga <span class="font-semibold">1 Maret 2025</span>
+                </p>
+            </div>
+            
+            <div class="certificate-footer text-[#008000]">
+                <p>
+                    Kami sangat berterima kasih atas kepedulian dan kontribusi Anda<br>
+                    terhadap kelestarian satwa di Taman Safari
+                </p>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="flex justify-center mt-8 space-x-4">            
+            <a href="{% url 'adopsi:adopsi_pengunjung' %}" class="px-6 py-2 bg-gray-100 text-[#008000] rounded-lg hover:bg-gray-200 transition-colors">
+                Kembali
+            </a>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="mt-10 text-center text-sm text-[#008000]/60">
+            © 2025 SIZOPI. All rights reserved.
+        </footer>
+    </div>
+</div>
+{% endblock %}

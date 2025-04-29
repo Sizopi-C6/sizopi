@@ -21,4 +21,5 @@ urlpatterns = [
     path('', include('authentication.urls')),
     path('admin/', admin.site.urls),
     path('data-satwa-habitat/', include('data_satwa_habitat.urls')),
+    path('adopsi/', include('adopsi.urls', namespace='adopsi')),
 ]

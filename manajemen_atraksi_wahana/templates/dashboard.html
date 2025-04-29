@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load humanize %}
 
 {% block meta %}
   <title>Dashboard Pengguna</title>
@@ -217,8 +218,12 @@
 
   <div class="section">
     <h4>RINGKASAN PENJUALAN TIKET HARI INI:</h4>
-    <p>{{ role_data.ringkasan_penjualan_tiket }}</p>
-  </div>
+    <ul>
+      {% for key, value in role_data.ringkasan_penjualan_tiket.items %}
+        <li>{{ key|capfirst }}: {{ value }}</li>
+      {% endfor %}
+    </ul>
+  </div>  
 
   <div class="section">
     <h4>JUMLAH PENGUNJUNG HARI INI:</h4>
@@ -227,9 +232,15 @@
 
   <div class="section">
     <h4>LAPORAN PENDAPATAN MINGGUAN:</h4>
-    <p>{{ role_data.laporan_pendapatan_mingguan }}</p>
+    <ul>
+      {% for hari, pendapatan in role_data.laporan_pendapatan_mingguan.items %}
+        <li>{{ hari|capfirst }}: Rp {{ pendapatan|intcomma }}</li>
+      {% endfor %}
+    </ul>
   </div>
+  
   {% endif %}
+
 
   <!-- Section untuk Staf Pelatih Pertunjukan -->
   {% if data_umum.role == "Staf Pelatih Pertunjukan" %}
@@ -261,10 +272,10 @@
     <p>{{ role_data.status_latihan_terakhir }}</p>
   </div>
   {% endif %}
-
-  <!-- Footer -->
-  <footer class="mt-8 text-center text-sm text-[#008000]/60">
-    © 2025 SIZOPI. All rights reserved.
-  </footer>
 </div>
+
+<!-- Footer -->
+<footer class="mt-8 text-center text-sm text-[#008000]/60">
+  © 2025 SIZOPI. All rights reserved.
+</footer>
 {% endblock %}

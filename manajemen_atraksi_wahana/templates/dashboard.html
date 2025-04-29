@@ -84,12 +84,12 @@
     .section h4 {
       margin-top: 0;
       font-weight: bold;
-      margin-bottom: 10px; /* Jarak antara judul dan konten */
+      margin-bottom: 5px; /* Jarak antara judul dan konten */
     }
 
     .section p, .section ul {
       margin-top: 0;
-      margin-bottom: 20px; /* Jarak setelah konten */
+      margin-bottom: 5px; /* Jarak setelah konten */
     }
 
   </style>
@@ -124,29 +124,29 @@
 
   <div class="profile-details">
     <div>
-      <label>Username:</label>
+      <label>USERNAME:</label>
       <span>{{ data_umum.username }}</span>
     </div>
     <div>
-      <label>Email:</label>
+      <label>EMAIL:</label>
       <span>{{ data_umum.email }}</span>
     </div>
     <div>
-      <label>Nomor Telepon:</label>
+      <label>NOMOR TELEPON:</label>
       <span>{{ data_umum.phone_number }}</span>
     </div>
     <div>
-      <label>Peran:</label>
+      <label>PERAN:</label>
       <span>{{ data_umum.role }}</span>
     </div>
   
     {% if data_umum.role == "Pengunjung" %}
     <div>
-      <label>Alamat Lengkap:</label>
+      <label>ALAMAT LENGKAP:</label>
       <span>{{ role_data.alamat }}</span>
     </div>
     <div>
-      <label>Tanggal Lahir:</label>
+      <label>TANGGAL LAHIR:</label>
       <span>{{ role_data.tgl_lahir }}</span>
     </div>
     {% endif %}
@@ -155,7 +155,7 @@
   <!-- Section untuk Pengunjung -->
   {% if data_umum.role == "Pengunjung" %}
   <div class="section">
-    <h4>Riwayat Kunjungan:</h4>
+    <h4>RIWAYAT KUNJUNGAN:</h4>
     <ul>
       {% for kunjungan in role_data.riwayat_kunjungan %}
         <li>{{ kunjungan }}</li>
@@ -164,7 +164,7 @@
   </div>
   
   <div class="section">
-    <h4>Informasi Tiket yang Dibeli:</h4>
+    <h4>INFORMASI TIKET YANG DIBELI:</h4>
     <ul>
       {% for tiket in role_data.info_tiket_dibeli %}
         <li>{{ tiket }}</li>
@@ -176,12 +176,12 @@
   <!-- Section untuk Dokter Hewan -->
   {% if data_umum.role == "Dokter Hewan" %}
   <div class="section">
-    <h4>Nomor Sertifikasi Profesional:</h4>
+    <h4>NOMOR SERTIFIKASI PROFESIONAL:</h4>
     <p>{{ role_data.no_STR }}</p>
   </div>
 
   <div class="section">
-    <h4>Daftar Spesialisasi:</h4>
+    <h4>DAFTAR SPESIALISASI:</h4>
     <ul>
       {% for spesialisasi in role_data.nama_spesialisasi %}
         <li>{{ spesialisasi }}</li>
@@ -190,7 +190,7 @@
   </div>
 
   <div class="section">
-    <h4>Jumlah Hewan yang Ditangani:</h4>
+    <h4>JUMLAH HEWAN YANG DITANGANI:</h4>
     <p>{{ role_data.jumlah_hewan_ditangani }}</p>
   </div>
   {% endif %}
@@ -198,12 +198,12 @@
   <!-- Section untuk Penjaga Hewan -->
   {% if data_umum.role == "Penjaga Hewan" %}
   <div class="section">
-    <h4>ID Staf:</h4>
+    <h4>ID STAF:</h4>
     <p>{{ role_data.id_staf }}</p>
   </div>
 
   <div class="section">
-    <h4>Jumlah Hewan yang Diberi Pakan:</h4>
+    <h4>JUMLAH HEWAN YANG DIBERI PAKAN:</h4>
     <p>{{ role_data.jumlah_hewan_diberi_pakan }}</p>
   </div>
   {% endif %}
@@ -211,22 +211,22 @@
   <!-- Section untuk Staf Administrasi -->
   {% if data_umum.role == "Staf Administrasi" %}
   <div class="section">
-    <h4>ID Staf:</h4>
+    <h4>ID STAF:</h4>
     <p>{{ role_data.id_staf }}</p>
   </div>
 
   <div class="section">
-    <h4>Ringkasan Penjualan Tiket Hari Ini:</h4>
+    <h4>RINGKASAN PENJUALAN TIKET HARI INI:</h4>
     <p>{{ role_data.ringkasan_penjualan_tiket }}</p>
   </div>
 
   <div class="section">
-    <h4>Jumlah Pengunjung Hari Ini:</h4>
+    <h4>JUMLAH PENGUNJUNG HARI INI:</h4>
     <p>{{ role_data.jumlah_pengunjung_hari_ini }}</p>
   </div>
 
   <div class="section">
-    <h4>Laporan Pendapatan Mingguan:</h4>
+    <h4>LAPORAN PENDAPATAN MINGGUAN:</h4>
     <p>{{ role_data.laporan_pendapatan_mingguan }}</p>
   </div>
   {% endif %}
@@ -234,17 +234,21 @@
   <!-- Section untuk Staf Pelatih Pertunjukan -->
   {% if data_umum.role == "Staf Pelatih Pertunjukan" %}
   <div class="section">
-    <h4>ID Staf:</h4>
+    <h4>ID STAF:</h4>
     <p>{{ role_data.id_staf }}</p>
   </div>
 
   <div class="section">
-    <h4>Jadwal Pertunjukan Hari Ini:</h4>
-    <p>{{ role_data.jadwal_pertunjukan_hari_ini }}</p>
+    <h4>JADWAL PERTUNJUKAN HARI INI:</h4>
+    <ul>
+      {% for jadwal in role_data.jadwal_pertunjukan_hari_ini %}
+        <li>{{ jadwal }}</li>
+      {% endfor %}
+    </ul>
   </div>
 
   <div class="section">
-    <h4>Daftar Hewan yang Dilatih:</h4>
+    <h4>DAFTAR HEWAN YANG DILATIH:</h4>
     <ul>
       {% for hewan in role_data.daftar_hewan_dilatih %}
         <li>{{ hewan }}</li>
@@ -253,7 +257,7 @@
   </div>
 
   <div class="section">
-    <h4>Status Latihan Terakhir:</h4>
+    <h4>STATUS LATIHAN TERAKHIR:</h4>
     <p>{{ role_data.status_latihan_terakhir }}</p>
   </div>
   {% endif %}

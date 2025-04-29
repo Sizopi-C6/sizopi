@@ -1,7 +1,7 @@
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import render
 
 def dashboard_view(request):
-    user_role = 'Pengunjung'
+    user_role = 'Staf Pelatih Pertunjukan'
     data_umum = {
         'nama_depan': 'John',
         'nama_tengah': 'Michael',
@@ -78,8 +78,8 @@ def data_atraksi(request):
         {
             'nama_atraksi': 'Wahana Safari',
             'lokasi': 'Zona A',
-            'kapasitas_max': '34 orang',
-            'jadwal': '01/05/2025 8:00:00',
+            'kapasitas_max': '34',
+            'jadwal': '8:00',
             'nama_hewan': [
                 'Sahara (Camelus dromedarius)',
                 'Rocky (Ovis canadensis)',
@@ -92,8 +92,8 @@ def data_atraksi(request):
         {
             'nama_atraksi': 'Reptile Encounter',
             'lokasi': 'Zona E',
-            'kapasitas_max': '89 orang',
-            'jadwal': '08/05/2025 7:45:00',
+            'kapasitas_max': '89',
+            'jadwal': '7:45',
             'nama_hewan': [
                 'Polar (Ursus maritimus)'
             ],
@@ -124,7 +124,7 @@ def edit_atraksi(request, nama_atraksi):
             'nama_atraksi': 'Wahana Safari',
             'lokasi': 'Zona A',
             'kapasitas_max': '34',
-            'jadwal': '01/05/2025 8:00:00',
+            'jadwal': '8:00',
             'nama_hewan': [
                 'Sahara (Camelus dromedarius)',
                 'Rocky (Ovis canadensis)',
@@ -138,7 +138,7 @@ def edit_atraksi(request, nama_atraksi):
             'nama_atraksi': 'Reptile Encounter',
             'lokasi': 'Zona E',
             'kapasitas_max': '89',
-            'jadwal': '08/05/2025 7:45:00',
+            'jadwal': '7:45:00',
             'nama_hewan': [
                 'Polar (Ursus maritimus)'
             ],
@@ -150,11 +150,10 @@ def edit_atraksi(request, nama_atraksi):
 
     atraksi = next((item for item in data_edit_atraksi if item['nama_atraksi'] == nama_atraksi), None)
 
-    if not atraksi:
-        return render(request, '404.html')
-
     hewan_list = ["Harimau", "Gajah", "Kera", "Burung"]
     pelatih_list = ["Dominic Morgan Dixon", "Zavier Genasis Patel"]
+    atraksi['pelatih'] = f"{atraksi['nama_depan']} {atraksi['nama_tengah']} {atraksi['nama_belakang']}"
+
 
     return render(request, 'form_edit_atraksi.html', {
         'atraksi': atraksi,
@@ -166,8 +165,8 @@ def data_wahana(request):
     data_wahana = [
         {
             'nama_wahana': 'Komedi Putar',
-            'kapasitas_max': '40 orang',
-            'jadwal': '10/06/2025 9:00:00',
+            'kapasitas_max': '40',
+            'jadwal': '9:00:00',
             'peraturan': [
                 'Anak di bawah 5 tahun harus didampingi orang dewasa.',
                 'Dilarang berdiri atau bergerak saat wahana beroperasi.',
@@ -176,8 +175,8 @@ def data_wahana(request):
         },
         {
             'nama_wahana': 'Kereta Gantung',
-            'kapasitas_max': '25 orang',
-            'jadwal': '13/06/2025 8:30:00',
+            'kapasitas_max': '25',
+            'jadwal': '8:30:00',
             'peraturan': [
                 'Anak di bawah 5 tahun harus didampingi orang dewasa.',
                 'Berat maksimum per kereta adalah 150 kg.',
@@ -199,8 +198,8 @@ def edit_wahana(request, nama_wahana):
     data_edit_wahana = [
         {
             'nama_wahana': 'Komedi Putar',
-            'kapasitas_max': '40 orang',
-            'jadwal': '10/06/2025 9:00:00',
+            'kapasitas_max': '40',
+            'jadwal': '9:00:00',
             'peraturan': [
                 'Anak di bawah 5 tahun harus didampingi orang dewasa.',
                 'Dilarang berdiri atau bergerak saat wahana beroperasi.',
@@ -209,8 +208,8 @@ def edit_wahana(request, nama_wahana):
         },
         {
             'nama_wahana': 'Kereta Gantung',
-            'kapasitas_max': '25 orang',
-            'jadwal': '13/06/2025 8:30:00',
+            'kapasitas_max': '25',
+            'jadwal': '8:30:00',
             'peraturan': [
                 'Anak di bawah 5 tahun harus didampingi orang dewasa.',
                 'Berat maksimum per kereta adalah 150 kg.',

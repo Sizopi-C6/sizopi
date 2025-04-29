@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+  <title>Detail Reservasi - SIZOPI</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #e8f4ea;
+    }
+    
+    .btn-primary {
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 128, 0, 0.25);
+    }
+    
+    .card {
+      background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .info-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .status-badge {
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    #hapusModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      width: 400px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .modal-content h2 {
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #008000;
+      font-size: 1.5rem;
+    }
+
+    .modal-content p {
+      margin-bottom: 25px;
+      color: #4b5563;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .btn-danger {
+      background-color: white;
+      color: #dc2626;
+      border: 1px solid #dc2626;
+      transition: all 0.3s ease;
+    }
+
+    .btn-danger:hover {
+      background-color: #fef2f2;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+    }
+
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+      margin: 0;
+    }
+
+    ul li {
+      margin-bottom: 4px;
+    }
+  </style>
+{% endblock meta %}
+
+{% block content %}
+
+{% include 'navbar/pengunjung.html' %}
+<div class="min-h-screen p-8 font-[Poppins]">
+  <div class="max-w-4xl mx-auto">
+    <h2 class="text-3xl font-bold text-[#008000] mb-6">DETAIL RESERVASI</h2>
+
+    <!-- White Info Card -->
+    <div class="info-card p-6 mb-8 border border-[#c8e1cc]">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div class="bg-[#f8f9fa] p-4 rounded-lg">
+          <p class="text-gray-700"><span class="font-semibold text-[#006400]">Nama Atraksi:</span> {{ data.nama_atraksi }}</p>
+        </div>
+        <div class="bg-[#f8f9fa] p-4 rounded-lg">
+          <p class="text-gray-700"><span class="font-semibold text-[#006400]">Lokasi:</span> {{ data.lokasi }}</p>
+        </div>
+        <div class="bg-[#f8f9fa] p-4 rounded-lg">
+          <p class="text-gray-700"><span class="font-semibold text-[#006400]">Jam:</span> {{ data.jam }}</p>
+        </div>
+        <div class="bg-[#f8f9fa] p-4 rounded-lg">
+          <p class="text-gray-700"><span class="font-semibold text-[#006400]">Tanggal:</span> {{ data.tanggal_kunjungan }}</p>
+        </div>
+        <div class="bg-[#f8f9fa] p-4 rounded-lg">
+          <p class="text-gray-700"><span class="font-semibold text-[#006400]">Jumlah Tiket:</span> {{ data.jumlah_tiket }}</p>
+        </div>
+        <div class="bg-[#f8f9fa] p-4 rounded-lg">
+          <p class="text-gray-700"><span class="font-semibold text-[#006400]">Status:</span> 
+            <span class="status-badge
+              {% if data.status == 'Confirmed' %}
+                bg-green-100 text-green-800
+              {% elif data.status == 'Pending' %}
+                bg-yellow-100 text-yellow-800
+              {% elif data.status == 'Cancelled' %}
+                bg-red-100 text-red-800
+              {% else %}
+                bg-gray-100 text-gray-800
+              {% endif %}">
+              {{ data.status }}
+            </span>
+          </p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap justify-center gap-4 mt-6">
+        <a href="{% url 'pengunjung_edit_reservasi' data.nama_atraksi %}"
+          class="px-6 py-2 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] transition duration-200 shadow-md">
+          Edit
+        </a>
+        <button type="button" onclick="bukaModal()"
+                class="px-6 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition duration-200 shadow-md">
+          Batalkan Reservasi
+        </button>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="hapusModal">
+  <div class="modal-content">
+    <h2>Batalkan Reservasi</h2>
+    <p>Apakah anda yakin ingin membatalkan atraksi ini?</p>
+    <div class="modal-buttons">
+      <button type="button" onclick="konfirmasiHapus()" 
+              class="btn-primary px-6 py-3 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] transition duration-200 shadow-md">
+        Ya
+      </button>
+      <button type="button" onclick="tutupModal()"
+              class="btn-danger px-6 py-3 font-medium rounded-lg hover:bg-[#fef2f2] transition duration-200 shadow-md">
+        Tidak
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let atraksiYangDihapus = null;
+
+  function bukaModal(namaAtraksi) {
+    atraksiYangDihapus = namaAtraksi;
+    document.getElementById("hapusModal").style.display = "flex";
+  }
+
+  function tutupModal() {
+    document.getElementById("hapusModal").style.display = "none";
+  }
+
+  function konfirmasiHapus() {
+    if (atraksiYangDihapus) {
+      window.location.href = "";
+    } else {
+      window.location.href = "";
+    }
+  }
+</script>
+
+</body>
+</html>
+{% endblock %}

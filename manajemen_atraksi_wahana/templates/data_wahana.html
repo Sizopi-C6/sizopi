@@ -2,89 +2,81 @@
 {% load static %}
 
 {% block meta %}
+  <title>Data Wahana - SIZOPI</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-
+    
     body {
       font-family: 'Poppins', sans-serif;
       background-color: #e8f4ea;
     }
-    .dashboard {
-      text-align: center;
-      max-width: 1400px;
-      margin: 50px auto;
-      padding: 20px;
-      background: #fff;
+    
+    .btn-primary {
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 128, 0, 0.25);
+    }
+    
+    .card {
+      background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
       border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      border: 1px solid #c8e1cc;
     }
-    .dashboard h3 {
-      margin: 10px 0 5px;
-      font-weight: 700;
-      font-size: 28px; /* Ukuran lebih besar */
-      color: #1f2937;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    th, td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-    }
-    th {
-      background-color: #f1f1f1;
-      font-weight: bold;
-      text-align: center;
-    }
-    td {
-      background-color: #fff;
-    }
-    button {
-      padding: 10px 20px; 
-      border-radius: 4px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: background-color 0.3s ease;
-      min-width: 90px;
-      color: white;
-    }
-    .btn-add {
+    
+    .table-header {
       background-color: #008000;
-      min-width: 190px;
       color: white;
     }
-    .btn-edit {
-      background-color: #ffff00;
-      color: white;
+    
+    .table-row:nth-child(even) {
+      background-color: #e0f0e3;
     }
-    .btn-delete {
-      background-color: #ff0000;
-      color: white;
+    
+    .table-row:nth-child(odd) {
+      background-color: #d2e7d6;
     }
-    .btn-edit:hover {
-      background-color: #ffe134;
+    
+    /* Horizontal scrolling */
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-bottom: 1rem;
+      border-radius: 12px;
     }
-    .btn-delete:hover {
-      background-color: #ff0000;
+
+    .table-responsive {
+      min-width: 800px;
+      width: 100%;
     }
-    .button-container {
-      display: flex;
-      justify-content: flex-end;
-      margin-bottom: 10px;
+
+    /* Custom scrollbar */
+    .table-wrapper::-webkit-scrollbar {
+      height: 10px;
     }
-    td:last-child {
-      text-align: center;
+
+    .table-wrapper::-webkit-scrollbar-track {
+      background: #d2e7d6;
+      border-radius: 10px;
     }
-    td button {
-      margin: 3px 5px;
+
+    .table-wrapper::-webkit-scrollbar-thumb {
+      background-color: #008000;
+      border-radius: 10px;
+      border: 2px solid #d2e7d6;
     }
+
+    .table-wrapper::-webkit-scrollbar-thumb:hover {
+      background-color: #006400;
+    }
+
     /* Modal styles */
-    #hapusModal {
+   /* Modal styles */
+   #hapusModal {
       display: none;
       position: fixed;
       top: 0; left: 0;
@@ -94,109 +86,165 @@
       justify-content: center;
       align-items: center;
     }
+
     .modal-content {
       background: white;
       padding: 30px;
-      border-radius: 8px;
-      width: 300px;
+      border-radius: 12px;
+      width: 400px;
       text-align: center;
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
     }
+
     .modal-content h2 {
       font-weight: bold;
       margin-bottom: 15px;
+      color: #008000;
+      font-size: 1.5rem;
     }
+
     .modal-content p {
-      margin-bottom: 20px;
+      margin-bottom: 25px;
+      color: #4b5563;
     }
-    .modal-content button {
-      background: none;
-      border: none;
-      color: blue;
-      font-weight: bold;
-      margin: 0 10px;
-      cursor: pointer;
+
+    .modal-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 20px;
     }
+
+    .btn-danger {
+      background-color: white;
+      color: #dc2626;
+      border: 1px solid #dc2626;
+      transition: all 0.3s ease;
+    }
+
+    .btn-danger:hover {
+      background-color: #fef2f2;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+    }
+
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+      margin: 0;
+    }
+
+    ul li {
+      margin-bottom: 4px;
+    }
+
+    ol {
+      list-style-type: decimal !important; /* Paksa angka 1., 2., 3. */
+      padding-left: 20px;
+      margin: 0;
+    }
+
+    ol li {
+      margin-bottom: 4px;
+  }
+
   </style>
 {% endblock meta %}
 
 {% block content %}
+{% include 'navbar/staff_administrator.html' %}
+<div class="min-h-screen p-8 font-[Poppins]">
+  <div class="max-w-7xl mx-auto">
+    <div class="card p-8 rounded-2xl shadow-lg mb-8">
+      <h2 class="text-3xl font-bold text-[#008000] mb-6">Data Wahana</h2>
 
-{% include 'navbar/staff.html' %}
-<div class="dashboard">
-  <h3>Data Wahana</h3>
+      <div class="mb-6 flex">
+        <button onclick="location.href='{% url 'tambah_wahana' %}'" 
+           class="btn-primary inline-block px-6 py-3 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] transition duration-200 shadow-md">
+          + Tambah Wahana
+        </button>
+      </div>
 
-  <div class="button-container">
-    <button class="btn-add" onclick="location.href='{% url 'tambah_wahana' %}'">+ Tambah Wahana</button>
-  </div>
-
-  <div>
-    <table>
-      <thead>
-        <tr>
-          <th>Nama Wahana</th>
-          <th>Kapasitas</th>
-          <th>Jadwal</th>
-          <th>Peraturan</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for wahana in data_wahana %}
-        <tr>
-          <td>{{ wahana.nama_wahana }}</td>
-          <td>{{ wahana.kapasitas_max }}</td>
-          <td>{{ wahana.jadwal }}</td>
-          <td>
-            <ol>
-              {% for peraturan in wahana.peraturan %}
-              <li>{{ peraturan }}</li>
+      <div class="table-container">
+        <div class="table-wrapper">
+          <table class="table-responsive min-w-full divide-y divide-gray-200">
+            <thead>
+              <tr class="table-header">
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Nama Wahana</th>
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Kapasitas</th>
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Jadwal</th>
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Peraturan</th>
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              {% for wahana in data_wahana %}
+              <tr class="table-row hover:bg-[#c8e1cc] transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{{ wahana.nama_wahana }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ wahana.kapasitas_max }} orang</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ wahana.jadwal }}</td>
+                <td class="px-6 py-4 text-sm text-gray-900">
+                  <ol type="1">
+                    {% for peraturan in wahana.peraturan %}
+                    <li>{{ peraturan }}</li>
+                    {% endfor %}
+                  </ol>                                    
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                  <a href="{% url 'edit_wahana' wahana.nama_wahana %}" class="text-yellow-600 hover:text-yellow-800">Edit</a>
+                  <span class="text-gray-400">|</span>
+                  <a href="#" onclick="bukaModal('{{ wahana.nama_wahana }}')" class="text-red-600 hover:text-red-800">Hapus</a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="5" class="px-6 py-10 text-center text-sm text-gray-500">Tidak ada data wahana.</td>
+              </tr>
               {% endfor %}
-            </ol>
-          </td>
-          <td>
-            <button class="btn-edit" onclick="location.href='{% url 'edit_wahana' wahana.nama_wahana %}'">Edit</button>
-            <button class="btn-delete" onclick="bukaModal('{{ wahana.nama_wahana }}')">Hapus</button>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
+<!-- Modal -->
 <div id="hapusModal">
   <div class="modal-content">
-    <h2>HAPUS WAHANA</h2>
-    <p>Apakah anda yakin ingin menghapus wahana ini?</p>
-    <div>
-      <button onclick="konfirmasiHapus()">[YA]</button>
-      <button onclick="tutupModal()">[TIDAK]</button>
+    <h2>HAPUS ATRAKSI</h2>
+    <p>Apakah anda yakin ingin menghapus atraksi ini?</p>
+    <div class="modal-buttons">
+      <button type="button" onclick="konfirmasiHapus()" 
+              class="btn-primary px-6 py-3 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] transition duration-200 shadow-md">
+        Ya
+      </button>
+      <button type="button" onclick="tutupModal()"
+              class="btn-danger px-6 py-3 font-medium rounded-lg hover:bg-[#fef2f2] transition duration-200 shadow-md">
+        Tidak
+      </button>
     </div>
   </div>
 </div>
 
 <script>
-  let wahanaYangDihapus = null;
+  let atraksiYangDihapus = null;
 
-  function bukaModal(namaWahana) {
-    wahanaYangDihapus = namaWahana;
+  function bukaModal(namaAtraksi) {
+    atraksiYangDihapus = namaAtraksi;
     document.getElementById("hapusModal").style.display = "flex";
   }
 
   function tutupModal() {
-    window.location.href = "";
+    document.getElementById("hapusModal").style.display = "none";
   }
 
   function konfirmasiHapus() {
-    if (wahanaYangDihapus) {
+    if (atraksiYangDihapus) {
       window.location.href = "";
     } else {
       window.location.href = "";
     }
   }
 </script>
-
-</body>
-</html>
 {% endblock %}

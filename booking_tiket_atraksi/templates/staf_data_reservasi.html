@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block meta %}
-  <title>Data Atraksi - SIZOPI</title>
+  <title>Data Reservasi Atraksi - SIZOPI</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
     
@@ -50,7 +50,7 @@
     }
 
     .table-responsive {
-      min-width: 1000px;
+      min-width: 800px;
       width: 100%;
     }
 
@@ -136,6 +136,40 @@
     ul li {
       margin-bottom: 4px;
     }
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .btn-edit {
+      background-color: #fcd34d;
+      color: #854d0e;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+
+    .btn-edit:hover {
+      background-color: #fbbf24;
+      transform: translateY(-1px);
+    }
+
+    .btn-delete {
+      background-color: #f87171;
+      color: #7f1d1d;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+
+    .btn-delete:hover {
+      background-color: #fb7185;
+      transform: translateY(-1px);
+    }
   </style>
 {% endblock meta %}
 
@@ -144,55 +178,56 @@
 <div class="min-h-screen p-8 font-[Poppins]">
   <div class="max-w-7xl mx-auto">
     <div class="card p-8 rounded-2xl shadow-lg mb-8">
-      <h2 class="text-3xl font-bold text-[#008000] mb-6">Data Atraksi</h2>
-
-      <div class="mb-6">
-        <button onclick="location.href='{% url 'tambah_atraksi' %}'" 
-           class="btn-primary inline-block px-6 py-3 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] transition duration-200 shadow-md">
-          + Tambah Atraksi
-        </button>
-      </div>
+      <h2 class="text-3xl font-bold text-[#008000] mb-6">Data Reservasi Atraksi</h2>
 
       <div class="table-container">
         <div class="table-wrapper">
           <table class="table-responsive min-w-full divide-y divide-gray-200">
             <thead>
               <tr class="table-header">
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Username Pengunjung</th>
                 <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Nama Atraksi</th>
-                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Lokasi</th>
-                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Kapasitas</th>
-                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Jadwal</th>
-                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Hewan yang Terlibat</th>
-                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Pelatih</th>
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Tanggal Reservasi</th>
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Jumlah Tiket</th>
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Status</th>
                 <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Aksi</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
-              {% for atraksi in data_atraksi %}
-              <tr class="table-row hover:bg-[#c8e1cc] transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{{ atraksi.nama_atraksi }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ atraksi.lokasi }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ atraksi.kapasitas_max }} orang</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ atraksi.jadwal }}</td>
-                <td class="px-6 py-4 text-sm text-gray-900">
-                  <ul>
-                    {% for hewan in atraksi.nama_hewan %}
-                    <li>- {{ hewan }}</li>
-                    {% endfor %}
-                  </ul>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ atraksi.nama_depan }} {{ atraksi.nama_tengah }} {{ atraksi.nama_belakang }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                  <a href="{% url 'edit_atraksi' atraksi.nama_atraksi %}" class="text-[#008000] hover:text-[#006400]">Edit</a>
-                  <span class="text-gray-400">|</span>
-                  <a href="#" onclick="bukaModal('{{ atraksi.nama_atraksi }}')" class="text-red-600 hover:text-red-800">Hapus</a>
-                </td>
-              </tr>
+              {% for reservasi in data_reservasi %}
+                {% if reservasi.tanggal_kunjungan %}
+                  <tr class="table-row hover:bg-[#c8e1cc] transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{{ reservasi.username }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ reservasi.nama_atraksi }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ reservasi.tanggal_kunjungan }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ reservasi.jumlah_tiket }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ reservasi.status }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div class="action-buttons">
+                        <a href="{% url 'staf_edit_reservasi' username=reservasi.username nama_atraksi=reservasi.nama_atraksi %}" 
+                          class="text-[#008000] hover:text-[#006400]">
+                          Edit
+                        </a>
+                        <span class="text-gray-400">|</span>
+                        <a href="#" 
+                          onclick="bukaModal('{{ reservasi.username }}', '{{ reservasi.nama_atraksi }}', '{{ reservasi.tanggal_kunjungan }}')" 
+                          class="text-red-600 hover:text-red-800">
+                          Hapus
+                        </a>
+                      </div>
+                    </td>                
+                  </tr>
+                {% else %}
+                  <tr>
+                    <td colspan="6" class="px-6 py-10 text-center text-sm text-gray-500">Tanggal reservasi tidak tersedia.</td>
+                  </tr>
+                {% endif %}
               {% empty %}
-              <tr>
-                <td colspan="7" class="px-6 py-10 text-center text-sm text-gray-500">Tidak ada data atraksi.</td>
-              </tr>
+                <tr>
+                  <td colspan="6" class="px-6 py-10 text-center text-sm text-gray-500">Tidak ada data reservasi.</td>
+                </tr>
               {% endfor %}
+
             </tbody>
           </table>
         </div>
@@ -220,10 +255,10 @@
 </div>
 
 <script>
-  let atraksiYangDihapus = null;
+  let reservasiYangDihapus = null;
 
-  function bukaModal(namaAtraksi) {
-    atraksiYangDihapus = namaAtraksi;
+  function bukaModal(namaReservasi) {
+    reservasiYangDihapus = namaReservasi;
     document.getElementById("hapusModal").style.display = "flex";
   }
 
@@ -232,7 +267,7 @@
   }
 
   function konfirmasiHapus() {
-    if (atraksiYangDihapus) {
+    if (reservasiYangDihapus) {
       window.location.href = "";
     } else {
       window.location.href = "";

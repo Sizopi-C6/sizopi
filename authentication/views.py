@@ -26,3 +26,6 @@ def register_staff(request):
         return redirect('login')
     
     return render(request, 'register_staff.html')
+
+def logout_view(request):
+    return redirect('login')

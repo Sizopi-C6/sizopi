@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Data Atraksi</title>
+
+  <style>
+    body {
+      font-family: 'Open Sans', sans-serif;
+      margin: 0;
+      background-color: #f9f9f9;
+    }
+    .dashboard {
+      text-align: center;
+      max-width: 1000px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #f1f1f1;
+      font-weight: bold;
+      text-align: center;
+    }
+    td {
+      background-color: #fff;
+    }
+    button {
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-edit {
+      background-color: #fcd34d;
+    }
+    .btn-delete {
+      background-color: #f87171;
+    }
+    .btn-edit:hover {
+      background-color: #fbbf24;
+    }
+    .btn-delete:hover {
+      background-color: #fb7185;
+    }
+    .button-container {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 10px;
+    }
+    td:last-child {
+      text-align: center;
+    }
+    td button {
+      margin: 3px 5px;
+    }
+    /* Modal styles */
+    #hapusModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      width: 300px;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+    .modal-content h2 {
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    .modal-content p {
+      margin-bottom: 20px;
+    }
+    .modal-content button {
+      background: none;
+      border: none;
+      color: blue;
+      font-weight: bold;
+      margin: 0 10px;
+      cursor: pointer;
+    }
+  </style>
+
+</head>
+<body>
+
+<div class="dashboard">
+  <h1>Data Atraksi</h1>
+
+  <!-- Button Section (Tambah Atraksi) -->
+  <div class="button-container">
+    <button class="btn-edit" onclick="location.href='{% url 'tambah_atraksi' %}'">+ Tambah Atraksi</button>
+  </div>
+
+  <!-- Table Section -->
+  <div>
+    <table>
+      <thead>
+        <tr>
+          <th>Nama Atraksi</th>
+          <th>Lokasi</th>
+          <th>Kapasitas</th>
+          <th>Jadwal</th>
+          <th>Hewan yang Terlibat</th>
+          <th>Pelatih</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for atraksi in data_atraksi %}
+        <tr>
+          <td>{{ atraksi.nama_atraksi }}</td>
+          <td>{{ atraksi.lokasi }}</td>
+          <td>{{ atraksi.kapasitas_max }}</td>
+          <td>{{ atraksi.jadwal }}</td>
+          <td>
+            <ul>
+              {% for hewan in atraksi.hewan %}
+              <li>{{ hewan }}</li>
+              {% endfor %}
+            </ul>
+          </td>
+          <td>{{ atraksi.nama_depan }} {{ atraksi.nama_tengah }} {{ atraksi.nama_belakang }}</td>
+          <td>
+            <button class="btn-edit" onclick="location.href='{% url 'edit_atraksi' atraksi.nama_atraksi %}'">Edit</button>
+            <button class="btn-delete" onclick="bukaModal('{{ atraksi.nama_atraksi }}')">Hapus</button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Konfirmasi Hapus -->
+<div id="hapusModal">
+  <div class="modal-content">
+    <h2>HAPUS ATRAKSI</h2>
+    <p>Apakah anda yakin ingin menghapus atraksi ini?</p>
+    <div>
+      <button onclick="konfirmasiHapus()">[YA]</button>
+      <button onclick="tutupModal()">[TIDAK]</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let atraksiYangDihapus = null;
+
+  function bukaModal(namaAtraksi) {
+    atraksiYangDihapus = namaAtraksi;
+    document.getElementById("hapusModal").style.display = "flex";
+  }
+
+  function tutupModal() {
+    window.location.href = "";
+  }
+
+  function konfirmasiHapus() {
+    if (atraksiYangDihapus) {
+      window.location.href = "";
+    } else {
+      window.location.href = "";
+    }
+  }
+</script>
+
+</body>
+</html>

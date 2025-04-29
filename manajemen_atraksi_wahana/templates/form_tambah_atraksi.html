@@ -4,10 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Form Tambah Atraksi</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+
+  <!-- TailwindCSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Flatpickr -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+  <!-- Select2 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+
+  <!-- FontAwesome (optional) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
   <style>
     .form-container {
       max-width: 900px;
@@ -22,12 +31,13 @@
       margin-bottom: 30px;
     }
     .form-group {
-      margin-bottom: 24px; /* Uniform spacing between each form group */
+      margin-bottom: 24px;
     }
     .select2-container--default .select2-selection--multiple {
       border: 1px solid #d1d5db;
       border-radius: 0.375rem;
       padding: 0.25rem;
+      min-height: 2.5rem;
     }
     @media (max-width: 600px) {
       .form-container {
@@ -37,6 +47,7 @@
     }
   </style>
 </head>
+
 <body class="bg-gray-100">
 
 <div class="form-container">
@@ -44,37 +55,42 @@
     <h2 class="text-2xl font-bold text-gray-800">Form Tambah Atraksi</h2>
   </div>
 
-  <form id="atraksiForm">
+  <form method="POST" action="{% url 'tambah_atraksi' %}" id="atraksiForm">
+    {% csrf_token %}
+    
     <!-- Nama Atraksi -->
     <div class="form-group">
       <label for="namaAtraksi" class="block text-sm font-medium text-gray-700 mb-1">Nama Atraksi</label>
       <input type="text" id="namaAtraksi" name="namaAtraksi" required
-             class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              placeholder="Masukkan nama atraksi"
+              class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
     </div>
 
     <!-- Lokasi -->
     <div class="form-group">
-        <label for="lokasi" class="block text-sm font-medium text-gray-700 mb-1">Lokasi</label>
-        <input type="text" id="lokasi" name="lokasi" required
-            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <label for="lokasi" class="block text-sm font-medium text-gray-700 mb-1">Lokasi</label>
+      <input type="text" id="lokasi" name="lokasi" required
+              placeholder="Masukkan lokasi"
+              class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
     </div>
     
     <!-- Kapasitas -->
     <div class="form-group">
-        <label for="kapasitas" class="block text-sm font-medium text-gray-700 mb-1">Kapasitas Maksimum (Orang)</label>
-        <input type="number" id="kapasitas" name="kapasitas" min="1" required
-            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <label for="kapasitas" class="block text-sm font-medium text-gray-700 mb-1">Kapasitas Maksimum (Orang)</label>
+      <input type="number" id="kapasitas" name="kapasitas" min="1" required
+              placeholder="Masukkan maksimal kapasitas (angka)"
+              class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
     </div>
-    
+
     <!-- Pelatih Pertunjukan -->
     <div class="form-group">
-      <label for="lokasi" class="block text-sm font-medium text-gray-700 mb-1">Pelatih Pertunjukan</label>
-      <select id="lokasi" name="lokasi" required
+      <label for="pelatih" class="block text-sm font-medium text-gray-700 mb-1">Pelatih Pertunjukan</label>
+      <select id="pelatih" name="pelatih" required
               class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-        <option value=""></option>
-        <option value="Area Akuatik">Aziz</option>
-        <option value="Zona Harimau">Baim</option>
-        <option value="Amphitheater Utama">Caca</option>
+          <option value="">-- Pilih Pelatih --</option>
+          {% for pelatih in pelatih_list %}
+              <option value="{{ pelatih }}">{{ pelatih }}</option>
+          {% endfor %}
       </select>
     </div>
 
@@ -89,41 +105,40 @@
     <!-- Hewan yang Terlibat (Multiselect) -->
     <div class="form-group">
       <label for="hewan" class="block text-sm font-medium text-gray-700 mb-1">Hewan yang Terlibat</label>
+      <select name="hewan" id="hewan" class="js-example-basic-multiple w-full" multiple="multiple">
+        {% for hewan in hewan_list %}
+          <option value="{{ hewan }}">{{ hewan }}</option>
+        {% endfor %}
+      </select>
     </div>
+
+    <!-- Submit Button -->
+    <div class="form-group">
+      <button type="submit" class="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">Tambah Atraksi</button>
+    </div>
+
   </form>
 </div>
 
 <!-- JavaScript Libraries -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
-  // Initialize timepicker
-  flatpickr(".timepicker", {
-    enableTime: true,
-    noCalendar: true,
-    dateFormat: "H:i",
-    time_24hr: true,
-    minuteIncrement: 5,
-    placeholder: "Pilih waktu"
-  });
-
-  // Initialize multiselect
   $(document).ready(function() {
-    $('.js-example-basic-multiple').select2({
+    $('#hewan').select2({
       placeholder: "Pilih hewan",
-      allowClear: true
+      allowClear: true,
+      width: '100%'
     });
-  });
-
-  // Form validation
-  document.getElementById('atraksiForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    // Add your form submission logic here
-    alert('Form berhasil disubmit!');
-    // this.submit();
+    flatpickr(".timepicker", {
+      enableTime: true,
+      noCalendar: true,
+      dateFormat: "H:i",
+      time_24hr: true,
+      minuteIncrement: 5
+    });
   });
 </script>
 

@@ -1,8 +1,7 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
   <title>Form Edit Wahana</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -10,6 +9,12 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
 
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #e8f4ea;
+    }
     .form-container {
       max-width: 900px;
       margin: 50px auto;
@@ -37,7 +42,7 @@
       background-color: #4CAF50;
       color: white;
       padding: 6px 12px;
-      border-radius: 4px;
+      border-radius: 3px;
       cursor: pointer;
       transition: background-color 0.3s;
     }
@@ -45,10 +50,11 @@
       background-color: #45a049;
     }
   </style>
-</head>
+{% endblock meta %}
 
-<body class="bg-gray-100">
+{% block content %}
 
+{% include 'navbar/staff.html' %}
 <div class="form-container">
   <div class="form-header">
     <h2 class="text-2xl font-bold text-gray-800">Form Edit Wahana</h2>
@@ -70,9 +76,9 @@
     <div class="form-group">
       <label for="kapasitas" class="block text-sm font-medium text-gray-700 mb-1">Kapasitas Maksimum (Orang)</label>
       <input type="number" id="kapasitas" name="kapasitas" min="1" required
+             class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
              placeholder="Masukkan kapasitas maksimum"
-             value="{{ wahana.kapasitas_max }}"
-             class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+             value="{{ wahana.kapasitas_max }}">
     </div>
 
     <!-- Jadwal -->
@@ -107,11 +113,18 @@
       </div>
     </div>
 
-    <!-- Submit Button -->
-    <div class="form-group mt-6">
-      <button type="submit" class="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">Simpan Perubahan</button>
-    </div>
+    <!-- Submit dan Batal -->
+    <div class="text-center space-x-4">
+      <button type="button" onclick="history.back()"
+        class="px-6 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500 transition">
+        Batal
+      </button>
 
+      <button type="submit"
+        class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+        Simpan Perubahan
+      </button>
+    </div>
   </form>
 </div>
 
@@ -178,8 +191,4 @@
         updatePeraturanLabels();
     });
 </script>
-    
-    
-
-</body>
-</html>
+{% endblock %}

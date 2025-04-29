@@ -2,27 +2,22 @@
 {% load static %}
 
 {% block meta %}
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+  <title>Data Reservasi Atraksi</title>
 
+  <style>
     body {
-      font-family: 'Poppins', sans-serif;
-      background-color: #e8f4ea;
+      font-family: 'Open Sans', sans-serif;
+      margin: 0;
+      background-color: #f9f9f9;
     }
     .dashboard {
       text-align: center;
-      max-width: 1400px;
+      max-width: 1000px;
       margin: 50px auto;
       padding: 20px;
       background: #fff;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    .dashboard h3 {
-      margin: 10px 0 5px;
-      font-weight: 700;
-      font-size: 28px; /* Ukuran lebih besar */
-      color: #1f2937;
     }
     table {
       width: 100%;
@@ -31,54 +26,39 @@
     }
     th, td {
       padding: 12px;
-      text-align: left;
+      text-align: center;
       border-bottom: 1px solid #ddd;
     }
     th {
       background-color: #f1f1f1;
       font-weight: bold;
-      text-align: center;
     }
     td {
       background-color: #fff;
     }
     button {
-      padding: 10px 20px; 
-      border-radius: 4px;
+      padding: 8px 16px;
+      border-radius: 3px;
       font-size: 14px;
-      font-weight: 600;
       cursor: pointer;
       border: none;
-      transition: background-color 0.3s ease;
-      min-width: 90px;
-      color: white;
-    }
-    .btn-add {
-      background-color: #008000;
-      min-width: 190px;
-      color: white;
     }
     .btn-edit {
-      background-color: #ffff00;
-      color: white;
+      background-color: #fcd34d;
     }
     .btn-delete {
-      background-color: #ff0000;
-      color: white;
+      background-color: #f87171;
     }
     .btn-edit:hover {
-      background-color: #ffe134;
+      background-color: #fbbf24;
     }
     .btn-delete:hover {
-      background-color: #ff0000;
+      background-color: #fb7185;
     }
     .button-container {
       display: flex;
       justify-content: flex-end;
       margin-bottom: 10px;
-    }
-    td:last-child {
-      text-align: center;
     }
     td button {
       margin: 3px 5px;
@@ -124,40 +104,33 @@
 
 {% include 'navbar/staff.html' %}
 <div class="dashboard">
-  <h3>Data Wahana</h3>
+  <h1>Data Reservasi Atraksi</h1>
 
-  <div class="button-container">
-    <button class="btn-add" onclick="location.href='{% url 'tambah_wahana' %}'">+ Tambah Wahana</button>
-  </div>
-
+  <!-- Table Section -->
   <div>
     <table>
       <thead>
         <tr>
-          <th>Nama Wahana</th>
-          <th>Kapasitas</th>
-          <th>Jadwal</th>
-          <th>Peraturan</th>
+          <th>Username Pengunjung</th>
+          <th>Nama Atraksi</th>
+          <th>Tanggal Reservasi</th>
+          <th>Jumlah Tiket</th>
+          <th>Status</th>
           <th>Aksi</th>
         </tr>
       </thead>
       <tbody>
-        {% for wahana in data_wahana %}
+        {% for reservasi in data_reservasi %}
         <tr>
-          <td>{{ wahana.nama_wahana }}</td>
-          <td>{{ wahana.kapasitas_max }}</td>
-          <td>{{ wahana.jadwal }}</td>
+          <td>{{ reservasi.username }}</td>
+          <td>{{ reservasi.nama_atraksi }}</td>
+          <td>{{ reservasi.tanggal_kunjungan }}</td>
+          <td>{{ reservasi.jumlah_tiket }}</td>
+          <td>{{ reservasi.status }}</td>
           <td>
-            <ol>
-              {% for peraturan in wahana.peraturan %}
-              <li>{{ peraturan }}</li>
-              {% endfor %}
-            </ol>
-          </td>
-          <td>
-            <button class="btn-edit" onclick="location.href='{% url 'edit_wahana' wahana.nama_wahana %}'">Edit</button>
-            <button class="btn-delete" onclick="bukaModal('{{ wahana.nama_wahana }}')">Hapus</button>
-          </td>
+            <button class="btn-edit" onclick="location.href='{% url 'staf_edit_reservasi' reservasi.username reservasi.nama_atraksi reservasi.tanggal %}'">Edit</button>
+            <button class="btn-delete" onclick="bukaModal('{{ reservasi.username }}', '{{ reservasi.nama_atraksi }}', '{{ reservasi.tanggal }}')">Hapus</button>
+            </td>
         </tr>
         {% endfor %}
       </tbody>
@@ -165,10 +138,11 @@
   </div>
 </div>
 
+<!-- Modal Konfirmasi Hapus -->
 <div id="hapusModal">
   <div class="modal-content">
-    <h2>HAPUS WAHANA</h2>
-    <p>Apakah anda yakin ingin menghapus wahana ini?</p>
+    <h2>HAPUS RESERVASI</h2>
+    <p>Apakah anda yakin ingin membatalkan reservasi ini?</p>
     <div>
       <button onclick="konfirmasiHapus()">[YA]</button>
       <button onclick="tutupModal()">[TIDAK]</button>
@@ -177,25 +151,23 @@
 </div>
 
 <script>
-  let wahanaYangDihapus = null;
+    let dataHapus = { username: '', nama: '', tanggal: '' };
 
-  function bukaModal(namaWahana) {
-    wahanaYangDihapus = namaWahana;
-    document.getElementById("hapusModal").style.display = "flex";
-  }
-
-  function tutupModal() {
-    window.location.href = "";
-  }
-
-  function konfirmasiHapus() {
-    if (wahanaYangDihapus) {
-      window.location.href = "";
-    } else {
-      window.location.href = "";
+    function bukaModal(username, nama, tanggal) {
+        dataHapus = { username, nama, tanggal };
+        document.getElementById("hapusModal").style.display = "flex";
     }
-  }
+
+    function tutupModal() {
+        document.getElementById("hapusModal").style.display = "none";
+    }
+
+    function konfirmasiHapus() {
+        const url = ``;
+        window.location.href = url;
+    }
 </script>
+  
 
 </body>
 </html>

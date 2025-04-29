@@ -16,7 +16,6 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-
 from manajemen_atraksi_wahana import views
 
 urlpatterns = [
@@ -25,5 +24,6 @@ urlpatterns = [
     path('data-satwa-habitat/', include('data_satwa_habitat.urls')),
     path('adopsi/', include('adopsi.urls', namespace='adopsi')),
     path('dashboard/', views.dashboard_view, name='dashboard'),
-    path('atraksi-wahana/', include('manajemen_atraksi_wahana.urls')),
+    path('', include('manajemen_atraksi_wahana.urls')),
+    path('', include('booking_tiket_atraksi.urls')),
 ]

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'data_satwa_habitat',
     'adopsi',
     'manajemen_atraksi_wahana',
+    'booking_tiket_atraksi',
 ]
 
 MIDDLEWARE = [

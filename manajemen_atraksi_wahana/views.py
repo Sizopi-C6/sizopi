@@ -47,7 +47,7 @@ def dashboard_view(request):
                 'total_pendapatan': 5000000
             },
             'jumlah_pengunjung_hari_ini': 200,
-                'laporan_pendapatan_mingguan': {
+            'laporan_pendapatan_mingguan': {
                 'senin': 4500000,
                 'selasa': 3800000,
                 'rabu': 4200000,
@@ -110,8 +110,8 @@ def data_atraksi(request):
     return render(request, 'data_atraksi.html', context)
 
 def tambah_atraksi(request):
-    hewan_list = ["Harimau", "Gajah", "Kera", "Burung"] 
-    pelatih_list = ["Aziz", "Baim", "Caca"] 
+    hewan_list = ["Sahara (Camelus dromedarius)", "Rocky (Ovis canadensis)", "Wave (Chelonia mydas)"] 
+    pelatih_list = ["Xavier Genesis Patel", "Dominic Morgan Dixon"] 
 
     return render(request, 'form_tambah_atraksi.html', {
         'hewan_list': hewan_list,

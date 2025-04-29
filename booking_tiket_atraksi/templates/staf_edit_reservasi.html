@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+  <title>Edit Reservasi</title>
+  <style>
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background-color: #f9f9f9;
+      padding: 40px;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      padding: 20px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    p {
+      margin: 8px 0;
+    }
+    .btn-group {
+      text-align: right;
+      margin-top: 20px;
+    }
+    .btn {
+      text-decoration: none;
+      padding: 6px 14px;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      background: none;
+    }
+    .btn-blue {
+      color: #2563eb;
+    }
+    .btn-blue:hover {
+      text-decoration: underline;
+    }
+  </style>
+{% endblock meta %}
+
+{% block content %}
+
+{% include 'navbar/staff.html' %}
+<div class="container">
+  <h2>EDIT RESERVASI</h2>
+  <form method="post">
+    {% csrf_token %}
+    <p><strong>Nama Atraksi:</strong> {{ reservasi.nama_atraksi }}</p>
+    <p><strong>Lokasi:</strong> {{ reservasi.lokasi }}</p>
+    <p><strong>Jam:</strong> {{ reservasi.jam }}</p>
+    <p><strong>Tanggal:</strong> {{ reservasi.tanggal }}</p>
+
+    <p><strong>Jumlah tiket yang ingin dibeli:</strong><br>
+      <input type="number" name="jumlah_tiket" value="{{ reservasi.jumlah_tiket }}" required min="1">
+    </p>
+
+    <p><strong>Status:</strong><br>
+      <select name="status" required>
+        <option value="Terjadwal" {% if reservasi.status == "Terjadwal" %}selected{% endif %}>Terjadwal</option>
+        <option value="Dibatalkan" {% if reservasi.status == "Dibatalkan" %}selected{% endif %}>Dibatalkan</option>
+      </select>
+    </p>
+
+    <div class="btn-group">
+      <button type="submit" class="btn btn-blue">SIMPAN</button>
+      <a href="{% url 'daftar_reservasi' %}" class="btn btn-blue">BATAL</a>
+    </div>
+  </form>
+</div>
+
+</body>
+</html>
+{% endblock %}

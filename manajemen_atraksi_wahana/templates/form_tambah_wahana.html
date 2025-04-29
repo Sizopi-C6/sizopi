@@ -1,12 +1,15 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
   <title>Form Tambah Wahana</title>
 
   <!-- TailwindCSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Flatpickr Timepicker -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
   <style>
     .form-container {
@@ -40,9 +43,11 @@
     }
   </style>
 </head>
+{% endblock meta %}
 
-<body class="bg-gray-100">
+{% block content %}
 
+{% include 'navbar/staff.html' %}
 <div class="form-container">
   <div class="form-header">
     <h2 class="text-2xl font-bold text-gray-800">Form Tambah Wahana</h2>
@@ -91,15 +96,36 @@
       </div>
     </div>
 
-    <!-- Submit Button -->
-    <div class="form-group">
-      <button type="submit" class="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">Tambah Wahana</button>
-    </div>
+    <!-- Simpan dan Batal -->
+    <div class="text-center space-x-4">
+      <button type="submit"
+        class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+        Simpan
+      </button>
 
+      <button type="button" onclick="history.back()"
+        class="px-6 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500 transition">
+        Batal
+      </button>
+    </div>
   </form>
 </div>
 
 <script>
+  $(document).ready(function() {
+    $('#hewan').select2({
+      placeholder: "Pilih hewan",
+      allowClear: true,
+      width: '100%'
+    });
+    flatpickr(".timepicker", {
+      enableTime: true,
+      noCalendar: true,
+      dateFormat: "H:i",
+      time_24hr: true,
+      minuteIncrement: 5
+    });
+  });
   function updatePeraturanLabels() {
     const items = document.querySelectorAll('#peraturan-container .peraturan-item');
     items.forEach((item, index) => {
@@ -124,46 +150,37 @@
     });
   }
   
-  // Tambah peraturan baru
-  document.getElementById('add-peraturan').addEventListener('click', function () {
-    const peraturanContainer = document.getElementById('peraturan-container');
+  document.getElementById('add-peraturan').addEventListener('click', function() {
+      const peraturanContainer = document.getElementById('peraturan-container');
   
-    const newPeraturanDiv = document.createElement('div');
-    newPeraturanDiv.classList.add('peraturan-item', 'flex', 'items-center', 'gap-2');
+      const newPeraturanDiv = document.createElement('div');
+      newPeraturanDiv.classList.add('peraturan-item', 'flex', 'items-center', 'gap-2');
   
-    const inputWrapper = document.createElement('div');
-    inputWrapper.classList.add('flex-1');
+      const inputWrapper = document.createElement('div');
+      inputWrapper.classList.add('flex-1');
   
-    const label = document.createElement('label');
-    label.classList.add('text-sm', 'text-gray-700');
+      const label = document.createElement('label');
+      label.classList.add('text-sm', 'text-gray-700');
   
-    const input = document.createElement('input');
-    input.setAttribute('type', 'text');
-    input.required = true;
-    input.classList.add('w-full', 'px-4', 'py-2', 'border', 'border-gray-300', 'rounded-md', 'focus:outline-none', 'focus:ring-2', 'focus:ring-blue-500');
+      const input = document.createElement('input');
+      input.setAttribute('type', 'text');
+      input.required = true;
+      input.classList.add('w-full', 'px-4', 'py-2', 'border', 'border-gray-300', 'rounded-md', 'focus:outline-none', 'focus:ring-2', 'focus:ring-blue-500');
   
-    const removeButton = document.createElement('button');
-    removeButton.type = 'button';
-    removeButton.classList.add('remove-peraturan', 'text-red-500', 'hover:text-red-700', 'font-semibold');
-    removeButton.textContent = 'Hapus';
+      const removeButton = document.createElement('button');
+      removeButton.type = 'button';
+      removeButton.classList.add('remove-peraturan', 'text-red-500', 'hover:text-red-700', 'font-semibold');
+      removeButton.textContent = 'Hapus';
   
-    inputWrapper.appendChild(label);
-    inputWrapper.appendChild(input);
+      inputWrapper.appendChild(label);
+      inputWrapper.appendChild(input);
   
-    newPeraturanDiv.appendChild(inputWrapper);
-    newPeraturanDiv.appendChild(removeButton);
+      newPeraturanDiv.appendChild(inputWrapper);
+      newPeraturanDiv.appendChild(removeButton);
+      peraturanContainer.appendChild(newPeraturanDiv);
   
-    peraturanContainer.appendChild(newPeraturanDiv);
-  
-    attachRemoveHandlers();
-    updatePeraturanLabels();
+      attachRemoveHandlers();
+      updatePeraturanLabels();
   });
-  
-  // Pas awal halaman dimuat
-  attachRemoveHandlers();
-  updatePeraturanLabels();
 </script>
-  
-
-</body>
-</html>
+{% endblock %}

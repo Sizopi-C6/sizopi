@@ -1,21 +1,20 @@
-<!-- Ini form_edit_atraksi.html -->
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
   <title>Form Edit Atraksi</title>
 
-  <!-- TailwindCSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Flatpickr -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-
-  <!-- Select2 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
-
+  
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #e8f4ea;
+    }
     .form-container {
       max-width: 900px;
       margin: 50px auto;
@@ -38,10 +37,12 @@
       min-height: 2.5rem;
     }
   </style>
-</head>
 
-<body class="bg-gray-100">
+{% endblock meta %}
 
+{% block content %}
+
+{% include 'navbar/staff.html' %}
 <div class="form-container">
   <div class="form-header">
     <h2 class="text-2xl font-bold text-gray-800">Form Edit Atraksi</h2>
@@ -109,11 +110,18 @@
       </select>
     </div>
 
-    <!-- Submit Button -->
-    <div class="form-group">
-      <button type="submit" class="w-full py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">Update Atraksi</button>
+    <!-- Submit dan Batal -->
+    <div class="text-center space-x-4">
+      <button type="button" onclick="history.back()"
+        class="px-6 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500 transition">
+        Batal
+      </button>
+      
+      <button type="submit"
+        class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+        Simpan Perubahan
+      </button>
     </div>
-
   </form>
 </div>
 
@@ -138,6 +146,4 @@
     });
   });
 </script>
-
-</body>
-</html>
+{% endblock %}

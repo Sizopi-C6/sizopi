@@ -1,73 +1,108 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Data Atraksi</title>
+{% extends 'base.html' %}
+{% load static %}
 
+{% block meta %}
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
     body {
-      font-family: 'Open Sans', sans-serif;
-      margin: 0;
-      background-color: #f9f9f9;
+      font-family: 'Poppins', sans-serif;
+      background-color: #e8f4ea;
     }
+
     .dashboard {
       text-align: center;
-      max-width: 1000px;
+      max-width: 1400px;
       margin: 50px auto;
       padding: 20px;
       background: #fff;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
+
+    .dashboard h3 {
+      margin: 10px 0 5px;
+      font-weight: 700;
+      font-size: 28px; /* Ukuran lebih besar */
+      color: #1f2937;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
     }
+
     th, td {
       padding: 12px;
       text-align: left;
       border-bottom: 1px solid #ddd;
     }
+
     th {
       background-color: #f1f1f1;
       font-weight: bold;
       text-align: center;
     }
+
     td {
       background-color: #fff;
     }
+
     button {
-      padding: 8px 16px;
+      padding: 10px 20px; 
       border-radius: 4px;
       font-size: 14px;
+      font-weight: 600;
       cursor: pointer;
       border: none;
+      transition: background-color 0.3s ease;
+      min-width: 90px;
+      color: white;
     }
+
+    .btn-add {
+      background-color: #008000;
+      min-width: 190px;
+      color: white;
+    }
+
     .btn-edit {
       background-color: #fcd34d;
+      color: white;
     }
+
     .btn-delete {
       background-color: #f87171;
+      color: white;
     }
+
+    .btn-add:hover {
+      background-color: #008000;
+    }
+
     .btn-edit:hover {
       background-color: #fbbf24;
     }
+
     .btn-delete:hover {
-      background-color: #fb7185;
+      background-color: #ef4444;
     }
+
     .button-container {
       display: flex;
       justify-content: flex-end;
       margin-bottom: 10px;
     }
+
     td:last-child {
       text-align: center;
     }
+
     td button {
       margin: 3px 5px;
     }
+
     /* Modal styles */
     #hapusModal {
       display: none;
@@ -79,6 +114,7 @@
       justify-content: center;
       align-items: center;
     }
+
     .modal-content {
       background: white;
       padding: 30px;
@@ -87,13 +123,16 @@
       text-align: center;
       box-shadow: 0 0 10px rgba(0,0,0,0.3);
     }
+
     .modal-content h2 {
       font-weight: bold;
       margin-bottom: 15px;
     }
+
     .modal-content p {
       margin-bottom: 20px;
     }
+
     .modal-content button {
       background: none;
       border: none;
@@ -103,19 +142,18 @@
       cursor: pointer;
     }
   </style>
+{% endblock meta %}
 
-</head>
-<body>
+{% block content %}
 
+{% include 'navbar/staff.html' %}
 <div class="dashboard">
-  <h1>Data Atraksi</h1>
+  <h3>Data Atraksi</h3>
 
-  <!-- Button Section (Tambah Atraksi) -->
   <div class="button-container">
-    <button class="btn-edit" onclick="location.href='{% url 'tambah_atraksi' %}'">+ Tambah Atraksi</button>
+    <button class="btn-add" onclick="location.href='{% url 'tambah_atraksi' %}'">+ Tambah Atraksi</button>
   </div>
 
-  <!-- Table Section -->
   <div>
     <table>
       <thead>
@@ -138,8 +176,8 @@
           <td>{{ atraksi.jadwal }}</td>
           <td>
             <ul>
-              {% for hewan in atraksi.hewan %}
-              <li>{{ hewan }}</li>
+              {% for hewan in atraksi.nama_hewan %}
+              <li>- {{ hewan }}</li>
               {% endfor %}
             </ul>
           </td>
@@ -155,7 +193,7 @@
   </div>
 </div>
 
-<!-- Modal Konfirmasi Hapus -->
+<!-- Modal -->
 <div id="hapusModal">
   <div class="modal-content">
     <h2>HAPUS ATRAKSI</h2>
@@ -187,6 +225,4 @@
     }
   }
 </script>
-
-</body>
-</html>
+{% endblock %}

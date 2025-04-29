@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+  <title>Edit Reservasi</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .form-container {
+      max-width: 900px;
+      margin: 50px auto;
+      padding: 30px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .form-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .form-group {
+      margin-bottom: 24px;
+    }
+    @media (max-width: 600px) {
+      .form-container {
+        margin: 20px auto;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+{% endblock meta %}
+
+{% block content %}
+
+{% include 'navbar/pengunjung.html' %}
+<div class="form-container">
+  <div class="form-header">
+    <h2 class="text-2xl font-bold text-gray-800">Edit Reservasi</h2>
+  </div>
+
+  <form method="POST">
+    {% csrf_token %}
+
+    <!-- Nama Atraksi -->
+    <div class="form-group">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Nama Atraksi</label>
+      <input type="text" value="{{ data.nama_atraksi }}" readonly
+        class="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700">
+    </div>
+
+    <!-- Lokasi -->
+    <div class="form-group">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi</label>
+      <input type="text" value="{{ data.lokasi }}" readonly
+        class="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700">
+    </div>
+
+    <!-- Jam -->
+    <div class="form-group">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Jam</label>
+      <input type="text" value="{{ data.jam }}" readonly
+        class="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700">
+    </div>
+
+    <!-- Tanggal -->
+    <div class="form-group">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
+      <input type="text" value="{{ data.tanggal }}" readonly
+        class="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700">
+    </div>
+
+    <!-- Jumlah Tiket -->
+    <div class="form-group">
+      <label for="jumlah_tiket" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Tiket yang Ingin Dibeli</label>
+      <input type="number" id="jumlah_tiket" name="jumlah_tiket" value="{{ data.jumlah_tiket }}" min="1" required
+        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+    </div>
+
+    <!-- Status -->
+    <div class="form-group">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+      <input type="text" value="{{ data.status }}" readonly
+        class="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700">
+    </div>
+
+    <hr class="my-6 border-gray-300">
+
+    <!-- Tombol -->
+    <div class="text-center space-x-4">
+      <button type="button" onclick="history.back()"
+        class="px-6 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500 transition">
+        Batal
+      </button>
+      <a href="{% url 'detail_reservasi' %}"
+        class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+        Simpan
+      </a>
+    </div>
+  </form>
+</div>
+
+</body>
+</html>
+{% endblock %}

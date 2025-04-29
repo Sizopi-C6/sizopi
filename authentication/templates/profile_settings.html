@@ -32,6 +32,23 @@
 {% endblock meta %}
 
 {% block content %}
+
+{% if profile.role == 'visitor' %}
+    {% include 'navbar/pengunjung.html' %}
+{% elif profile.role == 'vet' %}
+    {% include 'navbar/dokter.html' %}
+{% elif profile.role == 'staff_admin' %}
+    {% include 'navbar/staff_administrator.html' %}
+{% elif profile.role == 'keeper' %}
+    {% include 'navbar/penjaga.html' %}
+{% elif profile.role == 'trainer' %}
+    {% include 'navbar/pelatih.html' %}
+{% elif profile.role == 'visitor_admin' %}
+    {% include 'navbar/pengunjung_sebagai_admin.html' %}
+{% else %}
+    {% include 'navbar/guest.html' %}
+{% endif %}
+
 <div class="bg-[#e8f4ea] min-h-screen py-8">
   <div class="container mx-auto px-4 max-w-3xl">
     <div class="card p-8 rounded-xl shadow-lg border border-[#c8e1cc]">

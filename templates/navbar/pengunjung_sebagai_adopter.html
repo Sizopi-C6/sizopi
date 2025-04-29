@@ -136,12 +136,11 @@
         
         <div class="navbar-menu" id="mainMenu">
             <a href="/dashboard" class="navbar-item">Dashboard</a>
-            <a href="/informasi-kebun" class="navbar-item">Informasi Kebun Binatang</a>
-            <a href="/hewan-adopsi" id="adopsi-link" class="navbar-item hidden">Hewan Adopsi</a>
+            <a href="{% url 'adopsi:program_adopsi_pengunjung' %}" id="adopsi-link" class="navbar-item hidden">Hewan Adopsi</a>
         </div>
         
         <div class="navbar-menu" id="profileMenu">
-            <a href="/profile" class="navbar-item">Profil</a>
+            <a href="{% url 'profile_settings' %}" class="navbar-item">Profil</a>
             <a href="{% url 'logout_view' %}" class="navbar-item cta">Logout</a>
         </div>
     </div>

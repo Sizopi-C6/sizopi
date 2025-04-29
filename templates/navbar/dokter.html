@@ -134,11 +134,11 @@
         
         <div class="navbar-menu" id="mainMenu">
             <a href="/dashboard" class="navbar-item">Dashboard</a>
-            <a href="/rekam-medis" class="navbar-item">Rekam Medis</a>
+            <a href="/kesehatan/rekam-medis-hewan" class="navbar-item">Rekam Medis</a>
         </div>
         
         <div class="navbar-menu" id="profileMenu">
-            <a href="/profile" class="navbar-item">Profil</a>
+            <a href="{% url 'profile_settings' %}" class="navbar-item">Profil</a>
             <a href="{% url 'logout_view' %}" class="navbar-item cta">Logout</a>
         </div>
     </div>

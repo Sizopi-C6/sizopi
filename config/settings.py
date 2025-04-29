@@ -38,12 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'authentication',  
-<<<<<<< HEAD
-    'kesehatan_hewan'
-=======
+    'kesehatan_hewan',
     'data_satwa_habitat',
     'adopsi',
->>>>>>> 68b7a3b0e781973b5863dd5aa2f0f9007de42c4f
 ]
 
 MIDDLEWARE = [

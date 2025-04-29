@@ -1,6 +1,5 @@
 {% load static %}
 <style>
-  /* CSS Umum Navbar */
   .navbar {
       background: #006400;
       padding: 1rem 2rem;
@@ -41,16 +40,15 @@
       white-space: nowrap;
   }
   .navbar-item:hover {
-    background: #005000; /* Hijau yang lebih tua untuk hover */
+    background: #005000;
   }
   .navbar-item.cta {
-    background: #004d00; /* Hijau tua lebih kontras untuk tombol CTA */
+    background: #004d00;
   }
   .navbar-item.cta:hover {
-    background: #003b00; /* Hijau yang lebih tua lagi saat hover CTA */
+    background: #003b00;
   }
   
-  /* Hamburger menu untuk mobile */
   .menu-toggle {
       display: none;
       cursor: pointer;
@@ -60,7 +58,6 @@
       font-size: 1.5rem;
   }
   
-  /* Media Queries untuk Responsive Design */
   @media screen and (max-width: 960px) {
       .navbar {
           padding: 0.8rem 1.5rem;
@@ -139,7 +136,7 @@
       
       <div class="navbar-menu" id="profileMenu">
           <a href="/profile" class="navbar-item">Profil</a>
-          <a href="/logout" class="navbar-item cta">Logout</a>
+          <a href="{% url 'logout_view' %}" class="navbar-item cta">Logout</a>
       </div>
   </div>
 </nav>

@@ -16,9 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from authentication.views import logout_view
 
 urlpatterns = [
     path('', include('authentication.urls')),
+    path('logout/', logout_view, name='logout_view'),
     path('admin/', admin.site.urls),
     path('data-satwa-habitat/', include('data_satwa_habitat.urls')),
     path('adopsi/', include('adopsi.urls', namespace='adopsi')),

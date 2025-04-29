@@ -137,12 +137,12 @@
       
       <div class="navbar-menu" id="mainMenu">
           <a href="/dashboard" class="navbar-item">Dashboard</a>
-          <a href="/informasi-kebun" class="navbar-item">Informasi Kebun</a>
+          <a href="{% url 'data_satwa_habitat:list_habitat' %}" class="navbar-item">Informasi Kebun Binatang</a>
       </div>
       
       <div class="navbar-menu" id="profileMenu">
           <a href="{% url 'profile_settings' %}" class="navbar-item">Profil</a>
-          <a href="/logout" class="navbar-item cta">Logout</a>
+          <a href="{% url 'logout_view' %}" class="navbar-item cta">Logout</a>
       </div>
   </div>
 </nav>

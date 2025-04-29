@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'authentication',  
+    'kesehatan_hewan',
     'data_satwa_habitat',
     'adopsi',
 ]

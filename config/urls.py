@@ -22,4 +22,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('data-satwa-habitat/', include('data_satwa_habitat.urls')),
     path('adopsi/', include('adopsi.urls', namespace='adopsi')),
+    path('kesehatan/', include('kesehatan_hewan.urls')),
 ]

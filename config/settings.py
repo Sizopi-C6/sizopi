@@ -85,11 +85,19 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'sizopi',
+        'USER': 'sizopi-c6',
+        'PASSWORD': 'npg_9GHa0VUkZDjE',
+        'HOST': 'ep-autumn-darkness-a4bb855q.us-east-1.aws.neon.tech',
+        'PORT': '5432',
+        'OPTIONS': {
+            'sslmode': 'require',
+            'options': '-c search_path=sizopi',
+        },
+        'CONN_MAX_AGE': 600,
+    }
 }
 
 # Password validation

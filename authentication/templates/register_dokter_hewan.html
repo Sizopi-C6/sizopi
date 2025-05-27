@@ -28,6 +28,42 @@
   .card {
     background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
   }
+  
+  .checkbox-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 8px;
+  }
+  
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: white;
+    border: 2px solid #b8d8be;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+  }
+  
+  .checkbox-item:hover {
+    border-color: #008000;
+    background: #f0f8f0;
+  }
+  
+  .checkbox-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #008000;
+  }
+  
+  .checkbox-item label {
+    margin: 0;
+    cursor: pointer;
+    font-weight: 500;
+    color: #006400;
+  }
 </style>
 {% endblock meta %}
 
@@ -143,11 +179,11 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
           <!-- Nomor Telepon -->
           <div class="space-y-1">
-            <label for="nomor_telepon" class="block text-[#006400] font-medium">Nomor Telepon:</label>
+            <label for="no_telepon" class="block text-[#006400] font-medium">Nomor Telepon:</label>
             <input 
               type="text" 
-              id="nomor_telepon" 
-              name="nomor_telepon" 
+              id="no_telepon" 
+              name="no_telepon" 
               required
               class="w-full px-4 py-2 rounded-lg bg-white border border-[#b8d8be]"
               placeholder="08xxxxxxxxxx"
@@ -156,11 +192,11 @@
           
           <!-- Nomor Sertifikasi -->
           <div class="space-y-1">
-            <label for="nomor_sertifikasi" class="block text-[#006400] font-medium">Nomor Sertifikasi Profesional:</label>
+            <label for="no_str" class="block text-[#006400] font-medium">Nomor Sertifikasi Profesional:</label>
             <input 
               type="text" 
-              id="nomor_sertifikasi" 
-              name="nomor_sertifikasi" 
+              id="no_str" 
+              name="no_str" 
               required
               class="w-full px-4 py-2 rounded-lg bg-white border border-[#b8d8be]"
               placeholder="DH-XXXXX"
@@ -168,34 +204,74 @@
           </div>
         </div>
         
-        <!-- Spesialisasi -->
-        <div class="space-y-1">
-          <label for="spesialisasi" class="block text-[#006400] font-medium">Spesialisasi:</label>
-          <select 
-            id="spesialisasi" 
-            name="spesialisasi" 
-            required 
-            onchange="toggleLainnya(this)"
-            class="w-full px-4 py-2 rounded-lg bg-white border border-[#b8d8be]"
-          >
-            <option value="">-- Pilih --</option>
-            <option value="Mamalia Besar">Mamalia Besar</option>
-            <option value="Reptil">Reptil</option>
-            <option value="Burung Eksotis">Burung Eksotis</option>
-            <option value="Primata">Primata</option>
-            <option value="Lainnya">Lainnya</option>
-          </select>
+        <!-- Spesialisasi - FIXED: Changed to checkboxes with correct field names -->
+        <div class="space-y-3">
+          <label class="block text-[#006400] font-medium">Spesialisasi: <span class="text-red-500">*</span></label>
+          <p class="text-sm text-[#006400]/70">Pilih satu atau lebih spesialisasi yang Anda kuasai:</p>
+          
+          <div class="checkbox-group">
+            <div class="checkbox-item">
+              <input 
+                type="checkbox" 
+                id="mamalia" 
+                name="specializations" 
+                value="Mamalia Besar"
+              >
+              <label for="mamalia">Mamalia Besar</label>
+            </div>
+            
+            <div class="checkbox-item">
+              <input 
+                type="checkbox" 
+                id="reptil" 
+                name="specializations" 
+                value="Reptil"
+              >
+              <label for="reptil">Reptil</label>
+            </div>
+            
+            <div class="checkbox-item">
+              <input 
+                type="checkbox" 
+                id="burung" 
+                name="specializations" 
+                value="Burung Eksotis"
+              >
+              <label for="burung">Burung Eksotis</label>
+            </div>
+            
+            <div class="checkbox-item">
+              <input 
+                type="checkbox" 
+                id="primata" 
+                name="specializations" 
+                value="Primata"
+              >
+              <label for="primata">Primata</label>
+            </div>
+            
+            <div class="checkbox-item">
+              <input 
+                type="checkbox" 
+                id="lainnya" 
+                name="specializations" 
+                value="Lainnya"
+                onchange="toggleLainnya(this)"
+              >
+              <label for="lainnya">Lainnya</label>
+            </div>
+          </div>
         </div>
         
-        <!-- Spesialisasi Lainnya -->
+        <!-- Spesialisasi Lainnya - FIXED: Changed field name -->
         <div id="lainnya-input" class="space-y-1 hidden">
-          <label for="spesialisasi_lainnya" class="block text-[#006400] font-medium">Spesialisasi Lainnya:</label>
+          <label for="other_specialization" class="block text-[#006400] font-medium">Jelaskan Spesialisasi Lainnya:</label>
           <input 
             type="text" 
-            id="spesialisasi_lainnya" 
-            name="spesialisasi_lainnya"
+            id="other_specialization" 
+            name="other_specialization"
             class="w-full px-4 py-2 rounded-lg bg-white border border-[#b8d8be]"
-            placeholder="Jelaskan spesialisasi Anda"
+            placeholder="Contoh: Hewan Akuatik, Hewan Eksotis, dll."
           >
         </div>
         
@@ -217,16 +293,87 @@
       </div>
     </div>
   </div>
+
+  {% if messages %}
+    <div class="fixed top-4 right-4 z-50 space-y-2">
+        {% for message in messages %}
+            <div class="px-6 py-4 rounded-lg shadow-lg max-w-md 
+                {% if message.tags == 'success' %}
+                    bg-green-100 border border-green-400 text-green-700
+                {% elif message.tags == 'error' %}
+                    bg-red-100 border border-red-400 text-red-700
+                {% elif message.tags == 'warning' %}
+                    bg-yellow-100 border border-yellow-400 text-yellow-700
+                {% elif message.tags == 'info' %}
+                    bg-blue-100 border border-blue-400 text-blue-700
+                {% else %}
+                    bg-gray-100 border border-gray-400 text-gray-700
+                {% endif %}
+                alert alert-dismissible fade show" 
+                role="alert">
+                
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        {% if message.tags == 'success' %}
+                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                        {% elif message.tags == 'error' %}
+                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                        {% elif message.tags == 'warning' %}
+                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                        {% endif %}
+                        <span class="font-medium">{{ message }}</span>
+                    </div>
+                    <button type="button" class="ml-4 text-sm font-semibold" onclick="this.parentElement.parentElement.remove()">
+                        ×
+                    </button>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+  {% endif %}
   
   <script>
-    function toggleLainnya(select) {
+    function toggleLainnya(checkbox) {
       var lainnyaInput = document.getElementById('lainnya-input');
-      if (select.value == 'Lainnya') {
+      var otherInput = document.getElementById('other_specialization');
+      
+      if (checkbox.checked) {
         lainnyaInput.classList.remove('hidden');
+        otherInput.required = true;
       } else {
         lainnyaInput.classList.add('hidden');
+        otherInput.required = false;
+        otherInput.value = '';
       }
     }
+    
+    // Form validation to ensure at least one specialization is selected
+    document.querySelector('form').addEventListener('submit', function(e) {
+      const checkboxes = document.querySelectorAll('input[name="specializations"]:checked');
+      
+      if (checkboxes.length === 0) {
+        e.preventDefault();
+        alert('Silakan pilih minimal satu spesialisasi!');
+        return false;
+      }
+      
+      // If "Lainnya" is selected, make sure the text field is filled
+      const lainnyaChecked = document.getElementById('lainnya').checked;
+      const otherSpecText = document.getElementById('other_specialization').value.trim();
+      
+      if (lainnyaChecked && !otherSpecText) {
+        e.preventDefault();
+        alert('Silakan jelaskan spesialisasi lainnya!');
+        document.getElementById('other_specialization').focus();
+        return false;
+      }
+    });
   </script>
 </div>
 {% endblock content %}

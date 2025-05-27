@@ -204,10 +204,7 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ reservasi.status }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div class="action-buttons">
-                        <a href="{% url 'staf_edit_reservasi' username=reservasi.username nama_atraksi=reservasi.nama_atraksi %}" 
-                          class="text-[#008000] hover:text-[#006400]">
-                          Edit
-                        </a>
+                        <a href="{% url 'staf_edit_reservasi' reservasi.id %}" class="text-[#008000] hover:text-[#006400]">Edit</a>
                         <span class="text-gray-400">|</span>
                         <a href="#" 
                           onclick="bukaModal('{{ reservasi.username }}', '{{ reservasi.nama_atraksi }}', '{{ reservasi.tanggal_kunjungan }}')" 
@@ -260,10 +257,10 @@
 </div>
 
 <script>
-  let reservasiYangDihapus = null;
+  let reservasiYangDihapus = {};
 
-  function bukaModal(namaReservasi) {
-    reservasiYangDihapus = namaReservasi;
+  function bukaModal(username, namaAtraksi, tanggalKunjungan) {
+    reservasiYangDihapus = { username, namaAtraksi, tanggalKunjungan };
     document.getElementById("hapusModal").style.display = "flex";
   }
 
@@ -272,10 +269,8 @@
   }
 
   function konfirmasiHapus() {
-    if (reservasiYangDihapus) {
-      window.location.href = "";
-    } else {
-      window.location.href = "";
+    if (reservasiYangDihapus.username && reservasiYangDihapus.namaAtraksi) {
+      window.location.href = `/reservasi/batalkan/${reservasiYangDihapus.username}/${reservasiYangDihapus.namaAtraksi}/`;
     }
   }
 </script>

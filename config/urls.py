@@ -27,6 +27,6 @@ urlpatterns = [
     path('adopsi/', include('adopsi.urls', namespace='adopsi')),
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('', include('manajemen_atraksi_wahana.urls')),
-    path('reservasi-tiket/', include('booking_tiket_atraksi.urls')),
+    path('reservasi/', include('booking_tiket_atraksi.urls')),
     path('kesehatan/', include('kesehatan_hewan.urls')),
 ]

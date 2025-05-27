@@ -10,28 +10,28 @@
       font-family: 'Poppins', sans-serif;
       background-color: #e8f4ea;
     }
-    
+
     .btn-primary {
       transition: all 0.3s ease;
     }
-    
+
     .btn-primary:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0, 128, 0, 0.25);
     }
-    
+
     .card {
       background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
       border-radius: 12px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     }
-    
+
     .info-card {
       background: white;
       border-radius: 12px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     }
-    
+
     .status-badge {
       padding: 0.25rem 0.5rem;
       border-radius: 9999px;
@@ -112,20 +112,36 @@
   <div class="max-w-4xl mx-auto">
     <h2 class="text-3xl font-bold text-[#008000] mb-6">DETAIL RESERVASI</h2>
 
-    <!-- White Info Card -->
     <div class="info-card p-6 mb-8 border border-[#c8e1cc]">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div class="bg-[#f8f9fa] p-4 rounded-lg">
-          <p class="text-gray-700"><span class="font-semibold text-[#006400]">Nama Atraksi:</span> {{ data.nama_atraksi }}</p>
-        </div>
-        <div class="bg-[#f8f9fa] p-4 rounded-lg">
-          <p class="text-gray-700"><span class="font-semibold text-[#006400]">Lokasi:</span> {{ data.lokasi }}</p>
-        </div>
+        
+        {% if data.jenis_reservasi == "Atraksi" %}
+          <div class="bg-[#f8f9fa] p-4 rounded-lg">
+            <p class="text-gray-700"><span class="font-semibold text-[#006400]">Nama Atraksi:</span> {{ data.nama_atraksi }}</p>
+          </div>
+          <div class="bg-[#f8f9fa] p-4 rounded-lg">
+            <p class="text-gray-700"><span class="font-semibold text-[#006400]">Lokasi:</span> {{ data.lokasi }}</p>
+          </div>
+
+        {% elif data.jenis_reservasi == "Wahana" %}
+          <div class="bg-[#f8f9fa] p-4 rounded-lg">
+            <p class="text-gray-700"><span class="font-semibold text-[#006400]">Nama Wahana:</span> {{ data.nama_wahana }}</p>
+          </div>
+          <div class="bg-[#f8f9fa] p-4 rounded-lg">
+            <p class="text-gray-700"><span class="font-semibold text-[#006400]">Peraturan:</span></p>
+            <div class="text-gray-700">
+              {% for rule in data.peraturan %}
+                <p>{{ rule }}</p>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
         <div class="bg-[#f8f9fa] p-4 rounded-lg">
           <p class="text-gray-700"><span class="font-semibold text-[#006400]">Jam:</span> {{ data.jam }}</p>
         </div>
         <div class="bg-[#f8f9fa] p-4 rounded-lg">
-          <p class="text-gray-700"><span class="font-semibold text-[#006400]">Tanggal:</span> {{ data.tanggal_kunjungan }}</p>
+          <p class="text-gray-700"><span class="font-semibold text-[#006400]">Tanggal:</span> {{ data.tanggal }}</p>
         </div>
         <div class="bg-[#f8f9fa] p-4 rounded-lg">
           <p class="text-gray-700"><span class="font-semibold text-[#006400]">Jumlah Tiket:</span> {{ data.jumlah_tiket }}</p>
@@ -146,23 +162,21 @@
             </span>
           </p>
         </div>
+
       </div>
 
       <div class="flex flex-wrap justify-center gap-4 mt-6">
-        <a href="{% url 'pengunjung_edit_reservasi' data.nama_atraksi %}"
-          class="px-6 py-2 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] transition duration-200 shadow-md">
+        <a href="{% url 'pengunjung_edit_reservasi' data.id %}" class="px-6 py-2 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] transition duration-200 shadow-md">
           Edit
         </a>
-        <button type="button" onclick="bukaModal()"
-                class="px-6 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition duration-200 shadow-md">
+        <button type="button" onclick="bukaModal()" class="px-6 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition duration-200 shadow-md">
           Batalkan Reservasi
         </button>
-
       </div>
     </div>
   </div>
 </div>
-<!-- Footer -->
+
 <footer class="mt-8 text-center text-sm text-[#008000]/60">
   © 2025 SIZOPI. All rights reserved.
 </footer>
@@ -171,7 +185,7 @@
 <div id="hapusModal">
   <div class="modal-content">
     <h2>Batalkan Reservasi</h2>
-    <p>Apakah anda yakin ingin membatalkan atraksi ini?</p>
+    <p>Apakah anda yakin ingin membatalkan reservasi ini?</p>
     <div class="modal-buttons">
       <button type="button" onclick="konfirmasiHapus()" 
               class="btn-primary px-6 py-3 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] transition duration-200 shadow-md">
@@ -186,10 +200,7 @@
 </div>
 
 <script>
-  let atraksiYangDihapus = null;
-
-  function bukaModal(namaAtraksi) {
-    atraksiYangDihapus = namaAtraksi;
+  function bukaModal() {
     document.getElementById("hapusModal").style.display = "flex";
   }
 
@@ -198,11 +209,7 @@
   }
 
   function konfirmasiHapus() {
-    if (atraksiYangDihapus) {
-      window.location.href = "";
-    } else {
-      window.location.href = "";
-    }
+    window.location.href = "{% url 'pengunjung_data_booking' %}";
   }
 </script>
 

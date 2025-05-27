@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>Data Booking Pengunjung - SIZOPI</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+  
+  body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #e8f4ea;
+  }
+  
+  .btn-primary {
+    transition: all 0.3s ease;
+  }
+  
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 128, 0, 0.25);
+  }
+  
+  .card {
+    background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid #c8e1cc;
+  }
+  
+  .table-header {
+    background-color: #008000;
+    color: white;
+  }
+  
+  .table-row:nth-child(even) {
+    background-color: #e0f0e3;
+  }
+  
+  .table-row:nth-child(odd) {
+    background-color: #d2e7d6;
+  }
+  
+  .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1rem;
+    border-radius: 12px;
+  }
+
+  .table-responsive {
+    min-width: 800px;
+    width: 100%;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .btn-edit {
+    color: #008000;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+
+  .btn-edit:hover {
+    color: #006400;
+    text-decoration: underline;
+  }
+
+  .btn-cancel {
+    color: #dc2626;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+
+  .btn-cancel:hover {
+    color: #b91c1c;
+    text-decoration: underline;
+  }
+
+  .separator {
+    color: #9ca3af;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .status-terjadwal {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+
+  .status-dibatalkan {
+    background-color: #fee2e2;
+    color: #991b1b;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+{% include 'navbar/pengunjung.html' %}
+<div class="min-h-screen p-8 font-[Poppins]">
+  <div class="max-w-7xl mx-auto">
+    <div class="card p-8 rounded-2xl shadow-lg mb-8">
+      <h2 class="text-3xl font-bold text-[#008000] mb-6">Data Reservasi</h2>
+
+      <div class="table-container">
+        <div class="table-wrapper">
+          <table class="table-responsive min-w-full divide-y divide-gray-200">
+            <thead>
+              <tr class="table-header">
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Jenis Reservasi</th>
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Nama Atraksi/Wahana</th>
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Tanggal Reservasi</th>
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Jumlah Tiket</th>
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Status</th>
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              {% for booking in data_booking %}
+                <tr class="table-row hover:bg-[#c8e1cc] transition-colors">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {{ booking.jenis_reservasi }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {% if booking.jenis_reservasi == 'Atraksi' %}
+                      {{ booking.nama_atraksi }}
+                    {% else %}
+                      {{ booking.nama_wahana }}
+                    {% endif %}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ booking.tanggal_kunjungan }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ booking.jumlah_tiket }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="status-badge status-{{ booking.status|lower }}">
+                      {{ booking.status }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div class="action-buttons">
+                      <a href="{% url 'pengunjung_edit_reservasi' booking.id %}" class="btn-edit" id="edit-{{ booking.id }}">Edit</a>
+                      <span class="separator">|</span>
+                      <a href="#" class="btn-cancel" id="cancel-{{ booking.id }}">Batalkan</a>
+                    </div>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="6" class="px-6 py-10 text-center text-sm text-gray-500">
+                    Tidak ada data booking.
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.btn-cancel').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const nama = this.closest('tr').querySelector('td:nth-child(2)').textContent;
+      const bookingId = this.id.replace('cancel-', '');
+      
+      if(confirm(`Apakah Anda yakin ingin membatalkan reservasi ${nama}?`)) {
+        // Kirim request pembatalan
+        fetch(`/pengunjung/batalkan-reservasi/${bookingId}/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+          },
+        })
+        .then(response => {
+          if(response.ok) {
+            window.location.reload();
+          } else {
+            alert('Gagal membatalkan reservasi');
+          }
+        });
+      }
+    });
+  });
+</script>
+{% endblock %}

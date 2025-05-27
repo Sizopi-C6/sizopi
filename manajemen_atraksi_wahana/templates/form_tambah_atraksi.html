@@ -159,16 +159,16 @@
               <span class="text-sm text-[#006400]">orang</span>
             </div>
           </div>
-
+            
           <!-- Pelatih Pertunjukan -->
           <div>
             <label for="pelatih" class="block text-sm font-medium text-[#006400] mb-2">Pelatih Pertunjukan</label>
-            <select id="pelatih" name="pelatih" required class="form-input">
-                <option value="">-- Pilih Pelatih --</option>
-                {% for pelatih in pelatih_list %}
-                    <option value="{{ pelatih }}">{{ pelatih }}</option>
-                {% endfor %}
+            <select id="pelatih" name="pelatih" class="js-example-basic-multiple w-full" multiple="multiple" required>
+              {% for pelatih in pelatih_list %}
+                <option value="{{ pelatih }}">{{ pelatih }}</option>
+              {% endfor %}
             </select>
+            
           </div>
 
           <!-- Jadwal -->
@@ -188,6 +188,7 @@
               {% endfor %}
             </select>
           </div>
+
 
           <div class="flex justify-center gap-4 mt-8">
           <button type="submit" 
@@ -216,14 +217,18 @@
 
 <script>
   $(document).ready(function() {
-    // Initialize Select2
     $('#hewan').select2({
       placeholder: "Pilih hewan",
       allowClear: true,
       width: '100%'
     });
     
-    // Initialize Timepicker
+    $('#pelatih').select2({
+        placeholder: "Pilih pelatih",
+        allowClear: true,
+        width: '100%'
+    });
+
     flatpickr(".timepicker", {
       enableTime: true,
       noCalendar: true,

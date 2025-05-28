@@ -24,11 +24,124 @@
             border-color: #008000;
             box-shadow: 0 0 0 0.2rem rgba(0, 128, 0, 0.25);
         }
+        
+        .error-border {
+            border-color: #dc3545 !important;
+        }
+        
+        /* Animal Preview Styles */
+        .animal-image-container {
+            position: relative;
+            width: 100%;
+            height: 160px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .animal-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.3s ease;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            opacity: 0;
+            border-radius: 12px;
+        }
+        
+        .animal-image.loaded {
+            opacity: 1;
+        }
+        
+        .animal-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            color: #64748b;
+            z-index: 1;
+            border-radius: 12px;
+        }
+        
+        .animal-emoji {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .animal-name-placeholder {
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-align: center;
+            opacity: 0.8;
+        }
+        
+        .preview-container {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 2px solid #e0f2fe;
+            transition: all 0.3s ease;
+        }
+        
+        .preview-container.visible {
+            transform: scale(1.02);
+            border-color: #4ade80;
+        }
+        
+        .preview-info {
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+        
+        .preview-species {
+            font-size: 0.75rem;
+            color: #6b7280;
+            font-style: italic;
+        }
     </style>
 {% endblock meta %}
 
 {% block content %}
 {% include 'navbar/staff_administrator.html' %}
+
+<!-- Messages Display -->
+{% if messages %}
+    <div class="fixed top-4 right-4 z-50 space-y-2">
+        {% for message in messages %}
+            <div class="px-6 py-4 rounded-lg shadow-lg max-w-md 
+                {% if message.tags == 'success' %}
+                    bg-green-100 border border-green-400 text-green-700
+                {% elif message.tags == 'error' %}
+                    bg-red-100 border border-red-400 text-red-700
+                {% elif message.tags == 'warning' %}
+                    bg-yellow-100 border border-yellow-400 text-yellow-700
+                {% else %}
+                    bg-blue-100 border border-blue-400 text-blue-700
+                {% endif %}
+                alert alert-dismissible fade show" 
+                role="alert">
+                <div class="flex items-center justify-between">
+                    <span class="font-medium">{{ message }}</span>
+                    <button type="button" class="ml-4 text-sm font-semibold" onclick="this.parentElement.parentElement.remove()">×</button>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
 <div class="bg-[#e8f4ea] min-h-screen flex flex-col items-center font-[Poppins] p-8">
     <div class="w-full max-w-4xl">
         <!-- Header Section -->
@@ -41,13 +154,15 @@
             <h2 class="text-2xl font-semibold text-[#008000] mb-6">Pendataan Adopter</h2>
             
             <form id="verifikasiAkunForm">
+                {% csrf_token %}
                 <div class="mb-6">
                     <label for="username" class="block text-sm font-medium text-[#008000]/80 mb-2">Username Calon Adopter</label>
-                    <input type="text" id="username" name="username" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                    <input type="text" id="username" name="username" required
+                        class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
                 </div>
 
                 <div class="mb-6">
-                    <label class="block text-sm font-medium text-[#008000]/80 mb-2">Tipe Adopter</label>
+                    <label class="block text-sm font-medium text-[#008000]/80 mb-2">Calon Adopter akan mengadopsi satwa sebagai</label>
                     <div class="flex space-x-6">
                         <label class="flex items-center cursor-pointer">
                             <input type="radio" name="tipe" value="individu" checked 
@@ -81,33 +196,42 @@
         <div id="formIndividu" class="card-gradient rounded-2xl shadow-lg p-8 mb-8 hidden">
             <h2 class="text-2xl font-semibold text-[#008000] mb-6">FORM ADOPSI SATWA</h2>
             
-            <form id="adopsiIndividuForm">
+            <form id="adopsiIndividuForm" method="POST" action="{% url 'adopsi:submit_adoption_form' %}">
+                {% csrf_token %}
+                <input type="hidden" name="username" id="username_individu">
+                <input type="hidden" name="tipe_adopter" value="individu">
+                
                 <div class="mb-6">
                     <p class="mb-4">Pihak di bawah ini,</p>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
                             <label for="nama_individu" class="block text-sm font-medium text-[#008000]/80 mb-2">Nama</label>
-                            <input type="text" id="nama_individu" name="nama" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                            <input type="text" id="nama_individu" name="nama" required
+                                class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
                             <p class="text-xs text-gray-500 mt-1">(Nama depan di pengguna/boleh juga dijadikan isian)</p>
                         </div>
                         
                         <div>
                             <label for="nik" class="block text-sm font-medium text-[#008000]/80 mb-2">NIK</label>
-                            <input type="text" id="nik" name="nik" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                            <input type="text" id="nik" name="nik" required maxlength="16" pattern="[0-9]{16}"
+                                class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                            <p class="text-xs text-gray-500 mt-1">(16 digit angka)</p>
                         </div>
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
                             <label for="alamat" class="block text-sm font-medium text-[#008000]/80 mb-2">Alamat</label>
-                            <textarea id="alamat" name="alamat" rows="3" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]"></textarea>
+                            <textarea id="alamat" name="alamat" rows="3" readonly
+                                class="w-full p-3 bg-gray-100 rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]"></textarea>
                             <p class="text-xs text-gray-500 mt-1">(Alamat di pengunjung)</p>
                         </div>
                         
                         <div>
                             <label for="telepon" class="block text-sm font-medium text-[#008000]/80 mb-2">Nomor Telepon</label>
-                            <input type="tel" id="telepon" name="telepon" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                            <input type="tel" id="telepon" name="telepon" readonly
+                                class="w-full p-3 bg-gray-100 rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
                             <p class="text-xs text-gray-500 mt-1">(No telepon di pengguna)</p>
                         </div>
                     </div>
@@ -117,14 +241,38 @@
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label for="nama_hewan" class="block text-sm font-medium text-[#008000]/80 mb-2">Nama Hewan</label>
-                            <input type="text" id="nama_hewan" name="nama_hewan" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
-                            <p class="text-xs text-gray-500 mt-1">(Kalau ada)</p>
+                            <label for="animal_select_individu" class="block text-sm font-medium text-[#008000]/80 mb-2">Pilih Hewan</label>
+                            <select id="animal_select_individu" name="animal_id" required onchange="updateAnimalInfo('individu')"
+                                class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                                <option value="">-- Pilih Hewan --</option>
+                                {% for animal in available_animals %}
+                                <option value="{{ animal.id }}" data-species="{{ animal.species }}" data-name="{{ animal.name }}">{{ animal.name }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                         
                         <div>
                             <label for="jenis_hewan" class="block text-sm font-medium text-[#008000]/80 mb-2">Jenis Hewan</label>
-                            <input type="text" id="jenis_hewan" name="jenis_hewan" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                            <input type="text" id="jenis_hewan" name="jenis_hewan" readonly
+                                class="w-full p-3 bg-gray-100 rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                        </div>
+                    </div>
+                    
+                    <!-- Animal Preview -->
+                    <div id="animal_preview_individu" class="mb-6 hidden">
+                        <h4 class="text-lg font-medium text-[#008000] mb-3 text-center">Preview Hewan yang Dipilih</h4>
+                        <div class="preview-container mx-auto max-w-xs">
+                            <div class="animal-image-container">
+                                <div class="animal-placeholder">
+                                    <div class="animal-emoji" id="preview_emoji_individu">🐾</div>
+                                    <div class="animal-name-placeholder" id="preview_name_individu">Hewan</div>
+                                </div>
+                                <img id="preview_image_individu" class="animal-image" alt="Preview" style="display: none;">
+                            </div>
+                            <div class="preview-info">
+                                <div class="font-medium text-[#008000]" id="preview_title_individu">Nama Hewan</div>
+                                <div class="preview-species" id="preview_species_individu">Species</div>
+                            </div>
                         </div>
                     </div>
                     
@@ -135,13 +283,16 @@
                             <label for="nominal" class="block text-sm font-medium text-[#008000]/80 mb-2">Nominal</label>
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#008000]">Rp</span>
-                                <input type="text" id="nominal" name="nominal" class="w-full pl-10 p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                                <input type="text" id="nominal" name="nominal" required oninput="formatRupiah(this)"
+                                    class="w-full pl-10 p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
                             </div>
                         </div>
                         
                         <div>
                             <label for="periode" class="block text-sm font-medium text-[#008000]/80 mb-2">Untuk periode adopsi selama</label>
-                            <select id="periode" name="periode" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                            <select id="periode" name="periode" required
+                                class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                                <option value="">-- Pilih Periode --</option>
                                 <option value="3">3 bulan</option>
                                 <option value="6">6 bulan</option>
                                 <option value="12">12 bulan</option>
@@ -155,7 +306,7 @@
                         class="px-6 py-3 bg-gray-100 text-[#008000] rounded-lg hover:bg-gray-200 transition-colors">
                         Batal
                     </button>
-                    <button type="button" onclick="submitForm('individu')" 
+                    <button type="submit" 
                         class="px-6 py-3 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors">
                         Submit Form
                     </button>
@@ -167,32 +318,41 @@
         <div id="formOrganisasi" class="card-gradient rounded-2xl shadow-lg p-8 mb-8 hidden">
             <h2 class="text-2xl font-semibold text-[#008000] mb-6">FORM ADOPSI SATWA</h2>
             
-            <form id="adopsiOrganisasiForm">
+            <form id="adopsiOrganisasiForm" method="POST" action="{% url 'adopsi:submit_adoption_form' %}">
+                {% csrf_token %}
+                <input type="hidden" name="username" id="username_organisasi">
+                <input type="hidden" name="tipe_adopter" value="organisasi">
+                
                 <div class="mb-6">
                     <p class="mb-4">Pihak di bawah ini, selaku organisasi/perusahaan</p>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
                             <label for="nama_organisasi" class="block text-sm font-medium text-[#008000]/80 mb-2">Nama</label>
-                            <input type="text" id="nama_organisasi" name="nama" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                            <input type="text" id="nama_organisasi" name="nama_organisasi" required
+                                class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
                         </div>
                         
                         <div>
                             <label for="npp" class="block text-sm font-medium text-[#008000]/80 mb-2">NPP</label>
-                            <input type="text" id="npp" name="npp" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                            <input type="text" id="npp" name="npp" required maxlength="8" pattern="[0-9]{8}"
+                                class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                            <p class="text-xs text-gray-500 mt-1">(8 digit angka)</p>
                         </div>
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
                             <label for="alamat_org" class="block text-sm font-medium text-[#008000]/80 mb-2">Alamat</label>
-                            <textarea id="alamat_org" name="alamat" rows="3" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]"></textarea>
+                            <textarea id="alamat_org" name="alamat" rows="3" readonly
+                                class="w-full p-3 bg-gray-100 rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]"></textarea>
                             <p class="text-xs text-gray-500 mt-1">(Alamat di pengunjung)</p>
                         </div>
                         
                         <div>
                             <label for="kontak" class="block text-sm font-medium text-[#008000]/80 mb-2">Kontak</label>
-                            <input type="tel" id="kontak" name="kontak" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                            <input type="tel" id="kontak" name="kontak" readonly
+                                class="w-full p-3 bg-gray-100 rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
                             <p class="text-xs text-gray-500 mt-1">(No telepon di pengguna)</p>
                         </div>
                     </div>
@@ -202,14 +362,38 @@
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label for="nama_hewan_org" class="block text-sm font-medium text-[#008000]/80 mb-2">Nama Hewan</label>
-                            <input type="text" id="nama_hewan_org" name="nama_hewan" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
-                            <p class="text-xs text-gray-500 mt-1">(Kalau ada)</p>
+                            <label for="animal_select_organisasi" class="block text-sm font-medium text-[#008000]/80 mb-2">Pilih Hewan</label>
+                            <select id="animal_select_organisasi" name="animal_id" required onchange="updateAnimalInfo('organisasi')"
+                                class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                                <option value="">-- Pilih Hewan --</option>
+                                {% for animal in available_animals %}
+                                <option value="{{ animal.id }}" data-species="{{ animal.species }}" data-name="{{ animal.name }}">{{ animal.name }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                         
                         <div>
                             <label for="jenis_hewan_org" class="block text-sm font-medium text-[#008000]/80 mb-2">Jenis Hewan</label>
-                            <input type="text" id="jenis_hewan_org" name="jenis_hewan" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                            <input type="text" id="jenis_hewan_org" name="jenis_hewan" readonly
+                                class="w-full p-3 bg-gray-100 rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                        </div>
+                    </div>
+                    
+                    <!-- Animal Preview -->
+                    <div id="animal_preview_organisasi" class="mb-6 hidden">
+                        <h4 class="text-lg font-medium text-[#008000] mb-3 text-center">Preview Hewan yang Dipilih</h4>
+                        <div class="preview-container mx-auto max-w-xs">
+                            <div class="animal-image-container">
+                                <div class="animal-placeholder">
+                                    <div class="animal-emoji" id="preview_emoji_organisasi">🐾</div>
+                                    <div class="animal-name-placeholder" id="preview_name_organisasi">Hewan</div>
+                                </div>
+                                <img id="preview_image_organisasi" class="animal-image" alt="Preview" style="display: none;">
+                            </div>
+                            <div class="preview-info">
+                                <div class="font-medium text-[#008000]" id="preview_title_organisasi">Nama Hewan</div>
+                                <div class="preview-species" id="preview_species_organisasi">Species</div>
+                            </div>
                         </div>
                     </div>
                     
@@ -220,13 +404,16 @@
                             <label for="nominal_org" class="block text-sm font-medium text-[#008000]/80 mb-2">Nominal</label>
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#008000]">Rp</span>
-                                <input type="text" id="nominal_org" name="nominal" class="w-full pl-10 p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                                <input type="text" id="nominal_org" name="nominal" required oninput="formatRupiah(this)"
+                                    class="w-full pl-10 p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
                             </div>
                         </div>
                         
                         <div>
                             <label for="periode_org" class="block text-sm font-medium text-[#008000]/80 mb-2">Untuk periode adopsi selama</label>
-                            <select id="periode_org" name="periode" class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                            <select id="periode_org" name="periode" required
+                                class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                                <option value="">-- Pilih Periode --</option>
                                 <option value="3">3 bulan</option>
                                 <option value="6">6 bulan</option>
                                 <option value="12">12 bulan</option>
@@ -240,7 +427,7 @@
                         class="px-6 py-3 bg-gray-100 text-[#008000] rounded-lg hover:bg-gray-200 transition-colors">
                         Batal
                     </button>
-                    <button type="button" onclick="submitForm('organisasi')" 
+                    <button type="submit" 
                         class="px-6 py-3 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors">
                         Submit Form
                     </button>
@@ -255,8 +442,56 @@
     </div>
 
     <script>
+        let verifiedUserData = null;
+
+        function getAnimalEmoji(animalName, species) {
+            const name = animalName.toLowerCase();
+            const spec = species.toLowerCase();
+            
+            // Lions
+            if (name.includes('simba') || name.includes('lion') || spec.includes('leo')) return '🦁';
+            // Elephants  
+            if (name.includes('manny') || name.includes('tiny') || name.includes('elephant') || spec.includes('elephas') || spec.includes('loxodonta')) return '🐘';
+            // Tigers
+            if (name.includes('shere') || name.includes('khan') || name.includes('rajah') || name.includes('tiger') || name.includes('stripe') || name.includes('whiskers') || spec.includes('tigris')) return '🐅';
+            // Bears
+            if (name.includes('baloo') || name.includes('bear') || name.includes('snowy') || name.includes('polar') || name.includes('bearie') || spec.includes('ursus')) return '🐻';
+            // Camels
+            if (name.includes('sahara') || name.includes('desert') || name.includes('oasis') || name.includes('wind') || spec.includes('camelus')) return '🐪';
+            // Snow Leopards  
+            if (name.includes('everest') || name.includes('iceberg') || spec.includes('uncia')) return '🐆';
+            // Crocodiles
+            if (name.includes('puddle') || name.includes('marsh') || name.includes('splash') || name.includes('snap') || spec.includes('crocodylus')) return '🐊';
+            // Eagles
+            if (name.includes('swift') || name.includes('river') || spec.includes('haliaeetus')) return '🦅';
+            // Sharks
+            if (name.includes('sandy') || name.includes('sharky') || spec.includes('carcharhinus')) return '🦈';
+            // Monkeys/Gibbons
+            if (name.includes('mangrove') || name.includes('swing') || spec.includes('hylobates')) return '🐵';
+            // Turtles
+            if (name.includes('coastal') || name.includes('wave') || spec.includes('chelonia')) return '🐢';
+            // Clams
+            if (name.includes('coral') || name.includes('pearl') || spec.includes('tridacna')) return '🐚';
+            // Deer
+            if (name.includes('valley') || name.includes('forest') || spec.includes('odocoileus')) return '🦌';
+            // Sheep
+            if (name.includes('rocky') || name.includes('boulder') || spec.includes('ovis')) return '🐑';
+            // Panthers/Leopards
+            if (name.includes('bagheera') || spec.includes('pardus')) return '🐆';
+            
+            return '🐾';
+        }
+
+        function handlePreviewImageLoad(img) {
+            img.classList.add('loaded');
+        }
+
+        function handlePreviewImageError(img) {
+            img.style.display = 'none';
+        }
+
         function verifikasiAkun() {
-            const username = document.getElementById('username').value;
+            const username = document.getElementById('username').value.trim();
             const tipe = document.querySelector('input[name="tipe"]:checked').value;
             
             if(username === '') {
@@ -264,70 +499,114 @@
                 return;
             }
             
-            // Simulasi verifikasi akun
-            setTimeout(() => {
-                const userExists = true;
-
-                if (userExists) {
+            hideError();
+            
+            fetch('{% url "adopsi:verify_adopter_account" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: `username=${encodeURIComponent(username)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    verifiedUserData = data.data;
                     document.getElementById('verifikasiForm').classList.add('hidden');
                     
                     if(tipe === 'individu') {
+                        populateIndividuForm();
                         document.getElementById('formIndividu').classList.remove('hidden');
                     } else {
+                        populateOrganisasiForm();
                         document.getElementById('formOrganisasi').classList.remove('hidden');
                     }
                 } else {
-                    showError('Username tidak ditemukan');
+                    showError(data.message);
                 }
-            }, 500);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('Terjadi kesalahan saat verifikasi akun');
+            });
+        }
+
+        function populateIndividuForm() {
+            if (verifiedUserData) {
+                document.getElementById('username_individu').value = verifiedUserData.username;
+                document.getElementById('nama_individu').value = verifiedUserData.nama_depan || '';
+                document.getElementById('alamat').value = verifiedUserData.alamat || '';
+                document.getElementById('telepon').value = verifiedUserData.no_telepon || '';
+            }
+        }
+
+        function populateOrganisasiForm() {
+            if (verifiedUserData) {
+                document.getElementById('username_organisasi').value = verifiedUserData.username;
+                document.getElementById('alamat_org').value = verifiedUserData.alamat || '';
+                document.getElementById('kontak').value = verifiedUserData.no_telepon || '';
+            }
         }
 
         function showVerifikasiForm() {
             document.getElementById('formIndividu').classList.add('hidden');
             document.getElementById('formOrganisasi').classList.add('hidden');
             document.getElementById('verifikasiForm').classList.remove('hidden');
+            
+            document.getElementById('verifikasiAkunForm').reset();
+            verifiedUserData = null;
+            
+            document.getElementById('animal_preview_individu').classList.add('hidden');
+            document.getElementById('animal_preview_organisasi').classList.add('hidden');
         }
 
-        function submitForm(type) {
-            let form;
-            if (type === 'individu') {
-                form = document.getElementById('adopsiIndividuForm');
+        function updateAnimalInfo(type) {
+            const selectElement = document.getElementById(`animal_select_${type}`);
+            const jenisElement = document.getElementById(type === 'individu' ? 'jenis_hewan' : 'jenis_hewan_org');
+            const previewElement = document.getElementById(`animal_preview_${type}`);
+            const emojiElement = document.getElementById(`preview_emoji_${type}`);
+            const nameElement = document.getElementById(`preview_name_${type}`);
+            const titleElement = document.getElementById(`preview_title_${type}`);
+            const speciesElement = document.getElementById(`preview_species_${type}`);
+            const imageElement = document.getElementById(`preview_image_${type}`);
+            const containerElement = previewElement.querySelector('.preview-container');
+            
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+            
+            if (selectedOption.value) {
+                const animalName = selectedOption.dataset.name || selectedOption.text;
+                const species = selectedOption.dataset.species || '';
+                
+                jenisElement.value = species;
+                
+                emojiElement.textContent = getAnimalEmoji(animalName, species);
+                nameElement.textContent = animalName;
+                titleElement.textContent = animalName;
+                speciesElement.textContent = species;
+                
+                imageElement.style.display = 'block';
+                imageElement.src = `https://picsum.photos/200/160?random=${Math.floor(Math.random() * 1000)}`;
+                imageElement.onload = () => handlePreviewImageLoad(imageElement);
+                imageElement.onerror = () => handlePreviewImageError(imageElement);
+                
+                previewElement.classList.remove('hidden');
+                setTimeout(() => {
+                    containerElement.classList.add('visible');
+                }, 100);
             } else {
-                form = document.getElementById('adopsiOrganisasiForm');
+                jenisElement.value = '';
+                previewElement.classList.add('hidden');
+                containerElement.classList.remove('visible');
             }
-            
-            const requiredFields = form.querySelectorAll('input[type="text"], input[type="tel"], textarea');
-            let isValid = true;
-            
-            requiredFields.forEach(field => {
-                if (field.value === '') {
-                    field.classList.add('border-red-500');
-                    isValid = false;
-                } else {
-                    field.classList.remove('border-red-500');
-                }
-            });
-            
-            if (!isValid) {
-                alert('Mohon lengkapi semua field yang diperlukan');
-                return;
+        }
+
+        function formatRupiah(input) {
+            let value = input.value.replace(/[^0-9]/g, '');
+            if (value) {
+                value = parseInt(value).toLocaleString('id-ID');
             }
-            
-            let nominal;
-            if (type === 'individu') {
-                nominal = document.getElementById('nominal').value;
-            } else {
-                nominal = document.getElementById('nominal_org').value;
-            }
-            
-            const nominalValue = Number(nominal.replace(/[^0-9]/g, ''));
-            if (isNaN(nominalValue) || nominalValue <= 0) {
-                alert('Nominal kontribusi harus lebih besar dari 0');
-                return;
-            }
-            
-            alert('Data berhasil disimpan! Status pembayaran: Tertunda');
-            window.location.href = "{% url 'adopsi:adopsi_admin' %}";
+            input.value = value;
         }
 
         function showError(message) {
@@ -335,6 +614,30 @@
             errorDiv.textContent = message;
             errorDiv.classList.remove('hidden');
         }
+
+        function hideError() {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.classList.add('hidden');
+        }
+
+        setTimeout(function() {
+            const messages = document.querySelectorAll('.alert');
+            messages.forEach(function(message) {
+                message.style.transition = 'opacity 0.5s';
+                message.style.opacity = '0';
+                setTimeout(function() {
+                    message.remove();
+                }, 500);
+            });
+        }, 5000);
+
+        document.getElementById('nik').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        document.getElementById('npp').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
     </script>
 </div>
 {% endblock %}

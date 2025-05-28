@@ -133,37 +133,39 @@
         </div>
 
         <div class="navbar-menu" id="mainMenu">
-            {% if session_user.role %}
+            {% if request.session.user.role %}
                 <a href="/dashboard" class="navbar-item">Dashboard</a>
-                    {% if session_user.role == 'dokter_hewan' %}
+                    {% if request.session.user.role == 'dokter_hewan' %}
                         <a href="/kesehatan/rekam-medis-hewan" class="navbar-item">Rekam Medis</a>
         
-                    {% elif session_user.role == 'penjaga_hewan' %}
+                    {% elif request.session.user.role == 'penjaga_hewan' %}
                         <a href="/kesehatan/pemberian-pakan" class="navbar-item">Catatan Perawatan Hewan</a>
         
-                    {% elif session_user.role == 'staf_admin' %}
+                    {% elif request.session.user.role == 'staf_admin' %}
                         <a href="/kelola-pengunjung" class="navbar-item">Kelola Pengunjung</a>
                         <a href="{% url 'adopsi:adopsi_admin' %}" class="navbar-item">Kelola Adopsi</a>
                         <a href="{% url 'adopsi:daftar_adopter' %}" class="navbar-item">Kelola Adopter</a>
         
-                    {% elif session_user.role == 'pelatih_hewan' %}
+                    {% elif request.session.user.role == 'pelatih_hewan' %}
                         <a href="/jadwal-pertunjukan" class="navbar-item">Jadwal Pertunjukan</a>
         
-                    {% elif session_user.role == 'pengunjung' %}
+                    {% elif request.session.user.role == 'pengunjung' %}
                         <a href="{% url 'data_satwa_habitat:list_habitat' %}" class="navbar-item">Informasi Kebun Binatang</a>
                         <a href="/pengunjung-detail/" class="navbar-item">Reservasi Tiket</a>
         
-                    {% elif session_user.role == 'adopter' %}
+                    {% elif request.session.user.role == 'adopter' %}
                         <a href="{% url 'adopsi:program_adopsi_pengunjung' %}" id="adopsi-link" class="navbar-item">Hewan Adopsi</a>
                     {% endif %}
                 <a href="{% url 'profile_settings' %}" class="navbar-item">Profil</a>
+                <div class="navbar-menu" id="profileMenu">
+                    <a href="{% url 'logout_view' %}" class="navbar-item cta">Logout</a>
+                </div>
             {% else %}
                 <a href="/login/" class="navbar-item">Login</a>
+                <div class="navbar-menu" id="profileMenu">
+                    <a href="/register/" class="navbar-item cta">Register</a>
+                </div>
             {% endif %}
-        </div>
-
-        <div class="navbar-menu" id="profileMenu">
-            <a href="{% url 'logout_view' %}" class="navbar-item cta">Logout</a>
         </div>
    </div>
 </nav>

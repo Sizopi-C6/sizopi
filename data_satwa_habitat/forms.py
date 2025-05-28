@@ -243,18 +243,14 @@ class HabitatUpdatedForm(forms.Form):
         kapasitas = self.cleaned_data.get('kapasitas')
         if kapasitas is not None and kapasitas < 0:
             raise forms.ValidationError("Kapasitas harus bernilai positif.")
-        return kapasitas  # harus mengembalikan nilai kapasitas saja
+        return kapasitas
 
     def clean(self):
         cleaned_data = super().clean()
         kapasitas_baru = cleaned_data.get('kapasitas')
-        print("Kapasitas baru:", kapasitas_baru)
         status_baru = cleaned_data.get('status')
-        print("Status baru:", status_baru)
         kapasitas_lama = self.initial.get('kapasitas')
-        print("Kapasitas lama:", kapasitas_lama)
         status_lama = self.initial.get('status')
-        print("Status lama:", status_lama)
 
         if kapasitas_baru == kapasitas_lama and status_baru == status_lama:
             raise forms.ValidationError(

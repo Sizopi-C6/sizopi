@@ -69,43 +69,39 @@
         {% csrf_token %}
         
         <div class="grid grid-cols-1 gap-6">
-          <!-- Nama Habitat -->
           <div>
             <label class="block text-sm font-medium text-[#006400] mb-2">
               {{ form.nama.label }}
             </label>
             <input type="text" name="{{ form.nama.name }}" 
-                   class="form-input" id="id_nama" required>
+                   class="form-input" id="id_nama"  placeholder="Nama Habitat" required>
             {% if form.nama.errors %}
               <p class="text-red-500 text-xs mt-1">{{ form.nama.errors }}</p>
             {% endif %}
           </div>
 
-          <!-- Luas Area -->
           <div>
             <label class="block text-sm font-medium text-[#006400] mb-2">
               {{ form.luas_area.label }}
             </label>
             <input type="number" name="{{ form.luas_area.name }}" 
-                   class="form-input" id="id_luas_area" step="0.01" required>
+                   class="form-input" id="id_luas_area"  placeholder="1" step="0.01" min="0"required>
             {% if form.luas_area.errors %}
               <p class="text-red-500 text-xs mt-1">{{ form.luas_area.errors }}</p>
             {% endif %}
           </div>
 
-          <!-- Kapasitas -->
           <div>
             <label class="block text-sm font-medium text-[#006400] mb-2">
               {{ form.kapasitas.label }}
             </label>
             <input type="number" name="{{ form.kapasitas.name }}" 
-                   class="form-input" id="id_kapasitas" required>
+                   class="form-input" id="id_kapasitas"  placeholder="1" step="1" min="0" required>
             {% if form.kapasitas.errors %}
               <p class="text-red-500 text-xs mt-1">{{ form.kapasitas.errors }}</p>
             {% endif %}
           </div>
 
-          <!-- Status -->
           <div class="mb-6">
             <label for="id_status" class="block text-sm font-medium text-[#006400] mb-2">
               Status Lingkungan

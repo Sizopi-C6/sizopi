@@ -78,7 +78,6 @@
         {% csrf_token %}
         
         <div class="grid grid-cols-1 gap-6">
-          <!-- Nama Individu (readonly) -->
           <div>
             <label class="block text-sm font-medium text-[#006400] mb-2">
               {{ form.name.label }}
@@ -86,7 +85,6 @@
             {{ form.name }}
           </div>
 
-          <!-- Spesies (readonly) -->
           <div>
             <label class="block text-sm font-medium text-[#006400] mb-2">
               {{ form.species.label }}
@@ -94,7 +92,6 @@
             {{ form.species }}
           </div>
 
-          <!-- Asal Hewan (editable) -->
           <div>
             <label class="block text-sm font-medium text-[#006400] mb-2">
               {{ form.asal_hewan.label }}
@@ -129,7 +126,6 @@
             {% endif %}
           </div>
 
-          <!-- Nama Habitat (readonly) -->
           <div>
             <label class="block text-sm font-medium text-[#006400] mb-2">
               {{ form.nama_habitat.label }}
@@ -143,7 +139,6 @@
             </select>
           </div>
 
-          <!-- URL Foto (readonly) -->
           <div>
             <label class="block text-sm font-medium text-[#006400] mb-2">
               {{ form.url_foto.label }}

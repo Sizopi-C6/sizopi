@@ -52,14 +52,13 @@
 {% endblock meta %}
 
 {% block content %}
-{% include 'navbar/dokter.html' %}
 <div class="min-h-screen p-8 font-[Poppins] flex items-center justify-center">
   <div class="w-full max-w-2xl">
     <div class="card p-8 rounded-2xl shadow-lg border border-[#c8e1cc]">
       <h2 class="text-3xl font-bold text-[#008000] mb-6 text-center">Form Tambah Data Satwa</h2>
 
       {% if form.non_field_errors %}
-        <div class="alert alert-danger">
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
           {% for error in form.non_field_errors %}
             <p>{{ error }}</p>
           {% endfor %}
@@ -72,30 +71,30 @@
         <div class="space-y-4">
           <div class="mb-4">
             <label for="id_name" class="block text-sm font-medium text-[#006400] mb-2">
-              Nama Individu
+              Nama Individu (Opsional)
             </label>
-            <input type="text" name="name" id="id_name" class="form-input" required>
+            <input type="text" name="name" id="id_name" class="form-input" placeholder="Nama Individu">
           </div>
           
           <div class="mb-4">
             <label for="id_species" class="block text-sm font-medium text-[#006400] mb-2">
               Spesies
             </label>
-            <input type="text" name="species" id="id_species" class="form-input" required>
+            <input type="text" name="species" id="id_species" class="form-input" placeholder="Spesies Satwa" required>
           </div>
           
           <div class="mb-4">
             <label for="id_asal_hewan" class="block text-sm font-medium text-[#006400] mb-2">
               Asal Hewan
             </label>
-            <input type="text" name="asal_hewan" id="id_asal_hewan" class="form-input" required>
+            <input type="text" name="asal_hewan" id="id_asal_hewan" class="form-input" placeholder="Asal Hewan" required>
           </div>
           
           <div class="mb-4">
             <label for="id_tanggal_lahir" class="block text-sm font-medium text-[#006400] mb-2">
-              Tanggal Lahir
+              Tanggal Lahir (Opsional)
             </label>
-            <input type="date" name="tanggal_lahir" id="id_tanggal_lahir" class="form-input" required>
+            <input type="date" name="tanggal_lahir" id="id_tanggal_lahir" class="form-input">
           </div>
           
           <div class="mb-4">
@@ -124,7 +123,7 @@
             <label for="id_url_foto" class="block text-sm font-medium text-[#006400] mb-2">
               URL Foto
             </label>
-            <input type="url" name="url_foto" id="id_url_foto" class="form-input" required>
+            <input type="url" name="url_foto" id="id_url_foto" class="form-input"  placeholder="URL Foto" required>
           </div>
         </div>
 

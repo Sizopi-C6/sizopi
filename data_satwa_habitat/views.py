@@ -126,13 +126,10 @@ def find_satwa_by_id(satwa_id):
     return None
 
 def delete_satwa(request, id):
-    satwa = find_satwa_by_id(id)
-    if not satwa:
-        return redirect('data_satwa_habitat:show_list_satwa')
-    
     if request.method == 'POST':
+        with connection.cursor() as cursor:
+            cursor.execute("DELETE FROM hewan WHERE id = %s", [id])
         return redirect('data_satwa_habitat:show_list_satwa')
-    
     return redirect('data_satwa_habitat:show_list_satwa')
 
 def list_habitat(request):
@@ -179,21 +176,16 @@ def edit_habitat(request, habitat_nama):
         'kapasitas': row[2],
         'status': row[3],
     }
-    print("INITIAL: " + str(initial_data))
 
     if request.method == 'POST':
         form = HabitatUpdatedForm(request.POST)
         form.initial = initial_data
-        print("POST data:", request.POST)
-        print("Form data:", form.data)
         if form.is_valid():
-            print("cleaned_data:", form.cleaned_data)
             nama = form.cleaned_data['nama'] or initial_data['nama']
             luas_area = form.cleaned_data['luas_area'] if form.cleaned_data['luas_area'] is not None else initial_data['luas_area']
             kapasitas = form.cleaned_data['kapasitas'] if form.cleaned_data['kapasitas'] is not None else initial_data['kapasitas']
             status = form.cleaned_data['status'] or initial_data['status']
 
-            print("DEBUG:", nama, luas_area, kapasitas, status)
             with connection.cursor() as cursor:
                 cursor.execute("""
                     UPDATE habitat SET

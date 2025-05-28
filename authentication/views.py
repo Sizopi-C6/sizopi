@@ -563,3 +563,7 @@ def password_change_view(request):
         'form': form,
         'profile': profile
     })
+
+def session_user(request):
+    user = request.session.get('user')
+    return render(request, 'navbar.html', {'session_user': user})

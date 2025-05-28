@@ -75,35 +75,54 @@ def login_page(request):
         try:
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    SELECT result_status, result_message, user_data 
-                    FROM verify_login_credentials(%s, %s)
-                """, [email, password])
+                    SELECT p.*, 
+                    CASE 
+                        WHEN EXISTS (SELECT 1 FROM pengunjung WHERE username_p = p.username) THEN 'pengunjung'
+                        WHEN EXISTS (SELECT 1 FROM dokter_hewan WHERE username_dh = p.username) THEN 'dokter_hewan'
+                        WHEN EXISTS (SELECT 1 FROM penjaga_hewan WHERE username_jh = p.username) THEN 'penjaga_hewan'
+                        WHEN EXISTS (SELECT 1 FROM pelatih_hewan WHERE username_lh = p.username) THEN 'pelatih_hewan'
+                        WHEN EXISTS (SELECT 1 FROM staf_admin WHERE username_sa = p.username) THEN 'staf_admin'
+                        ELSE 'incomplete_registration'
+                    END AS role
+                    FROM pengguna p 
+                    WHERE p.email = %s
+                """, [email])
                 
-                result = cursor.fetchone()
-                if result:
-                    status, message, user_data_json = result
+                row = cursor.fetchone()
+                if row:
+                    user = dict(zip([column[0] for column in cursor.description], row))
                     
-                    if status == 'SUCCESS':
-                        import json
-                        user = json.loads(user_data_json)
-                        
-                        for key, value in user.items():
-                            if isinstance(value, (date, datetime)):
-                                user[key] = value.isoformat()
-                            elif isinstance(value, uuid.UUID):
-                                user[key] = str(value)
-                            elif isinstance(value, Decimal):
-                                user[key] = float(value)
-                        
-                        request.session['user'] = user
-                        request.session.save()
-                        
-                        messages.success(request, f"Selamat datang, {user.get('nama_depan')} {user.get('nama_belakang')}!")
-                        return redirect('dashboard')
-                    else:
-                        messages.error(request, message)
+                    if user.get('role') == 'incomplete_registration':
+                        messages.error(request, 'Registrasi Anda belum lengkap. Silakan hubungi administrator atau daftar ulang.')
+                        return render(request, 'login.html')
+                    
+                    for key, value in user.items():
+                        if isinstance(value, (date, datetime)):
+                            user[key] = value.isoformat()
+                        elif isinstance(value, uuid.UUID):
+                            user[key] = str(value)
+                        elif isinstance(value, Decimal):
+                            user[key] = float(value)
                 else:
-                    messages.error(request, 'Terjadi kesalahan sistem!')
+                    user = None
+                
+                if user and password == user.get('password'):
+                    request.session['user'] = user
+                    request.session.save()
+                    
+                    messages.success(request, f"Selamat datang, {user.get('nama_depan')} {user.get('nama_belakang')}!")
+                    
+                    role = user.get('role')
+                    if role == 'pengunjung':
+                        return redirect('dashboard') 
+                    elif role == 'dokter_hewan':
+                        return redirect('dashboard')  
+                    elif role in ['penjaga_hewan', 'pelatih_hewan', 'staf_admin']:
+                        return redirect('dashboard')  
+                    else:
+                        return redirect('dashboard')  
+                else:
+                    messages.error(request, 'Email atau password salah!')
                     
         except Exception as e:
             logger.error(f"Login error for email {email}: {str(e)}")

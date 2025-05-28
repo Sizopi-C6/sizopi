@@ -86,7 +86,9 @@
 {% endblock meta %}
 
 {% block content %}
+
 {% include 'navbar/staff_administrator.html' %}
+{% include 'message_display.html' %}
 
 <!-- Messages Display -->
 {% if messages %}
@@ -179,7 +181,7 @@
                                 <span class="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-full">
                                     Tidak Diadopsi
                                 </span>
-                                <a href="{% url 'adopsi:form_adopsi_hewan' %}" 
+                                <a href="{% url 'adopsi:form_adopsi_hewan' %}?animal_id={{ animal.id }}" 
                                    class="text-[#008000] hover:text-[#006400] font-medium">
                                     Daftarkan Adopter →
                                 </a>

@@ -41,11 +41,16 @@ CREATE OR REPLACE FUNCTION verify_login_credentials(p_email VARCHAR(100), p_pass
 RETURNS TABLE(
     result_status TEXT,
     result_message TEXT,
-    user_data JSON
+    username VARCHAR(50),
+    email VARCHAR(100),
+    nama_depan VARCHAR(50),
+    nama_tengah VARCHAR(50),
+    nama_belakang VARCHAR(50),
+    no_telepon VARCHAR(15),
+    user_role TEXT
 ) AS $$
 DECLARE
     user_record RECORD;
-    user_role TEXT;
 BEGIN
     -- Check if user exists with given email
     SELECT p.*, 
@@ -66,7 +71,7 @@ BEGIN
         RETURN QUERY SELECT 
             'ERROR'::TEXT,
             'Username atau password salah, silakan coba lagi.'::TEXT,
-            NULL::JSON;
+            NULL::VARCHAR(50), NULL::VARCHAR(100), NULL::VARCHAR(50), NULL::VARCHAR(50), NULL::VARCHAR(50), NULL::VARCHAR(15), NULL::TEXT;
         RETURN;
     END IF;
     
@@ -75,7 +80,7 @@ BEGIN
         RETURN QUERY SELECT 
             'ERROR'::TEXT,
             'Registrasi Anda belum lengkap. Silakan hubungi administrator.'::TEXT,
-            NULL::JSON;
+            NULL::VARCHAR(50), NULL::VARCHAR(100), NULL::VARCHAR(50), NULL::VARCHAR(50), NULL::VARCHAR(50), NULL::VARCHAR(15), NULL::TEXT;
         RETURN;
     END IF;
     
@@ -85,13 +90,19 @@ BEGIN
         RETURN QUERY SELECT 
             'SUCCESS'::TEXT,
             'Login berhasil.'::TEXT,
-            row_to_json(user_record)::JSON;
+            user_record.username,
+            user_record.email,
+            user_record.nama_depan,
+            user_record.nama_tengah,
+            user_record.nama_belakang,
+            user_record.no_telepon,
+            user_record.role;
     ELSE
         -- Wrong password
         RETURN QUERY SELECT 
             'ERROR'::TEXT,
             'Username atau password salah, silakan coba lagi.'::TEXT,
-            NULL::JSON;
+            NULL::VARCHAR(50), NULL::VARCHAR(100), NULL::VARCHAR(50), NULL::VARCHAR(50), NULL::VARCHAR(50), NULL::VARCHAR(15), NULL::TEXT;
     END IF;
     
     RETURN;

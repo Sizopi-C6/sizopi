@@ -73,56 +73,37 @@ def login_page(request):
             return render(request, 'login.html')
         
         try:
-            with connection.cursor() as cursor:                
+            with connection.cursor() as cursor:
                 cursor.execute("""
-                    SELECT p.*, 
-                    CASE 
-                        WHEN EXISTS (SELECT 1 FROM pengunjung WHERE username_p = p.username) THEN 'pengunjung'
-                        WHEN EXISTS (SELECT 1 FROM dokter_hewan WHERE username_dh = p.username) THEN 'dokter_hewan'
-                        WHEN EXISTS (SELECT 1 FROM penjaga_hewan WHERE username_jh = p.username) THEN 'penjaga_hewan'
-                        WHEN EXISTS (SELECT 1 FROM pelatih_hewan WHERE username_lh = p.username) THEN 'pelatih_hewan'
-                        WHEN EXISTS (SELECT 1 FROM staf_admin WHERE username_sa = p.username) THEN 'staf_admin'
-                        ELSE 'incomplete_registration'
-                    END AS role
-                    FROM pengguna p 
-                    WHERE p.email = %s
-                """, [email])
+                    SELECT result_status, result_message, user_data 
+                    FROM verify_login_credentials(%s, %s)
+                """, [email, password])
                 
-                row = cursor.fetchone()
-                if row:
-                    user = dict(zip([column[0] for column in cursor.description], row))
+                result = cursor.fetchone()
+                if result:
+                    status, message, user_data_json = result
                     
-                    if user.get('role') == 'incomplete_registration':
-                        messages.error(request, 'Registrasi Anda belum lengkap. Silakan hubungi administrator atau daftar ulang.')
-                        return render(request, 'login.html')
-                    
-                    for key, value in user.items():
-                        if isinstance(value, (date, datetime)):
-                            user[key] = value.isoformat()
-                        elif isinstance(value, uuid.UUID):
-                            user[key] = str(value)
-                        elif isinstance(value, Decimal):
-                            user[key] = float(value)
-                else:
-                    user = None
-                
-                if user and password == user.get('password'):
-                    request.session['user'] = user
-                    request.session.save()
-                    
-                    messages.success(request, f"Selamat datang, {user.get('nama_depan')} {user.get('nama_belakang')}!")
-                    
-                    role = user.get('role')
-                    if role == 'pengunjung':
-                        return redirect('dashboard') 
-                    elif role == 'dokter_hewan':
-                        return redirect('dashboard')  
-                    elif role in ['penjaga_hewan', 'pelatih_hewan', 'staf_admin']:
-                        return redirect('dashboard')  
+                    if status == 'SUCCESS':
+                        import json
+                        user = json.loads(user_data_json)
+                        
+                        for key, value in user.items():
+                            if isinstance(value, (date, datetime)):
+                                user[key] = value.isoformat()
+                            elif isinstance(value, uuid.UUID):
+                                user[key] = str(value)
+                            elif isinstance(value, Decimal):
+                                user[key] = float(value)
+                        
+                        request.session['user'] = user
+                        request.session.save()
+                        
+                        messages.success(request, f"Selamat datang, {user.get('nama_depan')} {user.get('nama_belakang')}!")
+                        return redirect('dashboard')
                     else:
-                        return redirect('dashboard')  
+                        messages.error(request, message)
                 else:
-                    messages.error(request, 'Email atau password salah!')
+                    messages.error(request, 'Terjadi kesalahan sistem!')
                     
         except Exception as e:
             logger.error(f"Login error for email {email}: {str(e)}")
@@ -192,16 +173,18 @@ def register_pengunjung(request):
             return render(request, 'register_pengunjung.html')
         
         try:
-            with transaction.atomic():
-                with connection.cursor() as cursor:
-                    cursor.execute("""
-                        SELECT COUNT(*) FROM pengguna WHERE username = %s OR email = %s
-                    """, [username, email])
-                    
-                    if cursor.fetchone()[0] > 0:
-                        messages.error(request, 'Username atau email sudah terdaftar!')
-                        return render(request, 'register_pengunjung.html')
-                    
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT validate_complete_registration(%s, %s, %s)
+                """, [username, email, 'pengunjung'])
+                
+                validation_result = cursor.fetchone()[0]
+                
+                if validation_result.startswith('ERROR'):
+                    messages.error(request, validation_result.replace('ERROR: ', ''))
+                    return render(request, 'register_pengunjung.html')
+                
+                with transaction.atomic():
                     cursor.execute("""
                         INSERT INTO pengguna (username, email, password, nama_depan, nama_tengah, nama_belakang, no_telepon)
                         VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -213,11 +196,15 @@ def register_pengunjung(request):
                     """, [username, alamat, tgl_lahir])
                     
                     messages.success(request, 'Registrasi berhasil! Silakan login.')
-                    return redirect('login') 
+                    return redirect('login')
                     
         except Exception as e:
-            logger.error(f"Pengunjung registration error: {str(e)}")
-            messages.error(request, f'Terjadi kesalahan: {str(e)}')
+            error_message = str(e)
+            if 'sudah digunakan' in error_message:
+                messages.error(request, error_message)
+            else:
+                logger.error(f"Pengunjung registration error: {error_message}")
+                messages.error(request, f'Terjadi kesalahan: {error_message}')
     
     return render(request, 'register_pengunjung.html')
 
@@ -288,24 +275,18 @@ def register_dokter_hewan(request):
             return render(request, 'register_dokter_hewan.html')
         
         try:
-            with transaction.atomic():
-                with connection.cursor() as cursor:
-                    cursor.execute("""
-                        SELECT COUNT(*) FROM pengguna WHERE username = %s OR email = %s
-                    """, [username, email])
-                    
-                    if cursor.fetchone()[0] > 0:
-                        messages.error(request, 'Username atau email sudah terdaftar!')
-                        return render(request, 'register_dokter_hewan.html')
-                    
-                    cursor.execute("""
-                        SELECT COUNT(*) FROM dokter_hewan WHERE no_str = %s
-                    """, [no_str])
-                    
-                    if cursor.fetchone()[0] > 0:
-                        messages.error(request, 'Nomor STR sudah terdaftar!')
-                        return render(request, 'register_dokter_hewan.html')
-                                        
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT validate_complete_registration(%s, %s, %s)
+                """, [username, email, 'dokter_hewan'])
+                
+                validation_result = cursor.fetchone()[0]
+                
+                if validation_result.startswith('ERROR'):
+                    messages.error(request, validation_result.replace('ERROR: ', ''))
+                    return render(request, 'register_dokter_hewan.html')
+                
+                with transaction.atomic():
                     cursor.execute("""
                         INSERT INTO pengguna (username, email, password, nama_depan, nama_tengah, nama_belakang, no_telepon)
                         VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -338,17 +319,12 @@ def register_dokter_hewan(request):
                     return redirect('login')
                     
         except Exception as e:
-            logger.error(f"Dokter hewan registration error: {str(e)}")
-            
-            try:
-                with connection.cursor() as cleanup_cursor:
-                    cleanup_cursor.execute("DELETE FROM spesialisasi WHERE username_sh = %s", [username])
-                    cleanup_cursor.execute("DELETE FROM dokter_hewan WHERE username_dh = %s", [username])
-                    cleanup_cursor.execute("DELETE FROM pengguna WHERE username = %s", [username])
-            except:
-                pass 
-                
-            messages.error(request, f'Terjadi kesalahan saat registrasi: {str(e)}')
+            error_message = str(e)
+            if 'sudah digunakan' in error_message:
+                messages.error(request, error_message)
+            else:
+                logger.error(f"Dokter hewan registration error: {error_message}")
+                messages.error(request, f'Terjadi kesalahan saat registrasi: {error_message}')
     
     return render(request, 'register_dokter_hewan.html')
 
@@ -407,16 +383,24 @@ def register_staff(request):
         id_staf = str(uuid.uuid4())
         
         try:
-            with transaction.atomic():
-                with connection.cursor() as cursor:
-                    cursor.execute("""
-                        SELECT COUNT(*) FROM pengguna WHERE username = %s OR email = %s
-                    """, [username, email])
-                    
-                    if cursor.fetchone()[0] > 0:
-                        messages.error(request, 'Username atau email sudah terdaftar!')
-                        return render(request, 'register_staff.html')
-                    
+            with connection.cursor() as cursor:
+                role_mapping = {
+                    'Penjaga Hewan': 'penjaga_hewan',
+                    'Staf Administrasi': 'staf_admin', 
+                    'Pelatih Pertunjukan': 'pelatih_hewan'
+                }
+                
+                cursor.execute("""
+                    SELECT validate_complete_registration(%s, %s, %s)
+                """, [username, email, role_mapping.get(peran, 'staff')])
+                
+                validation_result = cursor.fetchone()[0]
+                
+                if validation_result.startswith('ERROR'):
+                    messages.error(request, validation_result.replace('ERROR: ', ''))
+                    return render(request, 'register_staff.html')
+                
+                with transaction.atomic():
                     cursor.execute("""
                         INSERT INTO pengguna (username, email, password, nama_depan, nama_tengah, nama_belakang, no_telepon)
                         VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -444,21 +428,12 @@ def register_staff(request):
                     return redirect('login')
                     
         except Exception as e:
-            logger.error(f"Staff registration error: {str(e)}")
-            
-            try:
-                with connection.cursor() as cleanup_cursor:
-                    if peran == 'Penjaga Hewan':
-                        cleanup_cursor.execute("DELETE FROM penjaga_hewan WHERE username_jh = %s", [username])
-                    elif peran == 'Staf Administrasi':
-                        cleanup_cursor.execute("DELETE FROM staf_admin WHERE username_sa = %s", [username])
-                    elif peran == 'Pelatih Pertunjukan':
-                        cleanup_cursor.execute("DELETE FROM pelatih_hewan WHERE username_lh = %s", [username])
-                    cleanup_cursor.execute("DELETE FROM pengguna WHERE username = %s", [username])
-            except:
-                pass  
-                
-            messages.error(request, f'Terjadi kesalahan saat registrasi: {str(e)}')
+            error_message = str(e)
+            if 'sudah digunakan' in error_message:
+                messages.error(request, error_message)
+            else:
+                logger.error(f"Staff registration error: {error_message}")
+                messages.error(request, f'Terjadi kesalahan saat registrasi: {error_message}')
     
     return render(request, 'register_staff.html')
 

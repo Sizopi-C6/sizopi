@@ -104,9 +104,9 @@
   {% include 'navbar/pengunjung.html' %}
 {% elif data_umum.role == "Penjaga Hewan" %}
   {% include 'navbar/penjaga.html' %}
-{% elif data_umum.role == "Staf Administrasi" %}
+{% elif data_umum.role == "Staf Admin" %}
   {% include 'navbar/staff_administrator.html' %}
-{% elif data_umum.role == "Staf Pelatih Pertunjukan" %}
+{% elif data_umum.role == "Pelatih Hewan" %}
   {% include 'navbar/pelatih.html' %}
 {% else %}
   {% include 'navbar/guest.html' %}
@@ -210,7 +210,7 @@
   {% endif %}
 
   <!-- Section untuk Staf Administrasi -->
-  {% if data_umum.role == "Staf Administrasi" %}
+  {% if data_umum.role == "Staf Admin" %}
   <div class="section">
     <h4>ID STAF:</h4>
     <p>{{ role_data.id_staf }}</p>
@@ -242,8 +242,8 @@
   {% endif %}
 
 
-  <!-- Section untuk Staf Pelatih Pertunjukan -->
-  {% if data_umum.role == "Staf Pelatih Pertunjukan" %}
+  <!-- Section untuk Pelatih Hewan -->
+  {% if data_umum.role == "Pelatih Hewan" %}
   <div class="section">
     <h4>ID STAF:</h4>
     <p>{{ role_data.id_staf }}</p>

@@ -1,76 +1,98 @@
 from django.shortcuts import render
+from django.db import connection
+from django.shortcuts import render, redirect
+from django.contrib import messages
 
 def dashboard_view(request):
-    user_role = 'Pengunjung'
-    data_umum = {
-        'nama_depan': 'John',
-        'nama_tengah': 'Michael',
-        'nama_belakang': 'Doe',
-        'username': 'jdoe',
-        'email': 'jdoe@example.com',
-        'phone_number': '081234567890',
-        'role': user_role,
-    }
+    user = request.session.get('user')
+    if not user:
+        return redirect('login')
 
-    role_data = {}
+    username = user.get('username')
 
-    if user_role == 'Pengunjung':
-        role_data = {
-            'alamat': 'Jl. Mawar No. 1, Jakarta',
-            'tgl_lahir': '1990-05-15',
-            'riwayat_kunjungan': [
-                'Wahana Safari - Zona A - 03/04/2025 11:11:33',
-                'Kolam Reptil - Zona C - 25/01/2025 1:27:46'
-            ],
-            'info_tiket_dibeli': [
-                'Zona Burung - 2 Tiket',
-                'Petting Zoo - 3 Tiket'
-            ]
-        }
-    elif user_role == 'Dokter Hewan':
-        role_data = {
-            'no_STR': 'STR001', 
-            'nama_spesialisasi': ['Bedah Hewan'],  
-            'jumlah_hewan_ditangani': 10
-        }
-    elif user_role == 'Penjaga Hewan':
-        role_data = {
-            'id_staf': 'b3c6f8e2-3b7a-4b6c-92e1-bb8c8f729e01',
-            'jumlah_hewan_diberi_pakan': 25
-        }
-    elif user_role == 'Staf Administrasi':
-        role_data = {
-            'id_staf': 'b3c6f8e2-3b7a-4b6c-92e1-bb8c8f729e01',
-            'ringkasan_penjualan_tiket': {
-                'tiket_dewasa': 150,
-                'tiket_anak': 50,
-                'total_pendapatan': 5000000
-            },
-            'jumlah_pengunjung_hari_ini': 200,
-            'laporan_pendapatan_mingguan': {
-                'senin': 4500000,
-                'selasa': 3800000,
-                'rabu': 4200000,
-                'kamis': 5100000,
-                'jumat': 7000000,
-                'sabtu': 10500000,
-                'minggu': 11100000
-            },
-        }
-    elif user_role == 'Staf Pelatih Pertunjukan':
-        role_data = {
-            'id_staf': 'b3c6f8e2-3b7a-4b6c-92e1-bb8c8f729e01',
-            'jadwal_pertunjukan_hari_ini': {'10:00 - Pertunjukan Lumba-Lumba', '14:00 - Pertunjukan Burung'},
-            'daftar_hewan_dilatih': {'Lumba-Lumba (Dolly)', 'Kakatua (Coco)'},
-            'status_latihan_terakhir': 'Berhasil: 2023-11-15'
-        }
-    else:
+    with connection.cursor() as cursor:
+        # data user
+        cursor.execute("""
+            SELECT username, email, nama_depan, nama_tengah, nama_belakang, no_telepon
+            FROM pengguna
+            WHERE username = %s
+        """, [username])
+        row = cursor.fetchone()
+
+        if not row:
+            messages.error(request, 'Data pengguna tidak ditemukan.')
+            return redirect('login')
+
+        # role user
+        cursor.execute("""
+            SELECT CASE
+                WHEN EXISTS (SELECT 1 FROM pengunjung WHERE username_p = %s) THEN 'pengunjung'
+                WHEN EXISTS (SELECT 1 FROM dokter_hewan WHERE username_dh = %s) THEN 'dokter_hewan'
+                WHEN EXISTS (SELECT 1 FROM penjaga_hewan WHERE username_jh = %s) THEN 'penjaga_hewan'
+                WHEN EXISTS (SELECT 1 FROM pelatih_hewan WHERE username_lh = %s) THEN 'pelatih_hewan'
+                WHEN EXISTS (SELECT 1 FROM staf_admin WHERE username_sa = %s) THEN 'staf_admin'
+                ELSE 'unknown'
+            END AS role
+        """, [username] * 5)
+        role = cursor.fetchone()[0]
+
+        formatted_role = role.replace('_', ' ').title()
+
         role_data = {}
+        if role == 'pengunjung':
+            cursor.execute("""
+                SELECT alamat, tgl_lahir
+                FROM pengunjung
+                WHERE username_p = %s
+            """, [username])
+            pengunjung_row = cursor.fetchone()
+            if pengunjung_row:
+                role_data['alamat'] = pengunjung_row[0]
+                role_data['tgl_lahir'] = pengunjung_row[1].strftime('%Y-%m-%d')
+        elif role == 'staf_admin':
+            cursor.execute("""
+                SELECT id_staf FROM staf_admin
+                WHERE username_sa = %s
+            """, [username])
+            id_staf = cursor.fetchone()
+            role_data['id_staf'] = id_staf[0] if id_staf else '-'
+        elif role == 'dokter_hewan':
+            cursor.execute("""
+                SELECT no_str FROM dokter_hewan
+                WHERE username_dh = %s
+            """, [username])
+            no_str = cursor.fetchone()
+            role_data['no_STR'] = no_str[0] if no_str else '-'
+        elif role == 'penjaga_hewan':
+            cursor.execute("""
+                SELECT id_staf FROM penjaga_hewan
+                WHERE username_jh = %s
+            """, [username])
+            id_staf = cursor.fetchone()
+            role_data['id_staf'] = id_staf[0] if id_staf else '-'
+        elif role == 'pelatih_hewan':
+            cursor.execute("""
+                SELECT id_staf FROM pelatih_hewan
+                WHERE username_lh = %s
+            """, [username])
+            id_staf = cursor.fetchone()
+            role_data['id_staf'] = id_staf[0] if id_staf else '-'
+            
+    data_umum = {
+        'username': row[0],
+        'email': row[1],
+        'nama_depan': row[2],
+        'nama_tengah': row[3] or '',
+        'nama_belakang': row[4],
+        'phone_number': row[5],
+        'role': formatted_role
+    }
 
     context = {
         'data_umum': data_umum,
         'role_data': role_data
     }
+
     return render(request, 'dashboard.html', context)
 
 def data_atraksi(request):

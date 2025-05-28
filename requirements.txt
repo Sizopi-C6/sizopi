@@ -6,3 +6,4 @@ requests
 urllib3
 dj-database-url
 python-dotenv
+python-dateutil==2.8.2

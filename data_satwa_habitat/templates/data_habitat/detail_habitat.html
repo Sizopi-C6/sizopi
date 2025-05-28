@@ -54,7 +54,6 @@
       align-items: center;
     }
 
-    /* Horizontal scrolling */
     .table-wrapper {
       width: 100%;
       overflow-x: auto;
@@ -96,7 +95,6 @@
   <div class="max-w-7xl mx-auto">
     <h2 class="text-3xl font-bold text-[#008000] mb-6">DETAIL HABITAT: {{ habitat.nama }}</h2>
 
-    <!-- White Info Card -->
     <div class="info-card p-6 mb-8 border border-[#c8e1cc]">
       <div class="flex flex-col md:flex-row justify-between items-start gap-4">
         <div class="space-y-2">
@@ -122,10 +120,12 @@
              class="btn-primary px-4 py-2 bg-yellow-500 text-white font-medium rounded-lg hover:bg-yellow-600 transition duration-200 shadow-md">
             Edit Habitat
           </a>
-          <a href="#" 
-             class="px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition duration-200 shadow-md">
-            Hapus Habitat
-          </a>
+          <form action="{% url 'data_satwa_habitat:delete_habitat' habitat.nama %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition duration-200 shadow-md">
+              Hapus Habitat
+            </button>
+          </form>
         </div>
       </div>
     </div>

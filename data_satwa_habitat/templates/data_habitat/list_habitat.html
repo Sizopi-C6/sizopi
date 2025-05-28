@@ -135,7 +135,12 @@
                   <span class="text-gray-400">|</span>
                   <a href="{% url 'data_satwa_habitat:edit_habitat' habitat.nama %}" class="text-[#008000] hover:text-[#006400]">Edit</a>
                   <span class="text-gray-400">|</span>
-                  <a href="#" class="text-red-600 hover:text-red-800">Hapus</a>
+                  <form action="{% url 'data_satwa_habitat:delete_habitat' habitat.nama %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="text-red-600 hover:text-red-800 bg-transparent border-0 p-0 cursor-pointer font-medium">
+                      Hapus
+                    </button>
+                  </form>
                 </td>
               </tr>
               {% empty %}

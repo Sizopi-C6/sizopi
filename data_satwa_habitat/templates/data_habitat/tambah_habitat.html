@@ -58,6 +58,14 @@
     <div class="card p-8 rounded-2xl shadow-lg border border-[#c8e1cc]">
       <h2 class="text-3xl font-bold text-[#008000] mb-6 text-center">Form Tambah Habitat</h2>
 
+      {% if form.non_field_errors %}
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+          {% for error in form.non_field_errors %}
+        <p class="font-medium">{{ error }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+      
       <form method="post" class="space-y-6">
         {% csrf_token %}
         
@@ -99,15 +107,11 @@
           </div>
 
           <!-- Status -->
-          <div>
-            <label class="block text-sm font-medium text-[#006400] mb-2">
-              {{ form.status.label }}
+          <div class="mb-6">
+            <label for="id_status" class="block text-sm font-medium text-[#006400] mb-2">
+              Status Lingkungan
             </label>
-            <select name="{{ form.status.name }}" class="form-input" id="id_status" required>
-              {% for value, label in form.status.field.choices %}
-                <option value="{{ value }}">{{ label }}</option>
-              {% endfor %}
-            </select>
+            <textarea name="status" id="id_status" rows="3" placeholder="Contoh: Suhu: 28°C, Kelembapan: 70%, Vegetasi lebat" class="form-input resize-none" required></textarea>
             {% if form.status.errors %}
               <p class="text-red-500 text-xs mt-1">{{ form.status.errors }}</p>
             {% endif %}

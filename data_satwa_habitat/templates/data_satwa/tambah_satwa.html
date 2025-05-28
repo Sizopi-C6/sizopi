@@ -58,6 +58,14 @@
     <div class="card p-8 rounded-2xl shadow-lg border border-[#c8e1cc]">
       <h2 class="text-3xl font-bold text-[#008000] mb-6 text-center">Form Tambah Data Satwa</h2>
 
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+          {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+
       <form method="post">
         {% csrf_token %}
         
@@ -94,18 +102,22 @@
             <label for="id_status_kesehatan" class="block text-sm font-medium text-[#006400] mb-2">
               Status Kesehatan
             </label>
-            <select name="status_kesehatan" id="id_status_kesehatan" class="form-input" required>
-              <option value="sehat">Sehat</option>
-              <option value="sakit">Sakit</option>
-              <option value="dalam pemantauan">Dalam Pemantauan</option>
+            <select name="{{ form.status_kesehatan.name }}" id="id_status_kesehatan" class="form-input">
+              {% for value, label in form.status_kesehatan.field.choices %}
+                <option value="{{ value }}" {% if form.status_kesehatan.value == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
             </select>
           </div>
           
           <div class="mb-4">
             <label for="id_nama_habitat" class="block text-sm font-medium text-[#006400] mb-2">
-              Habitat
+              Nama Habitat
             </label>
-            <input type="text" name="nama_habitat" id="id_nama_habitat" class="form-input" required>
+            <select name="{{ form.nama_habitat.name }}" id="id_status_kesehatan" class="form-input">
+              {% for value, label in form.nama_habitat.field.choices %}
+                <option value="{{ value }}" {% if form.status_kesehatan.value == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
           </div>
           
           <div class="mb-4">

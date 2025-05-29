@@ -160,16 +160,6 @@ adopsi pengunjung
             </div>
         </div>
 
-        <!-- Debug Info -->
-        {% if user %}
-        <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4" style="display: none;" id="debugInfo">
-            <strong>Debug Info:</strong>
-            <p>Username: {{ username }}</p>
-            <p>User Role: {{ user.role }}</p>
-            <p>Animals Count: {{ adopted_animals|length }}</p>
-        </div>
-        {% endif %}
-
         <!-- Hewan yang Diadopsi -->
         <section class="mt-8">
             <h2 class="text-2xl font-bold text-[#008000] mb-6 text-center">Hewan yang Sedang Anda Adopsi</h2>

@@ -49,6 +49,11 @@
             box-shadow: 0 0 0 2px rgba(0, 128, 0, 0.1);
         }
         
+        .input-field:disabled {
+            background-color: #f0f0f0;
+            color: #666;
+        }
+        
         .btn-primary {
             background-color: #008000;
             color: white;
@@ -56,6 +61,8 @@
             border-radius: 8px;
             font-weight: 500;
             transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
         }
         
         .btn-primary:hover {
@@ -69,21 +76,47 @@
             border-radius: 8px;
             font-weight: 500;
             transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
         }
         
         .btn-secondary:hover {
             background-color: #e0e0e0;
         }
+        
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+        
+        /* Validation Notice Styles */
+        .period-notice {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 {% endblock meta %}
 
 {% block content %}
-{% include 'navbar/pengunjung_sebagai_adopter.html' %}
+{% include 'message_display.html' %}
+
 <div class="bg-[#e8f4ea] min-h-screen flex flex-col items-center font-[Poppins] p-8">
     <div class="w-full max-w-6xl">
         <!-- Breadcrumb -->
         <div class="mb-6">
-            <a href="#" class="text-[#008000] hover:text-[#006400]">Program Adopsi</a>
+            <a href="{% url 'adopsi:adopsi_pengunjung' %}" class="text-[#008000] hover:text-[#006400]">Program Adopsi</a>
             <span class="mx-2 text-[#008000]/60">></span>
             <span class="text-[#008000]/80">Perpanjang Periode Adopsi Satwa</span>
         </div>
@@ -93,67 +126,72 @@
             <div class="form-header">
                 <h1 class="text-3xl font-bold text-[#008000] mb-2">PERPANJANG PERIODE ADOPSI SATWA</h1>
                 <div class="w-1/2 mx-auto border-b-2 border-[#008000] my-4"></div>
+                <p class="text-sm text-[#008000]/70">Perpanjang periode adopsi untuk {{ adoption_data.nama_hewan }}</p>
             </div>
 
-            <form method="POST" action="" class="form-body">
+            <form method="POST" action="{% url 'adopsi:perpanjang_periode' %}" class="form-body" id="perpanjangForm">
                 {% csrf_token %}
-                <input type="hidden" name="animal_id" value="{{ animal_id }}">
+                <input type="hidden" name="animal_id" value="{{ adoption_data.id }}">
                 
                 <!-- Form individu -->
+                {% if adoption_data.tipe_adopter == 'Individu' %}
                 <div id="formIndividu" class="space-y-6 mt-8">
                     <p class="text-[#008000] text-base">Pihak di bawah ini,</p>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-[#008000] mb-2">Nama</label>
-                            <input type="text" name="nama" value="Budi Santoso" class="input-field" readonly>
+                            <input type="text" name="nama" value="{{ adoption_data.nama_individu|default:adoption_data.nama_adopter }}" class="input-field" readonly>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-[#008000] mb-2">NIK</label>
-                            <input type="text" name="nik" value="3175021509880002" class="input-field" readonly>
+                            <input type="text" name="nik" value="{{ adoption_data.nik }}" class="input-field" readonly>
                         </div>
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-[#008000] mb-2">Alamat</label>
-                        <textarea name="alamat" class="input-field" readonly>Jl. Merdeka No. 123, RT 05/RW 07, Kelurahan Sukamaju, Jakarta Selatan</textarea>
+                        <textarea name="alamat" class="input-field" readonly>{{ adoption_data.alamat }}</textarea>
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-[#008000] mb-2">Nomor Telepon</label>
-                        <input type="tel" name="telepon" value="081234567890" class="input-field" readonly>
+                        <input type="tel" name="telepon" value="{{ adoption_data.no_telepon }}" class="input-field" readonly>
                     </div>
                     
                     <p class="text-[#008000] text-base">(selanjutnya disebut sebagai Adopter)</p>
                 </div>
+                {% endif %}
 
                 <!-- Form organisasi -->
-                <div id="formOrganisasi" class="space-y-6 mt-8 hidden">
+                {% if adoption_data.tipe_adopter == 'Organisasi' %}
+                <div id="formOrganisasi" class="space-y-6 mt-8">
                     <p class="text-[#008000] text-base">Pihak di bawah ini, selaku organisasi/perusahaan</p>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-[#008000] mb-2">Nama Organisasi</label>
-                            <input type="text" name="nama_organisasi" value="PT Sejahtera Bersama" class="input-field" readonly>
+                            <input type="text" name="nama_organisasi" value="{{ adoption_data.nama_organisasi|default:adoption_data.nama_adopter }}" class="input-field" readonly>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-[#008000] mb-2">NPP</label>
-                            <input type="text" name="npp" value="09.753.124.5-091.000" class="input-field" readonly>
+                            <input type="text" name="npp" value="{{ adoption_data.npp }}" class="input-field" readonly>
                         </div>
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-[#008000] mb-2">Alamat</label>
-                        <textarea name="alamat_org" class="input-field" readonly>Gedung Menara Tinggi Lt. 15, Jl. Sudirman No. 45, Jakarta Pusat</textarea>
+                        <textarea name="alamat_org" class="input-field" readonly>{{ adoption_data.alamat }}</textarea>
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-[#008000] mb-2">Kontak</label>
-                        <input type="tel" name="telepon_org" value="021-5553214" class="input-field" readonly>
+                        <input type="tel" name="telepon_org" value="{{ adoption_data.no_telepon }}" class="input-field" readonly>
                     </div>
                     
                     <p class="text-[#008000] text-base">(selanjutnya disebut sebagai Adopter)</p>
                 </div>
+                {% endif %}
 
                 <div class="my-8">
                     <p class="text-[#008000] text-base">dengan ini menyatakan kepedulian dan minat untuk lanjut mengadopsi secara simbolis satwa</p>
@@ -161,38 +199,85 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
                         <div>
                             <label class="block text-sm font-medium text-[#008000] mb-2">Nama Hewan</label>
-                            <input type="text" name="nama_hewan" value="Simba" class="input-field" readonly>
+                            <input type="text" name="nama_hewan" value="{{ adoption_data.nama_hewan }}" class="input-field" readonly>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-[#008000] mb-2">Jenis Hewan</label>
-                            <input type="text" name="jenis_hewan" value="Singa (Panthera leo)" class="input-field" readonly>
+                            <input type="text" name="jenis_hewan" value="{{ adoption_data.species }}" class="input-field" readonly>
                         </div>
                     </div>
 
-                    <p class="text-[#008000] text-base mb-6">Adopter juga bersedia memberikan kontribusi finansial kepada pihak taman sadari sebagai dukungan untuk pemeliharaan satwa:</p>
-
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-[#008000] mb-2">Nominal Kontribusi (Rp)</label>
-                        <textarea name="nominal_org" class="input-field" readonly>Rp2.500.000</textarea>
+                    <!-- Current Adoption Info -->
+                    <div class="bg-[#008000]/5 p-4 rounded-lg mb-6">
+                        <h4 class="font-semibold text-[#008000] mb-2">Informasi Adopsi Saat Ini:</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                            <div>
+                                <span class="text-[#008000]/80">Mulai:</span>
+                                <span class="font-medium">{{ adoption_data.tgl_mulai_adopsi|date:"d M Y" }}</span>
+                            </div>
+                            <div>
+                                <span class="text-[#008000]/80">Berakhir:</span>
+                                <span class="font-medium">{{ adoption_data.tgl_berhenti_adopsi|date:"d M Y" }}</span>
+                            </div>
+                            <div>
+                                <span class="text-[#008000]/80">Kontribusi:</span>
+                                <span class="font-medium">Rp {{ adoption_data.kontribusi_finansial|floatformat:0 }}</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-[#008000] mb-2">Perpanjang Periode Selama</label>
-                        <select name="periode" required class="input-field">
+                    <p class="text-[#008000] text-base mb-6">Adopter juga bersedia memberikan kontribusi finansial kepada pihak taman safari sebagai dukungan untuk pemeliharaan satwa:</p>
+
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-[#008000] mb-2">Nominal Kontribusi Tambahan (Rp) *</label>
+                        <input 
+                            type="number" 
+                            name="nominal" 
+                            id="nominalInput"
+                            required 
+                            min="1"
+                            step="1000"
+                            placeholder="Masukkan nominal kontribusi"
+                            class="input-field"
+                        >
+                        <p class="text-xs text-[#008000]/60 mt-1">Kontribusi harus lebih besar dari Rp 0</p>
+                        <div id="nominalError" class="error-message">
+                            Kontribusi harus lebih besar dari Rp 0!
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-[#008000] mb-2">Perpanjang Periode Selama *</label>
+                        <select name="periode" id="periodeSelect" required class="input-field">
+                            <option value="">Pilih periode perpanjangan</option>
                             <option value="3">3 Bulan</option>
                             <option value="6">6 Bulan</option>
                             <option value="12">12 Bulan</option>
                         </select>
+                        <div id="periodeError" class="error-message">
+                            Periode perpanjangan harus dipilih!
+                        </div>
+                    </div>
+
+                    <!-- Important Notice -->
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                        <h4 class="font-semibold text-yellow-800 mb-2">⚠️ Penting untuk Diperhatikan:</h4>
+                        <ul class="text-sm text-yellow-700 space-y-1">
+                            <li>• Perpanjangan akan dimulai setelah periode adopsi saat ini berakhir</li>
+                            <li>• Status pembayaran perpanjangan akan tertunda hingga Anda melakukan pembayaran</li>
+                            <li>• Anda akan menerima notifikasi untuk melakukan pembayaran setelah submit form</li>
+                            <li>• Sertifikat adopsi baru akan diterbitkan setelah pembayaran lunas</li>
+                        </ul>
                     </div>
                 </div>
 
                 <div class="form-footer flex justify-center space-x-6">
-                    <a href="#" class="btn-secondary">
+                    <a href="{% url 'adopsi:adopsi_pengunjung' %}" class="btn-secondary">
                         Batal
                     </a>
-                    <a href="#" class="btn-primary">
-                        Submit Form
-                    </a>
+                    <button type="submit" class="btn-primary">
+                        Submit Form Perpanjang
+                    </button>
                 </div>
             </form>
         </div>
@@ -205,23 +290,96 @@
 </div>
 
 <script>
-    function toggleForms(userType) {
-        const formIndividu = document.getElementById('formIndividu');
-        const formOrganisasi = document.getElementById('formOrganisasi');
+    function validateForm() {
+        const nominalInput = document.getElementById('nominalInput');
+        const periodeSelect = document.getElementById('periodeSelect');
+        const nominalError = document.getElementById('nominalError');
+        const periodeError = document.getElementById('periodeError');
         
-        if (userType === 'individu') {
-            formIndividu.classList.remove('hidden');
-            formOrganisasi.classList.add('hidden');
-        } else if (userType === 'organisasi') {
-            formIndividu.classList.add('hidden');
-            formOrganisasi.classList.remove('hidden');
+        let isValid = true;
+        
+        const nominalValue = parseInt(nominalInput.value) || 0;
+        if (nominalValue <= 0) {
+            nominalError.style.display = 'block';
+            nominalInput.style.borderColor = '#dc3545';
+            isValid = false;
+        } else {
+            nominalError.style.display = 'none';
+            nominalInput.style.borderColor = '#c8e1cc';
         }
+        
+        if (!periodeSelect.value) {
+            periodeError.style.display = 'block';
+            periodeSelect.style.borderColor = '#dc3545';
+            isValid = false;
+        } else {
+            periodeError.style.display = 'none';
+            periodeSelect.style.borderColor = '#c8e1cc';
+        }
+        
+        return isValid;
     }
-    
+
     document.addEventListener('DOMContentLoaded', function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const userType = urlParams.get('user_type') || 'individu';
-        toggleForms(userType);
+        const nominalInput = document.getElementById('nominalInput');
+        const periodeSelect = document.getElementById('periodeSelect');
+        const form = document.getElementById('perpanjangForm');
+        
+        nominalInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            e.target.value = value;
+            
+            if (parseInt(value) > 0) {
+                document.getElementById('nominalError').style.display = 'none';
+                e.target.style.borderColor = '#c8e1cc';
+            }
+        });
+        
+        periodeSelect.addEventListener('change', function(e) {
+            if (e.target.value) {
+                document.getElementById('periodeError').style.display = 'none';
+                e.target.style.borderColor = '#c8e1cc';
+            }
+            
+            updatePeriodNotice();
+        });
+        
+        form.addEventListener('submit', function(e) {
+            if (!validateForm()) {
+                e.preventDefault();
+                return false;
+            }
+        });
+        
+        function updatePeriodNotice() {
+            const selectedPeriod = periodeSelect.value;
+            const nominalValue = parseInt(nominalInput.value) || 0;
+            
+            if (selectedPeriod && nominalValue > 0) {
+                const currentEndDate = new Date('{{ adoption_data.tgl_berhenti_adopsi|date:"Y-m-d" }}');
+                let newEndDate = new Date(currentEndDate);
+                
+                if (selectedPeriod === '3') {
+                    newEndDate.setMonth(newEndDate.getMonth() + 3);
+                } else if (selectedPeriod === '6') {
+                    newEndDate.setMonth(newEndDate.getMonth() + 6);
+                } else if (selectedPeriod === '12') {
+                    newEndDate.setFullYear(newEndDate.getFullYear() + 1);
+                }
+                
+                const existingNotice = document.querySelector('.period-notice');
+                if (existingNotice) {
+                    existingNotice.remove();
+                }
+                
+                const notice = document.createElement('div');
+                notice.className = 'period-notice bg-green-50 border border-green-200 rounded-lg p-3 mt-2 text-sm text-green-700';
+                notice.innerHTML = `
+                    <strong>Periode adopsi baru akan berakhir pada:</strong> ${newEndDate.toLocaleDateString('id-ID', {year: 'numeric', month: 'long', day: 'numeric'})}
+                `;
+                periodeSelect.parentNode.appendChild(notice);
+            }
+        }
     });
 </script>
 {% endblock %}

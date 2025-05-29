@@ -1,46 +1,46 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load humanize %}
 
 {% block meta %}
-  <title>Data Reservasi Atraksi - SIZOPI</title>
+  <title>Data Wahana - SIZOPI</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-    
+
     body {
       font-family: 'Poppins', sans-serif;
       background-color: #e8f4ea;
     }
-    
+
     .btn-primary {
       transition: all 0.3s ease;
     }
-    
+
     .btn-primary:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0, 128, 0, 0.25);
     }
-    
+
     .card {
       background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
       border-radius: 12px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
       border: 1px solid #c8e1cc;
     }
-    
+
     .table-header {
       background-color: #008000;
       color: white;
     }
-    
+
     .table-row:nth-child(even) {
       background-color: #e0f0e3;
     }
-    
+
     .table-row:nth-child(odd) {
       background-color: #d2e7d6;
     }
-    
-    /* Horizontal scrolling */
+
     .table-wrapper {
       width: 100%;
       overflow-x: auto;
@@ -54,7 +54,6 @@
       width: 100%;
     }
 
-    /* Custom scrollbar */
     .table-wrapper::-webkit-scrollbar {
       height: 10px;
     }
@@ -74,8 +73,7 @@
       background-color: #006400;
     }
 
-    /* Modal styles */
-    #hapusModal {
+    #batalkanModal {
       display: none;
       position: fixed;
       top: 0; left: 0;
@@ -86,7 +84,7 @@
       align-items: center;
     }
 
-    .modal-content {
+    #batalkanModal > div {
       background: white;
       padding: 30px;
       border-radius: 12px;
@@ -95,14 +93,14 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.15);
     }
 
-    .modal-content h2 {
+    #batalkanModal h2 {
       font-weight: bold;
       margin-bottom: 15px;
       color: #008000;
       font-size: 1.5rem;
     }
 
-    .modal-content p {
+    #batalkanModal p {
       margin-bottom: 25px;
       color: #4b5563;
     }
@@ -114,17 +112,31 @@
       margin-top: 20px;
     }
 
-    .btn-danger {
-      background-color: white;
-      color: #dc2626;
-      border: 1px solid #dc2626;
-      transition: all 0.3s ease;
+    #confirmCancelBtn, #cancelModalBtn {
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
     }
 
-    .btn-danger:hover {
-      background-color: #fef2f2;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+    #confirmCancelBtn {
+      background-color: #dc2626;
+      color: white;
+    }
+
+    #confirmCancelBtn:hover {
+      background-color: #b91c1c;
+    }
+
+    #cancelModalBtn {
+      background-color: #e0f0e3;
+      color: #008000;
+    }
+
+    #cancelModalBtn:hover {
+      background-color: #c8e1cc;
     }
 
     ul {
@@ -143,38 +155,40 @@
       justify-content: center;
     }
 
-    .btn-edit {
-      background-color: #fcd34d;
-      color: #854d0e;
-      padding: 6px 12px;
-      border-radius: 4px;
+    .btn-cancel {
+      color: #dc2626;
       font-weight: 500;
       transition: all 0.3s;
+      cursor: pointer;
     }
 
-    .btn-edit:hover {
-      background-color: #fbbf24;
-      transform: translateY(-1px);
+    .btn-cancel:hover {
+      color: #b91c1c;
+      text-decoration: underline;
     }
 
-    .btn-delete {
-      background-color: #f87171;
-      color: #7f1d1d;
-      padding: 6px 12px;
-      border-radius: 4px;
-      font-weight: 500;
-      transition: all 0.3s;
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-weight: 600;
+      display: inline-block;
+      text-align: center;
+      min-width: 90px;
     }
 
-    .btn-delete:hover {
-      background-color: #fb7185;
-      transform: translateY(-1px);
+    .status-terjadwal {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+
+    .status-dibatalkan {
+      background-color: #fee2e2;
+      color: #b91c1c;
     }
   </style>
 {% endblock meta %}
 
 {% block content %}
-{% include 'navbar/staff_administrator.html' %}
 <div class="min-h-screen p-8 font-[Poppins]">
   <div class="max-w-7xl mx-auto">
     <div class="card p-8 rounded-2xl shadow-lg mb-8">
@@ -201,21 +215,23 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ reservasi.nama_atraksi }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ reservasi.tanggal_kunjungan }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ reservasi.jumlah_tiket }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ reservasi.status }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <span class="status-badge {% if reservasi.status == 'Dibatalkan' %}status-dibatalkan{% else %}status-terjadwal{% endif %}">
+                        {{ reservasi.status }}
+                      </span>
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div class="action-buttons">
-                        <a href="{% url 'staf_edit_reservasi' username=reservasi.username nama_atraksi=reservasi.nama_atraksi %}" 
-                          class="text-[#008000] hover:text-[#006400]">
-                          Edit
-                        </a>
+                        <a href="{% url 'staf_edit_reservasi' username=reservasi.username nama_atraksi=reservasi.nama_atraksi tanggal_kunjungan=reservasi.tanggal_kunjungan_url %}" class="text-[#008000] hover:text-[#006400]">Edit</a>
                         <span class="text-gray-400">|</span>
-                        <a href="#" 
-                          onclick="bukaModal('{{ reservasi.username }}', '{{ reservasi.nama_atraksi }}', '{{ reservasi.tanggal_kunjungan }}')" 
-                          class="text-red-600 hover:text-red-800">
+                        <a href="#" class="btn-cancel"
+                          data-username="{{ reservasi.username }}"
+                          data-nama-atraksi="{{ reservasi.nama_atraksi }}"
+                          data-tanggal="{{ reservasi.tanggal_kunjungan|date:'Y-m-d' }}">
                           Batalkan
                         </a>
                       </div>
-                    </td>                
+                    </td>
                   </tr>
                 {% else %}
                   <tr>
@@ -227,7 +243,6 @@
                   <td colspan="6" class="px-6 py-10 text-center text-sm text-gray-500">Tidak ada data reservasi.</td>
                 </tr>
               {% endfor %}
-
             </tbody>
           </table>
         </div>
@@ -236,47 +251,86 @@
   </div>
 </div>
 
-<!-- Footer -->
 <footer class="mt-8 text-center text-sm text-[#008000]/60">
   © 2025 SIZOPI. All rights reserved.
 </footer>
 
-<!-- Modal -->
-<div id="hapusModal">
-  <div class="modal-content">
-    <h2>BATALKAN RESERVASI</h2>
-    <p>Apakah anda yakin ingin membatalkan atraksi ini?</p>
+<div id="batalkanModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">
+  <div>
+    <h2 id="modalTitle">Batalkan Reservasi</h2>
+    <p id="modalText">Apakah anda yakin ingin membatalkan reservasi ini?</p>
     <div class="modal-buttons">
-      <button type="button" onclick="konfirmasiHapus()" 
-              class="btn-primary px-6 py-3 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] transition duration-200 shadow-md">
-        Ya
-      </button>
-      <button type="button" onclick="tutupModal()"
-              class="btn-danger px-6 py-3 font-medium rounded-lg hover:bg-[#fef2f2] transition duration-200 shadow-md">
-        Tidak
-      </button>
+      <button id="confirmCancelBtn">Ya</button>
+      <button id="cancelModalBtn">Tidak</button>
     </div>
   </div>
 </div>
 
+<input type="hidden" id="csrfToken" value="{{ csrf_token }}">
 <script>
-  let reservasiYangDihapus = null;
+  document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('batalkanModal');
+    const modalText = document.getElementById('modalText');
+    const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+    const cancelModalBtn = document.getElementById('cancelModalBtn');
+    const csrfToken = document.getElementById('csrfToken').value;
 
-  function bukaModal(namaReservasi) {
-    reservasiYangDihapus = namaReservasi;
-    document.getElementById("hapusModal").style.display = "flex";
-  }
+    let selectedRow = null;
+    let selectedBookingData = null;
 
-  function tutupModal() {
-    document.getElementById("hapusModal").style.display = "none";
-  }
+    document.querySelectorAll('.btn-cancel').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        selectedRow = btn.closest('tr');
+        selectedBookingData = {
+          username: btn.getAttribute('data-username'),
+          nama_atraksi: btn.getAttribute('data-nama-atraksi'),
+          tanggal_kunjungan: btn.getAttribute('data-tanggal'),
+        };
 
-  function konfirmasiHapus() {
-    if (reservasiYangDihapus) {
-      window.location.href = "";
-    } else {
-      window.location.href = "";
-    }
-  }
+        const nama = selectedRow.querySelector('td:nth-child(2)').textContent.trim();
+        modalText.textContent = `Apakah Anda yakin ingin membatalkan reservasi "${nama}"?`;
+        modal.style.display = 'flex';
+        confirmCancelBtn.focus();
+      });
+    });
+
+    cancelModalBtn.addEventListener('click', () => {
+      modal.style.display = 'none';
+      selectedRow = null;
+      selectedBookingData = null;
+    });
+
+    confirmCancelBtn.addEventListener('click', () => {
+      if (!selectedRow || !selectedBookingData) return;
+
+      fetch('/reservasi/pengunjung/batalkan-reservasi/', {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrfToken,
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(selectedBookingData)
+      })
+      .then(response => {
+        if (response.ok) {
+          const statusBadge = selectedRow.querySelector('.status-badge');
+          statusBadge.textContent = 'Dibatalkan';
+          statusBadge.classList.remove('status-terjadwal');
+          statusBadge.classList.add('status-dibatalkan');
+
+          modal.style.display = 'none';
+          selectedRow = null;
+          selectedBookingData = null;
+        } else {
+          alert('Gagal membatalkan reservasi');
+        }
+      })
+      .catch(() => {
+        alert('Terjadi kesalahan jaringan');
+      });
+    });
+  });
 </script>
 {% endblock %}

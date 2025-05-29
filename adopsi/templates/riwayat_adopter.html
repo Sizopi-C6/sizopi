@@ -3,7 +3,6 @@
 
 {% block meta %}
     <title>Riwayat Adopter - SIZOPI</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
         
@@ -29,6 +28,8 @@
             border-radius: 8px;
             font-weight: 500;
             font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
         }
         
         .btn-delete {
@@ -39,6 +40,12 @@
         .btn-delete:hover {
             background-color: #fecaca;
         }
+
+        .btn-disabled {
+            color: #9ca3af;
+            background-color: #f3f4f6;
+            cursor: not-allowed;
+        }
         
         .status-badge {
             padding: 0.25rem 0.75rem;
@@ -46,15 +53,85 @@
             font-size: 0.875rem;
             font-weight: 500;
         }
+
+        .status-active {
+            background-color: #dcfce7;
+            color: #16a34a;
+        }
+
+        .status-completed {
+            background-color: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .status-pending {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-tertunda {
+            background-color: #fef2f2;
+            color: #dc2626;
+        }
+
+        .format-rupiah {
+            font-family: 'Courier New', monospace;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6b7280;
+        }
+
+        .message-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 9999;
+            max-width: 400px;
+        }
+
+        .message {
+            margin-bottom: 0.5rem;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .message.success {
+            border-left-color: #10b981;
+            color: #065f46;
+        }
+
+        .message.error {
+            border-left-color: #ef4444;
+            color: #991b1b;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
     </style>
 {% endblock meta %}
 
 {% block content %}
-{% include 'navbar/staff_administrator.html' %}
+{% include 'message_display.html' %}
+
 <div class="min-h-screen bg-[#e8f4ea]" style="font-family: 'Poppins', sans-serif;">
     <div class="p-8">
         <div class="w-full max-w-6xl mx-auto">
-            <!-- Tombol Kembali (di luar card) -->
+            <!-- Tombol Kembali -->
             <a href="{% url 'adopsi:daftar_adopter' %}" class="text-[#008000] hover:text-[#006400] flex items-center mb-8">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
@@ -62,84 +139,59 @@
                 Kembali
             </a>
 
-            <!-- Judul dalam card yang ditengah -->
+            <!-- Header -->
             <div class="card p-8 mb-8">
                 <h1 class="text-3xl font-bold text-[#008000] text-center">Riwayat Adopsi</h1>
             </div>
 
             <!-- Detail Adopter -->
+            {% if adopter_data %}
             <div class="card p-6 mb-8">
+                <h2 class="text-xl font-semibold text-[#008000] mb-4">Detail Adopter</h2>
                 <div class="bg-white rounded-lg p-6 shadow-sm">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-[#008000]">
-                        {% if adopter_id == 1 %}
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-[#008000]">
                         <div>
-                            <p class="font-medium">Nama Adopter:</p>
-                            <p>Bambang Susanto</p>
+                            <p class="font-medium text-gray-600">Nama Adopter:</p>
+                            <p class="text-lg">{{ adopter_data.nama_adopter|default:"Tidak tersedia" }}</p>
+                            {% if adopter_data.tipe_adopter == 'Individu' and adopter_data.nik %}
+                                <p class="text-sm text-gray-500">NIK: {{ adopter_data.nik }}</p>
+                            {% elif adopter_data.tipe_adopter == 'Organisasi' and adopter_data.npp %}
+                                <p class="text-sm text-gray-500">NPP: {{ adopter_data.npp }}</p>
+                            {% endif %}
                         </div>
                         <div>
-                            <p class="font-medium">Alamat:</p>
-                            <p>Jl. Merdeka No. 123, Jakarta</p>
+                            <p class="font-medium text-gray-600">Alamat:</p>
+                            <p>{{ adopter_data.alamat|default:"Tidak tersedia" }}</p>
                         </div>
                         <div>
-                            <p class="font-medium">Kontak:</p>
-                            <p>0812-3456-7890</p>
+                            <p class="font-medium text-gray-600">Kontak:</p>
+                            <p>{{ adopter_data.no_telepon|default:"Tidak tersedia" }}</p>
+                            {% if adopter_data.email %}
+                                <p class="text-sm text-gray-500">{{ adopter_data.email }}</p>
+                            {% endif %}
                         </div>
-                        {% elif adopter_id == 2 %}
-                        <div>
-                            <p class="font-medium">Nama Adopter:</p>
-                            <p>Cindy Wijaya</p>
+                    </div>
+                    
+                    <!-- Summary -->
+                    <div class="mt-6 pt-4 border-t border-gray-200">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="text-center">
+                                <p class="text-2xl font-bold text-[#008000]">{{ riwayat_adopsi|length|default:0 }}</p>
+                                <p class="text-sm text-gray-600">Total Adopsi</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-2xl font-bold text-[#008000] format-rupiah">Rp{{ total_kontribusi_lunas|floatformat:0|default:0 }}</p>
+                                <p class="text-sm text-gray-600">Total Kontribusi Lunas</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-2xl font-bold text-[#008000]">{{ adopter_data.tipe_adopter|default:"Unknown" }}</p>
+                                <p class="text-sm text-gray-600">Tipe Adopter</p>
+                            </div>
                         </div>
-                        <div>
-                            <p class="font-medium">Alamat:</p>
-                            <p>Jl. Sudirman No. 456, Bandung</p>
-                        </div>
-                        <div>
-                            <p class="font-medium">Kontak:</p>
-                            <p>0813-7890-1234</p>
-                        </div>
-                        {% elif adopter_id == 3 %}
-                        <div>
-                            <p class="font-medium">Nama Adopter:</p>
-                            <p>Dewi Lestari</p>
-                        </div>
-                        <div>
-                            <p class="font-medium">Alamat:</p>
-                            <p>Jl. Gatot Subroto No. 789, Surabaya</p>
-                        </div>
-                        <div>
-                            <p class="font-medium">Kontak:</p>
-                            <p>0814-1234-5678</p>
-                        </div>
-                        {% elif adopter_id == 4 %}
-                        <div>
-                            <p class="font-medium">Nama Adopter:</p>
-                            <p>Eko Prasetyo</p>
-                        </div>
-                        <div>
-                            <p class="font-medium">Alamat:</p>
-                            <p>Jl. Ahmad Yani No. 321, Yogyakarta</p>
-                        </div>
-                        <div>
-                            <p class="font-medium">Kontak:</p>
-                            <p>0815-5678-9012</p>
-                        </div>
-                        {% elif adopter_id == 5 %}
-                        <div>
-                            <p class="font-medium">Nama Adopter:</p>
-                            <p>Fajar Nugraha</p>
-                        </div>
-                        <div>
-                            <p class="font-medium">Alamat:</p>
-                            <p>Jl. Diponegoro No. 654, Semarang</p>
-                        </div>
-                        <div>
-                            <p class="font-medium">Kontak:</p>
-                            <p>0816-9012-3456</p>
-                        </div>
-                        {% endif %}
                     </div>
                 </div>
             </div>
+            {% endif %}
 
             <!-- Tabel Riwayat -->
             <div class="card p-6">
@@ -153,107 +205,139 @@
                                 <th class="px-4 py-3 text-left text-[#008000] font-semibold">Jenis</th>
                                 <th class="px-4 py-3 text-left text-[#008000] font-semibold">Tanggal Mulai</th>
                                 <th class="px-4 py-3 text-left text-[#008000] font-semibold">Tanggal Berakhir</th>
-                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Jumlah</th>
+                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Kontribusi</th>
+                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Status Pembayaran</th>
                                 <th class="px-4 py-3 text-left text-[#008000] font-semibold">Status/Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-[#008000]/20 bg-white">
-                            {% if adopter_id == 1 %}
-                            <tr class="hover-row">
-                                <td class="px-4 py-3 text-[#008000]">Melly</td>
-                                <td class="px-4 py-3 text-[#008000]">Gajah</td>
-                                <td class="px-4 py-3 text-[#008000]">2025-02-26</td>
-                                <td class="px-4 py-3 text-[#008000]">2025-08-26</td>
-                                <td class="px-4 py-3 text-[#008000] font-medium">Rp850.000</td>
-                                <td class="px-4 py-3">
-                                    <span class="status-badge bg-green-100 text-green-700">
-                                        Sedang Berlangsung
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr class="hover-row">
-                                <td class="px-4 py-3 text-[#008000]">Simba</td>
-                                <td class="px-4 py-3 text-[#008000]">Singa</td>
-                                <td class="px-4 py-3 text-[#008000]">2024-07-10</td>
-                                <td class="px-4 py-3 text-[#008000]">2024-10-10</td>
-                                <td class="px-4 py-3 text-[#008000] font-medium">Rp500.000</td>
-                                <td class="px-4 py-3">
-                                    <button class="btn-action btn-delete">
-                                        Hapus
-                                    </button>
-                                </td>
-                            </tr>
-                            {% elif adopter_id == 2 %}
-                            <tr class="hover-row">
-                                <td class="px-4 py-3 text-[#008000]">Nala</td>
-                                <td class="px-4 py-3 text-[#008000]">Zebra</td>
-                                <td class="px-4 py-3 text-[#008000]">2023-12-12</td>
-                                <td class="px-4 py-3 text-[#008000]">2024-12-12</td>
-                                <td class="px-4 py-3 text-[#008000] font-medium">Rp1.200.000</td>
-                                <td class="px-4 py-3">
-                                    <button class="btn-action btn-delete">
-                                        Hapus
-                                    </button>
-                                </td>
-                            </tr>
-                            {% elif adopter_id == 3 %}
-                            <tr class="hover-row">
-                                <td class="px-4 py-3 text-[#008000]">Milo</td>
-                                <td class="px-4 py-3 text-[#008000]">Orangutan</td>
-                                <td class="px-4 py-3 text-[#008000]">2025-03-15</td>
-                                <td class="px-4 py-3 text-[#008000]">2025-09-15</td>
-                                <td class="px-4 py-3 text-[#008000] font-medium">Rp950.000</td>
-                                <td class="px-4 py-3">
-                                    <span class="status-badge bg-green-100 text-green-700">
-                                        Sedang Berlangsung
-                                    </span>
-                                </td>
-                            </tr>
-                            {% elif adopter_id == 4 %}
-                            <tr class="hover-row">
-                                <td class="px-4 py-3 text-[#008000]">Kiko</td>
-                                <td class="px-4 py-3 text-[#008000]">Badak</td>
-                                <td class="px-4 py-3 text-[#008000]">2024-11-01</td>
-                                <td class="px-4 py-3 text-[#008000]">2025-05-01</td>
-                                <td class="px-4 py-3 text-[#008000] font-medium">Rp1.100.000</td>
-                                <td class="px-4 py-3">
-                                    <button class="btn-action btn-delete">
-                                        Hapus
-                                    </button>
-                                </td>
-                            </tr>
-                            {% elif adopter_id == 5 %}
-                            <tr class="hover-row">
-                                <td class="px-4 py-3 text-[#008000]">Luna</td>
-                                <td class="px-4 py-3 text-[#008000]">Harimau</td>
-                                <td class="px-4 py-3 text-[#008000]">2025-01-20</td>
-                                <td class="px-4 py-3 text-[#008000]">2025-07-20</td>
-                                <td class="px-4 py-3 text-[#008000] font-medium">Rp1.500.000</td>
-                                <td class="px-4 py-3">
-                                    <span class="status-badge bg-green-100 text-green-700">
-                                        Sedang Berlangsung
-                                    </span>
-                                </td>
-                            </tr>
+                            {% if riwayat_adopsi %}
+                                {% for adopsi in riwayat_adopsi %}
+                                <tr class="hover-row">
+                                    <td class="px-4 py-3 text-[#008000] font-medium">{{ adopsi.nama_hewan|default:"Unknown" }}</td>
+                                    <td class="px-4 py-3 text-[#008000]">{{ adopsi.jenis_hewan|default:"Unknown" }}</td>
+                                    <td class="px-4 py-3 text-[#008000]">
+                                        {% if adopsi.tgl_mulai_adopsi %}
+                                            {{ adopsi.tgl_mulai_adopsi|date:"d-m-Y" }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-4 py-3 text-[#008000]">
+                                        {% if adopsi.tgl_berhenti_adopsi %}
+                                            {{ adopsi.tgl_berhenti_adopsi|date:"d-m-Y" }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-4 py-3 text-[#008000] font-medium format-rupiah">
+                                        Rp{{ adopsi.kontribusi_finansial|floatformat:0|default:0 }}
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        {% if adopsi.status_pembayaran == 'Lunas' %}
+                                            <span class="status-badge status-active">Lunas</span>
+                                        {% else %}
+                                            <span class="status-badge status-tertunda">{{ adopsi.status_pembayaran|default:"Tertunda" }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        {% if adopsi.status_adopsi == 'Sedang Berlangsung' %}
+                                            <span class="status-badge status-active">
+                                                Sedang Berlangsung
+                                            </span>
+                                        {% elif adopsi.status_adopsi == 'Selesai' %}
+                                            {% if adopsi.dapat_dihapus %}
+                                                <form method="post" action="{% url 'adopsi:delete_riwayat_adopsi' %}" 
+                                                      class="inline delete-form">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="adopter_id" value="{{ adopter_data.id_adopter }}">
+                                                    <input type="hidden" name="id_hewan" value="{{ adopsi.id_hewan }}">
+                                                    <input type="hidden" name="tgl_mulai_adopsi" value="{{ adopsi.tgl_mulai_adopsi|date:'Y-m-d' }}">
+                                                    <button type="submit" class="btn-action btn-delete">
+                                                        Hapus
+                                                    </button>
+                                                </form>
+                                            {% else %}
+                                                <span class="status-badge status-completed">Selesai</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="status-badge status-pending">{{ adopsi.status_adopsi|default:"Unknown" }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="7" class="empty-state">
+                                        <div>
+                                            <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" 
+                                                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                            </svg>
+                                            <p class="text-lg font-medium text-gray-500">Belum ada riwayat adopsi</p>
+                                            <p class="text-sm text-gray-400">Adopter ini belum pernah melakukan adopsi</p>
+                                        </div>
+                                    </td>
+                                </tr>
                             {% endif %}
                         </tbody>
                     </table>
                 </div>
+
+                {% if riwayat_adopsi %}
+                <div class="mt-6 text-sm text-gray-600 bg-white rounded-lg p-4">
+                    <p><strong>📋 Keterangan:</strong></p>
+                    <ul class="list-disc list-inside mt-2 space-y-1">
+                        <li>Riwayat adopsi menampilkan data adopsi yang sudah berakhir maupun masih berlangsung, asalkan status pembayarannya sudah lunas.</li>
+                        <li>Namun data yang bisa dihapus hanya yang periode adopsinya sudah berakhir.</li>
+                    </ul>
+                </div>
+                {% endif %}
             </div>
+
+            <!-- Footer -->
+            <footer class="mt-8 text-center text-sm text-[#008000]/60">
+                © 2025 SIZOPI. All rights reserved.
+            </footer>
         </div>
     </div>
-
-    <script>
-        // Fungsi untuk handle delete riwayat
-        document.querySelectorAll('.btn-delete').forEach(button => {
-            button.addEventListener('click', function() {
-                const confirmDelete = confirm('Apakah Anda yakin ingin menghapus riwayat ini?');
-                if(confirmDelete) {
-                    const row = this.closest('tr');
-                    row.remove();
-                }
-            });
-        });
-    </script>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteForms = document.querySelectorAll('.delete-form');
+    
+    deleteForms.forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const namaHewan = this.closest('tr').querySelector('td').textContent.trim();
+            
+            const confirmMessage = `⚠️ PERINGATAN!\n\nApakah Anda yakin ingin menghapus riwayat adopsi "${namaHewan}"?\n\n• Data yang dihapus tidak dapat dikembalikan\n\nKlik OK untuk melanjutkan.`;
+            
+            if (confirm(confirmMessage)) {
+                const button = this.querySelector('.btn-delete');
+                button.textContent = 'Menghapus...';
+                button.disabled = true;
+                button.style.opacity = '0.7';
+                
+                this.submit();
+            }
+        });
+    });
+
+    const rupiahElements = document.querySelectorAll('.format-rupiah');
+    rupiahElements.forEach(function(element) {
+        const text = element.textContent;
+        if (text.includes('Rp')) {
+            const number = text.replace('Rp', '').replace(/\./g, '').replace(/,/g, '');
+            if (!isNaN(number) && number !== '') {
+                const formatted = new Intl.NumberFormat('id-ID').format(parseInt(number));
+                element.textContent = 'Rp' + formatted;
+            }
+        }
+    });
+});
+</script>
+
 {% endblock content %}

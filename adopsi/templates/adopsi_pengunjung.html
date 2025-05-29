@@ -19,11 +19,133 @@
             transform: translateY(-5px);
             box-shadow: 0 8px 20px rgba(0, 100, 0, 0.15);
         }
+
+        /* Image Placeholder Styles */
+        .animal-image-container {
+            position: relative;
+            width: 100%;
+            height: 192px; /* h-48 */
+            overflow: hidden;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 16px 16px 0 0;
+        }
+        
+        .animal-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.3s ease;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            opacity: 0;
+        }
+        
+        .animal-image.loaded {
+            opacity: 1;
+        }
+        
+        .animal-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            color: #64748b;
+            z-index: 1;
+        }
+        
+        .animal-emoji {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .animal-name-placeholder {
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-align: center;
+            opacity: 0.8;
+        }
+
+        /* Loading animation */
+        .loading-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #008000;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 3;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Modal Image Styles */
+        .modal-image-container {
+            position: relative;
+            height: 256px; /* h-64 */
+            width: 100%;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        }
+
+        .modal-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.3s ease;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            opacity: 0;
+        }
+
+        .modal-image.loaded {
+            opacity: 1;
+        }
+
+        .modal-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            color: #64748b;
+            z-index: 1;
+        }
+
+        .modal-emoji {
+            font-size: 4rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
     </style>
 {% endblock meta %}
 
 {% block content %}
-{% include 'navbar/pengunjung_sebagai_adopter.html' %}
+{% include 'message_display.html' %}
+
 <div class="bg-[#e8f4ea] min-h-screen flex flex-col items-center font-[Poppins] p-8">
     <div class="w-full max-w-6xl">
         <!-- Hero Section -->
@@ -36,117 +158,163 @@
             </div>
         </div>
 
+        <!-- Debug Info -->
+        {% if user %}
+        <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4" style="display: none;" id="debugInfo">
+            <strong>Debug Info:</strong>
+            <p>Username: {{ username }}</p>
+            <p>User Role: {{ user.role }}</p>
+            <p>Animals Count: {{ adopted_animals|length }}</p>
+        </div>
+        {% endif %}
+
         <!-- Hewan yang Diadopsi -->
         <section class="mt-8">
             <h2 class="text-2xl font-bold text-[#008000] mb-6 text-center">Hewan yang Sedang Anda Adopsi</h2>
+            {% if adopted_animals %}
             <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-
+                {% for animal in adopted_animals %}
                 <div class="animal-card bg-white rounded-2xl shadow-md overflow-hidden">
-                    <img src="{% static 'images/jerapah.jpeg' %}" alt="Jerapah" class="w-full h-48 object-cover">
+                    <div class="animal-image-container">
+                        <!-- Loading Spinner -->
+                        <div class="loading-spinner" id="spinner-{{ forloop.counter }}"></div>
+                        
+                        <!-- Placeholder Background -->
+                        <div class="animal-placeholder">
+                            <div class="animal-emoji" data-animal="{{ animal.nama_hewan|lower }}" data-species="{{ animal.species|lower }}">🐾</div>
+                            <div class="animal-name-placeholder">{{ animal.nama_hewan }}</div>
+                        </div>
+                        
+                        <!-- Main Image -->
+                        <img src="{{ animal.url_foto }}"
+                             alt="{{ animal.nama_hewan }}" 
+                             class="animal-image"
+                             data-species="{{ animal.species|lower }}"
+                             data-name="{{ animal.nama_hewan|lower }}"
+                             data-counter="{{ forloop.counter }}"
+                             onload="handleImageLoad(this)"
+                             onerror="handleImageError(this)"
+                             loading="lazy">
+                    </div>
                     <div class="p-6">
-                        <h3 class="text-xl font-semibold text-[#008000] mb-2">Jerapah</h3>
+                        <h3 class="text-xl font-semibold text-[#008000] mb-2">{{ animal.nama_hewan }}</h3>
                         <div class="space-y-2 mb-4">
                             <p class="text-sm text-[#008000]/80">
-                                <span class="font-medium">Jenis:</span> Mamalia
+                                <span class="font-medium">Jenis:</span> {{ animal.species }}
                             </p>
                             <p class="text-sm text-[#008000]/80">
-                                <span class="font-medium">Kondisi:</span> Sehat
+                                <span class="font-medium">Kondisi:</span> 
+                                <span class="{% if animal.status_kesehatan == 'Sehat' %}text-green-600{% elif animal.status_kesehatan == 'Sakit' %}text-red-600{% else %}text-yellow-600{% endif %}">
+                                    {{ animal.status_kesehatan }}
+                                </span>
+                            </p>
+                            <p class="text-sm text-[#008000]/80">
+                                <span class="font-medium">Status Pembayaran:</span> 
+                                <span class="{% if animal.status_pembayaran == 'Lunas' %}text-green-600{% else %}text-red-600{% endif %}">
+                                    {{ animal.status_pembayaran }}
+                                </span>
                             </p>
                         </div>
                         <button 
                             data-info-modal 
+                            data-animal-id="{{ animal.id }}"
+                            data-animal-name="{{ animal.nama_hewan }}"
+                            data-animal-species="{{ animal.species }}"
+                            data-animal-habitat="{{ animal.nama_habitat }}"
+                            data-animal-photo="{{ animal.url_foto }}"
+                            data-tgl-mulai="{{ animal.tgl_mulai_adopsi }}"
+                            data-tgl-berhenti="{{ animal.tgl_berhenti_adopsi }}"
                             class="w-full py-2 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors"
+                            onclick="console.log('Button clicked for animal:', '{{ animal.id }}');"
                         >
                             Lihat Detail
                         </button>
                     </div>
                 </div>
-
-                <div class="animal-card bg-white rounded-2xl shadow-md overflow-hidden">
-                    <img src="{% static 'images/penguin.jpg' %}" alt="Penguin" class="w-full h-48 object-cover">
-                    <div class="p-6">
-                        <h3 class="text-xl font-semibold text-[#008000] mb-2">Penguin</h3>
-                        <div class="space-y-2 mb-4">
-                            <p class="text-sm text-[#008000]/80">
-                                <span class="font-medium">Jenis:</span> Unggas
-                            </p>
-                            <p class="text-sm text-[#008000]/80">
-                                <span class="font-medium">Kondisi:</span> Perawatan Khusus
-                            </p>
-                        </div>
-                        <button 
-                            data-info-modal 
-                            class="w-full py-2 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors"
-                        >
-                            Lihat Detail
-                        </button>
-                    </div>
-                </div>
+                {% endfor %}
             </div>
+            {% else %}
+            <div class="text-center py-12">
+                <div class="text-6xl text-[#008000]/20 mb-4">🐾</div>
+                <h3 class="text-xl text-[#008000]/80 mb-2">Belum ada hewan yang Anda adopsi</h3>
+                <p class="text-[#008000]/60">Mulai program adopsi simbolis untuk membantu satwa yang membutuhkan</p>
+            </div>
+            {% endif %}
         </section>
 
         <!-- Modal Info -->
-        <div id="infoModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4">
-            <div class="card-gradient rounded-2xl shadow-lg w-full max-w-xl">
+        <div id="infoModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
+            <div class="card-gradient rounded-2xl shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
                 <div class="p-6">
-
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-2xl font-bold text-[#008000]">Informasi Hewan Adopsi</h3>
-                        <button onclick="toggleModal('infoModal')" class="text-[#008000] hover:text-[#006400]">
+                        <button onclick="toggleModal('infoModal')" class="text-[#008000] hover:text-[#006400] text-2xl">
                             ✕
                         </button>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                        <div class="relative h-64 w-full rounded-lg overflow-hidden">
-                            <img src="{% static 'images/jerapah.jpeg' %}" alt="Hewan" class="w-full h-full object-cover">
+                        <div class="modal-image-container">
+                            <!-- Modal Placeholder -->
+                            <div class="modal-placeholder">
+                                <div class="modal-emoji" id="modalEmoji">🐾</div>
+                            </div>
+                            
+                            <!-- Modal Image -->
+                            <img id="modalAnimalPhoto" 
+                                 src="" 
+                                 alt="Hewan" 
+                                 class="modal-image"
+                                 onload="handleModalImageLoad(this)"
+                                 onerror="handleModalImageError(this)">
                         </div>
 
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-sm font-medium text-[#008000]/80">Nama Hewan</label>
-                                <p class="text-lg font-semibold text-[#008000]">Jerapah</p>
+                                <p id="modalAnimalName" class="text-lg font-semibold text-[#008000]">-</p>
                             </div>
                             
                             <div>
                                 <label class="block text-sm font-medium text-[#008000]/80">Jenis Hewan</label>
-                                <p class="text-[#008000]">Mamalia</p>
+                                <p id="modalAnimalSpecies" class="text-[#008000]">-</p>
                             </div>
                             
                             <div>
                                 <label class="block text-sm font-medium text-[#008000]/80">Habitat</label>
-                                <p class="text-[#008000]">Savana Afrika</p>
+                                <p id="modalAnimalHabitat" class="text-[#008000]">-</p>
                             </div>
                             
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-medium text-[#008000]/80">Mulai Adopsi</label>
-                                    <p class="text-[#008000]">01 Maret 2024</p>
+                                    <p id="modalTglMulai" class="text-[#008000]">-</p>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-[#008000]/80">Akhir Adopsi</label>
-                                    <p class="text-[#008000]">01 Maret 2025</p>
+                                    <p id="modalTglBerhenti" class="text-[#008000]">-</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Tombol -->
-                    <div class="mt-8 grid grid-cols-2 gap-4">
-                        <a 
-                            href="{% url 'adopsi:laporan_kondisi_hewan' %}" 
+                    <div class="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <button 
+                            id="btnLaporan"
+                            onclick="redirectToLaporan()"
                             class="py-2 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors text-center"
                         >
                             Pantau Kondisi Hewan
-                        </a>
+                        </button>
 
-                        <a 
-                            href="{% url 'adopsi:sertifikat_adopsi' %}" 
+                        <button 
+                            id="btnSertifikat"
+                            onclick="redirectToSertifikat()"
                             class="py-2 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors text-center"
                         >
                             Lihat Sertifikat Adopsi
-                        </a>
+                        </button>
 
                         <button 
                             data-berhenti 
@@ -155,146 +323,51 @@
                             Berhenti Adopsi
                         </button>
 
-
-                        <form action="{% url 'adopsi:perpanjang_periode' %}" method="GET">
-                            <input type="hidden" name="animal_id" value="1">
-                            <input type="hidden" name="animal_name" value="Jerapah">
-                            <input type="hidden" name="animal_type" value="Mamalia">
-                            <button 
-                                type="submit"
-                                class="w-full py-2 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors"
-                            >
-                                Perpanjang Periode
-                            </button>
-                        </form>
-                        
+                        <button
+                            id="btnPerpanjang"
+                            onclick="redirectToPerpanjang()"
+                            class="py-2 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors text-center"
+                        >
+                            Perpanjang Periode
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <script>
-            function toggleModal(modalId) {
-                const modal = document.getElementById(modalId);
-                modal.classList.toggle('hidden');
-                modal.classList.toggle('flex');
-            }
-
-            document.querySelectorAll('[data-info-modal]').forEach(button => {
-                button.addEventListener('click', () => toggleModal('infoModal'));
-            });
-        </script>
-
-        <!-- Modal Perpanjang -->
-        <div id="perpanjangModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4">
+        <!-- Modal Berhenti -->
+        <div id="berhentiModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
             <div class="card-gradient rounded-2xl shadow-lg w-full max-w-xl">
                 <div class="p-6">
-
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xl font-semibold text-[#008000]">FORM PERPANJANG PERIODE ADOPSI SATWA</h3>
-                        <button onclick="toggleModal('perpanjangModal')" class="text-[#008000] hover:text-[#006400]">
+                        <h3 class="text-xl font-semibold text-[#008000]">Konfirmasi Berhenti Adopsi</h3>
+                        <button onclick="toggleModal('berhentiModal')" class="text-[#008000] hover:text-[#006400] text-xl">
                             ✕
                         </button>
                     </div>
 
-                    <form class="space-y-4">
+                    <div class="space-y-4">
+                        <p class="text-[#008000]">Apakah Anda yakin ingin berhenti mengadopsi satwa ini?</p>
+                        <p class="text-sm text-[#008000]/70">Setelah berhenti, Anda tidak akan mendapatkan laporan kondisi hewan dan sertifikat adopsi tidak berlaku lagi.</p>
+                    </div>
 
-                        <div id="formPerpanjangIndividu" class="space-y-4">
-                            <p class="text-[#008000] text-sm">Pihak di bawah ini,</p>
-                            
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-[#008000]/80">Nama</label>
-                                    <input type="text" value="John Doe" class="w-full p-2 bg-white rounded-lg border border-[#c8e1cc]" disabled>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-[#008000]/80">NIK</label>
-                                    <input type="text" value="1234567890123456" class="w-full p-2 bg-white rounded-lg border border-[#c8e1cc]" disabled>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-[#008000]/80">Alamat</label>
-                                <textarea class="w-full p-2 bg-white rounded-lg border border-[#c8e1cc]" disabled>Jl. Contoh No. 123</textarea>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-[#008000]/80">Nomor Telepon</label>
-                                <input type="tel" value="081234567890" class="w-full p-2 bg-white rounded-lg border border-[#c8e1cc]" disabled>
-                            </div>
-                            
-                            <p class="text-[#008000] text-sm">(selanjutnya disebut sebagai Adopter)</p>
-                        </div>
-
-                        <div id="formPerpanjangOrganisasi" class="hidden space-y-4">
-                            <p class="text-[#008000] text-sm">Pihak di bawah ini, selaku organisasi/perusahaan</p>
-                            
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-[#008000]/80">Nama Organisasi</label>
-                                    <input type="text" value="PT Contoh" class="w-full p-2 bg-white rounded-lg border border-[#c8e1cc]" disabled>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-[#008000]/80">NPP</label>
-                                    <input type="text" value="NPP12345" class="w-full p-2 bg-white rounded-lg border border-[#c8e1cc]" disabled>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-[#008000]/80">Alamat</label>
-                                <textarea class="w-full p-2 bg-white rounded-lg border border-[#c8e1cc]" disabled>Jl. Perusahaan No. 456</textarea>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-[#008000]/80">Kontak</label>
-                                <input type="tel" value="081234567891" class="w-full p-2 bg-white rounded-lg border border-[#c8e1cc]" disabled>
-                            </div>
-                        </div>
-
-                        <div class="space-y-4">
-                            <p class="text-[#008000] text-sm">dengan ini menyatakan kepedulian dan minat untuk lanjut mengadopsi secara simbolis satwa</p>
-                            
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-[#008000]/80">Nama Hewan</label>
-                                    <input type="text" value="Jerapah" class="w-full p-2 bg-white rounded-lg border border-[#c8e1cc]" disabled>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-[#008000]/80">Jenis Hewan</label>
-                                    <input type="text" value="Mamalia" class="w-full p-2 bg-white rounded-lg border border-[#c8e1cc]" disabled>
-                                </div>
-                            </div>
-
-                            <p class="text-[#008000] text-sm">Adopter juga bersedia memberikan kontribusi finansial kepada pihak taman sadari sebagai dukungan untuk pemeliharaan satwa:</p>
-
-                            <div>
-                                <label class="block text-sm font-medium text-[#008000]/80">Nominal Kontribusi (Rp)</label>
-                                <input type="number" required class="w-full p-2 bg-white rounded-lg border border-[#c8e1cc]">
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-[#008000]/80">Perpanjang Periode Selama</label>
-                                <select required class="w-full p-2 bg-white rounded-lg border border-[#c8e1cc]">
-                                    <option value="3">3 Bulan</option>
-                                    <option value="6">6 Bulan</option>
-                                    <option value="12">12 Bulan</option>
-                                </select>
-                            </div>
-                        </div>
-
+                    <form id="formBerhentiAdopsi" method="POST" action="{% url 'adopsi:berhenti_adopsi' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="animal_id" id="berhentiAnimalId">
+                        
                         <div class="mt-6 flex justify-end space-x-4">
                             <button 
-                                type="button" 
-                                onclick="toggleModal('perpanjangModal')" 
+                                type="submit"
+                                class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                            >
+                                Iya, Berhenti
+                            </button>
+                            <button 
+                                type="button"
+                                onclick="toggleModal('berhentiModal')" 
                                 class="px-6 py-2 bg-gray-100 text-[#008000] rounded-lg hover:bg-gray-200"
                             >
                                 Batal
-                            </button>
-                            <button 
-                                type="submit" 
-                                class="px-6 py-2 bg-[#008000] text-white rounded-lg hover:bg-[#006400]"
-                            >
-                                Submit Form
                             </button>
                         </div>
                     </form>
@@ -302,68 +375,207 @@
             </div>
         </div>
 
-        <script>
-            document.querySelectorAll('[data-perpanjang]').forEach(button => {
-                button.addEventListener('click', () => {
-                    const isOrganisasi = false;
-                    if(isOrganisasi) {
-                        document.getElementById('formPerpanjangIndividu').classList.add('hidden');
-                        document.getElementById('formPerpanjangOrganisasi').classList.remove('hidden');
-                    } else {
-                        document.getElementById('formPerpanjangOrganisasi').classList.add('hidden');
-                        document.getElementById('formPerpanjangIndividu').classList.remove('hidden');
-                    }
-                    toggleModal('perpanjangModal');
-                });
-            });
-        </script>
-
-        <!-- Modal Berhenti -->
-        <div id="berhentiModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4">
-            <div class="card-gradient rounded-2xl shadow-lg w-full max-w-xl">
-                <div class="p-6">
-
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xl font-semibold text-[#008000]">Konfirmasi Berhenti Adopsi</h3>
-                        <button onclick="toggleModal('berhentiModal')" class="text-[#008000] hover:text-[#006400]">
-                            ✕
-                        </button>
-                    </div>
-
-                    <div class="space-y-4">
-                        <p class="text-[#008000]">Apakah Anda yakin ingin berhenti mengadopsi satwa ini?</p>
-                    </div>
-
-                    <div class="mt-6 flex justify-end space-x-4">
-                        <button 
-                            onclick="confirmBerhenti()" 
-                            class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                        >
-                            Iya
-                        </button>
-                        <button 
-                            onclick="toggleModal('berhentiModal')" 
-                            class="px-6 py-2 bg-gray-100 text-[#008000] rounded-lg hover:bg-gray-200"
-                        >
-                            Batal
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- Debug Toggle -->
+        <button onclick="toggleDebug()" class="fixed bottom-4 right-4 bg-blue-500 text-white px-3 py-1 rounded text-xs">
+            Debug
+        </button>
 
         <script>
-            document.querySelectorAll('[data-berhenti]').forEach(button => {
-                button.addEventListener('click', () => {
-                    toggleModal('infoModal');
-                    toggleModal('berhentiModal');
-                });
-            });
+            let currentAnimalId = null;
+            let currentAnimalName = '';
+            let currentAnimalSpecies = '';
 
-            function confirmBerhenti() {
-                alert('Permintaan berhenti adopsi telah dikirim!');
-                toggleModal('berhentiModal');
+            function getAnimalEmoji(animalName, species) {
+                const name = animalName.toLowerCase();
+                const spec = species.toLowerCase();
+                
+                // Tigers
+                if (name.includes('shere') || name.includes('khan') || name.includes('rajah') || name.includes('tiger') || name.includes('stripe') || name.includes('whiskers') || spec.includes('tigris')) return '🐅';
+                // Bears
+                if (name.includes('baloo') || name.includes('bear') || name.includes('snowy') || name.includes('polar') || name.includes('bearie') || spec.includes('ursus')) return '🐻';
+                // Camels
+                if (name.includes('sahara') || name.includes('desert') || name.includes('oasis') || name.includes('wind') || spec.includes('camelus')) return '🐪';
+                // Snow Leopards  
+                if (name.includes('everest') || name.includes('iceberg') || spec.includes('uncia')) return '🐆';
+                // Crocodiles
+                if (name.includes('puddle') || name.includes('marsh') || name.includes('splash') || name.includes('snap') || spec.includes('crocodylus')) return '🐊';
+                // Eagles
+                if (name.includes('swift') || name.includes('river') || spec.includes('haliaeetus')) return '🦅';
+                // Sharks
+                if (name.includes('sandy') || name.includes('sharky') || spec.includes('carcharhinus')) return '🦈';
+                // Monkeys/Gibbons
+                if (name.includes('mangrove') || name.includes('swing') || spec.includes('hylobates')) return '🐵';
+                // Turtles
+                if (name.includes('coastal') || name.includes('wave') || spec.includes('chelonia')) return '🐢';
+                // Clams
+                if (name.includes('coral') || name.includes('pearl') || spec.includes('tridacna')) return '🐚';
+                // Deer
+                if (name.includes('valley') || name.includes('forest') || spec.includes('odocoileus')) return '🦌';
+                // Sheep
+                if (name.includes('rocky') || name.includes('boulder') || spec.includes('ovis')) return '🐑';
+                // Panthers/Leopards
+                if (name.includes('bagheera') || spec.includes('pardus')) return '🐆';
+                
+                return '🐾';
             }
+
+            function hideLoadingSpinner(counter) {
+                const spinner = document.getElementById(`spinner-${counter}`);
+                if (spinner) {
+                    spinner.style.display = 'none';
+                }
+            }
+
+            function handleImageLoad(img) {
+                img.classList.add('loaded');
+                hideLoadingSpinner(img.dataset.counter);
+            }
+
+            function handleImageError(img) {
+                hideLoadingSpinner(img.dataset.counter);
+                img.style.display = 'none';
+            }
+
+            function handleModalImageLoad(img) {
+                img.classList.add('loaded');
+            }
+
+            function handleModalImageError(img) {
+                img.style.display = 'none';
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                document.querySelectorAll('.animal-emoji').forEach(function(element) {
+                    const animalName = element.dataset.animal || '';
+                    const species = element.dataset.species || '';
+                    element.textContent = getAnimalEmoji(animalName, species);
+                });
+            });
+
+            function toggleDebug() {
+                const debugInfo = document.getElementById('debugInfo');
+                if (debugInfo.style.display === 'none') {
+                    debugInfo.style.display = 'block';
+                } else {
+                    debugInfo.style.display = 'none';
+                }
+            }
+
+            function toggleModal(modalId) {
+                const modal = document.getElementById(modalId);
+                modal.classList.toggle('hidden');
+                modal.classList.toggle('flex');
+            }
+
+            function redirectToLaporan() {
+                if (currentAnimalId) {
+                    const url = "{% url 'adopsi:laporan_kondisi_hewan' %}?animal_id=" + encodeURIComponent(currentAnimalId);
+                    console.log('Redirecting to laporan:', url);
+                    window.location.href = url;
+                } else {
+                    console.error('No animal ID selected');
+                    alert('Error: Tidak ada hewan yang dipilih');
+                }
+            }
+
+            function redirectToSertifikat() {
+                if (currentAnimalId) {
+                    const url = "{% url 'adopsi:sertifikat_adopsi' %}?animal_id=" + encodeURIComponent(currentAnimalId);
+                    console.log('Redirecting to sertifikat:', url);
+                    window.location.href = url;
+                } else {
+                    console.error('No animal ID selected');
+                    alert('Error: Tidak ada hewan yang dipilih');
+                }
+            }
+
+            function redirectToPerpanjang() {
+                if (currentAnimalId) {
+                    const url = "{% url 'adopsi:perpanjang_periode' %}?animal_id=" + encodeURIComponent(currentAnimalId);
+                    console.log('Redirecting to perpanjang:', url);
+                    window.location.href = url;
+                } else {
+                    console.error('No animal ID selected');
+                    alert('Error: Tidak ada hewan yang dipilih');
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('DOM loaded, setting up event listeners');
+                
+                document.querySelectorAll('[data-info-modal]').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        console.log('Detail button clicked');
+                        
+                        const animalId = e.target.getAttribute('data-animal-id');
+                        const animalName = e.target.getAttribute('data-animal-name');
+                        const animalSpecies = e.target.getAttribute('data-animal-species');
+                        const animalHabitat = e.target.getAttribute('data-animal-habitat');
+                        const animalPhoto = e.target.getAttribute('data-animal-photo');
+                        const tglMulai = e.target.getAttribute('data-tgl-mulai');
+                        const tglBerhenti = e.target.getAttribute('data-tgl-berhenti');
+                        
+                        console.log('Animal data:', {
+                            id: animalId,
+                            name: animalName,
+                            species: animalSpecies,
+                            habitat: animalHabitat,
+                            photo: animalPhoto,
+                            tglMulai: tglMulai,
+                            tglBerhenti: tglBerhenti
+                        });
+                        
+                        currentAnimalId = animalId;
+                        currentAnimalName = animalName;
+                        currentAnimalSpecies = animalSpecies;
+                        
+                        document.getElementById('modalEmoji').textContent = getAnimalEmoji(animalName, animalSpecies);
+                        
+                        const modalImg = document.getElementById('modalAnimalPhoto');
+                        modalImg.classList.remove('loaded');
+                        modalImg.style.display = 'block';
+                        modalImg.src = animalPhoto;
+                        
+                        document.getElementById('modalAnimalName').textContent = animalName;
+                        document.getElementById('modalAnimalSpecies').textContent = animalSpecies;
+                        document.getElementById('modalAnimalHabitat').textContent = animalHabitat || '-';
+                        document.getElementById('modalTglMulai').textContent = formatDate(tglMulai);
+                        document.getElementById('modalTglBerhenti').textContent = formatDate(tglBerhenti);
+                        
+                        console.log('Modal updated, showing modal');
+                        toggleModal('infoModal');
+                    });
+                });
+
+                document.querySelectorAll('[data-berhenti]').forEach(button => {
+                    button.addEventListener('click', () => {
+                        console.log('Berhenti button clicked for animal:', currentAnimalId);
+                        document.getElementById('berhentiAnimalId').value = currentAnimalId;
+                        toggleModal('infoModal');
+                        toggleModal('berhentiModal');
+                    });
+                });
+            });
+
+            function formatDate(dateString) {
+                if (!dateString) return '-';
+                
+                try {
+                    const date = new Date(dateString);
+                    const options = { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                    };
+                    return date.toLocaleDateString('id-ID', options);
+                } catch (e) {
+                    console.error('Error formatting date:', e);
+                    return dateString;
+                }
+            }
+
+            console.log('Script loaded successfully');
+            console.log('Available animals:', {{ adopted_animals|length }});
         </script>
 
         <!-- Footer -->

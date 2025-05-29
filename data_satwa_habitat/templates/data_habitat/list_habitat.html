@@ -113,7 +113,6 @@
               {% for habitat in daftar_habitat %}
               <tr class="table-row hover:bg-[#c8e1cc] transition-colors">
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{{ habitat.nama }}</td>
-                <td>Debug: "{{ habitat.nama|length }}" chars</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ habitat.luas_area|floatformat:2 }} m²</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ habitat.kapasitas }} hewan</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

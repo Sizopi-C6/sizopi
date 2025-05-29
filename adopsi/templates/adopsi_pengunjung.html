@@ -19,11 +19,131 @@
             transform: translateY(-5px);
             box-shadow: 0 8px 20px rgba(0, 100, 0, 0.15);
         }
+
+        /* Image Placeholder Styles */
+        .animal-image-container {
+            position: relative;
+            width: 100%;
+            height: 192px; /* h-48 */
+            overflow: hidden;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 16px 16px 0 0;
+        }
+        
+        .animal-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.3s ease;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            opacity: 0;
+        }
+        
+        .animal-image.loaded {
+            opacity: 1;
+        }
+        
+        .animal-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            color: #64748b;
+            z-index: 1;
+        }
+        
+        .animal-emoji {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .animal-name-placeholder {
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-align: center;
+            opacity: 0.8;
+        }
+
+        /* Loading animation */
+        .loading-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #008000;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 3;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Modal Image Styles */
+        .modal-image-container {
+            position: relative;
+            height: 256px; /* h-64 */
+            width: 100%;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        }
+
+        .modal-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.3s ease;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            opacity: 0;
+        }
+
+        .modal-image.loaded {
+            opacity: 1;
+        }
+
+        .modal-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            color: #64748b;
+            z-index: 1;
+        }
+
+        .modal-emoji {
+            font-size: 4rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
     </style>
 {% endblock meta %}
 
 {% block content %}
-{% include 'navbar/pengunjung_sebagai_adopter.html' %}
 {% include 'message_display.html' %}
 
 <div class="bg-[#e8f4ea] min-h-screen flex flex-col items-center font-[Poppins] p-8">
@@ -55,7 +175,27 @@
             <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {% for animal in adopted_animals %}
                 <div class="animal-card bg-white rounded-2xl shadow-md overflow-hidden">
-                    <img src="{{ animal.url_foto }}" alt="{{ animal.nama_hewan }}" class="w-full h-48 object-cover">
+                    <div class="animal-image-container">
+                        <!-- Loading Spinner -->
+                        <div class="loading-spinner" id="spinner-{{ forloop.counter }}"></div>
+                        
+                        <!-- Placeholder Background -->
+                        <div class="animal-placeholder">
+                            <div class="animal-emoji" data-animal="{{ animal.nama_hewan|lower }}" data-species="{{ animal.species|lower }}">🐾</div>
+                            <div class="animal-name-placeholder">{{ animal.nama_hewan }}</div>
+                        </div>
+                        
+                        <!-- Main Image -->
+                        <img src="{{ animal.url_foto }}"
+                             alt="{{ animal.nama_hewan }}" 
+                             class="animal-image"
+                             data-species="{{ animal.species|lower }}"
+                             data-name="{{ animal.nama_hewan|lower }}"
+                             data-counter="{{ forloop.counter }}"
+                             onload="handleImageLoad(this)"
+                             onerror="handleImageError(this)"
+                             loading="lazy">
+                    </div>
                     <div class="p-6">
                         <h3 class="text-xl font-semibold text-[#008000] mb-2">{{ animal.nama_hewan }}</h3>
                         <div class="space-y-2 mb-4">
@@ -114,8 +254,19 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="relative h-64 w-full rounded-lg overflow-hidden">
-                            <img id="modalAnimalPhoto" src="" alt="Hewan" class="w-full h-full object-cover">
+                        <div class="modal-image-container">
+                            <!-- Modal Placeholder -->
+                            <div class="modal-placeholder">
+                                <div class="modal-emoji" id="modalEmoji">🐾</div>
+                            </div>
+                            
+                            <!-- Modal Image -->
+                            <img id="modalAnimalPhoto" 
+                                 src="" 
+                                 alt="Hewan" 
+                                 class="modal-image"
+                                 onload="handleModalImageLoad(this)"
+                                 onerror="handleModalImageError(this)">
                         </div>
 
                         <div class="space-y-4">
@@ -231,6 +382,75 @@
 
         <script>
             let currentAnimalId = null;
+            let currentAnimalName = '';
+            let currentAnimalSpecies = '';
+
+            function getAnimalEmoji(animalName, species) {
+                const name = animalName.toLowerCase();
+                const spec = species.toLowerCase();
+                
+                // Tigers
+                if (name.includes('shere') || name.includes('khan') || name.includes('rajah') || name.includes('tiger') || name.includes('stripe') || name.includes('whiskers') || spec.includes('tigris')) return '🐅';
+                // Bears
+                if (name.includes('baloo') || name.includes('bear') || name.includes('snowy') || name.includes('polar') || name.includes('bearie') || spec.includes('ursus')) return '🐻';
+                // Camels
+                if (name.includes('sahara') || name.includes('desert') || name.includes('oasis') || name.includes('wind') || spec.includes('camelus')) return '🐪';
+                // Snow Leopards  
+                if (name.includes('everest') || name.includes('iceberg') || spec.includes('uncia')) return '🐆';
+                // Crocodiles
+                if (name.includes('puddle') || name.includes('marsh') || name.includes('splash') || name.includes('snap') || spec.includes('crocodylus')) return '🐊';
+                // Eagles
+                if (name.includes('swift') || name.includes('river') || spec.includes('haliaeetus')) return '🦅';
+                // Sharks
+                if (name.includes('sandy') || name.includes('sharky') || spec.includes('carcharhinus')) return '🦈';
+                // Monkeys/Gibbons
+                if (name.includes('mangrove') || name.includes('swing') || spec.includes('hylobates')) return '🐵';
+                // Turtles
+                if (name.includes('coastal') || name.includes('wave') || spec.includes('chelonia')) return '🐢';
+                // Clams
+                if (name.includes('coral') || name.includes('pearl') || spec.includes('tridacna')) return '🐚';
+                // Deer
+                if (name.includes('valley') || name.includes('forest') || spec.includes('odocoileus')) return '🦌';
+                // Sheep
+                if (name.includes('rocky') || name.includes('boulder') || spec.includes('ovis')) return '🐑';
+                // Panthers/Leopards
+                if (name.includes('bagheera') || spec.includes('pardus')) return '🐆';
+                
+                return '🐾';
+            }
+
+            function hideLoadingSpinner(counter) {
+                const spinner = document.getElementById(`spinner-${counter}`);
+                if (spinner) {
+                    spinner.style.display = 'none';
+                }
+            }
+
+            function handleImageLoad(img) {
+                img.classList.add('loaded');
+                hideLoadingSpinner(img.dataset.counter);
+            }
+
+            function handleImageError(img) {
+                hideLoadingSpinner(img.dataset.counter);
+                img.style.display = 'none';
+            }
+
+            function handleModalImageLoad(img) {
+                img.classList.add('loaded');
+            }
+
+            function handleModalImageError(img) {
+                img.style.display = 'none';
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                document.querySelectorAll('.animal-emoji').forEach(function(element) {
+                    const animalName = element.dataset.animal || '';
+                    const species = element.dataset.species || '';
+                    element.textContent = getAnimalEmoji(animalName, species);
+                });
+            });
 
             function toggleDebug() {
                 const debugInfo = document.getElementById('debugInfo');
@@ -306,8 +526,16 @@
                         });
                         
                         currentAnimalId = animalId;
+                        currentAnimalName = animalName;
+                        currentAnimalSpecies = animalSpecies;
                         
-                        document.getElementById('modalAnimalPhoto').src = animalPhoto;
+                        document.getElementById('modalEmoji').textContent = getAnimalEmoji(animalName, animalSpecies);
+                        
+                        const modalImg = document.getElementById('modalAnimalPhoto');
+                        modalImg.classList.remove('loaded');
+                        modalImg.style.display = 'block';
+                        modalImg.src = animalPhoto;
+                        
                         document.getElementById('modalAnimalName').textContent = animalName;
                         document.getElementById('modalAnimalSpecies').textContent = animalSpecies;
                         document.getElementById('modalAnimalHabitat').textContent = animalHabitat || '-';

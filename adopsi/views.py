@@ -1224,13 +1224,29 @@ def daftar_adopter(request):
             top_contributors = []
             for row in cursor.fetchall():
                 contributor = dict(zip([column[0] for column in cursor.description], row))
-                if isinstance(contributor.get('total_kontribusi'), Decimal):
-                    contributor['total_kontribusi'] = float(contributor['total_kontribusi'])
-                elif isinstance(contributor.get('total_kontribusi'), int):
-                    contributor['total_kontribusi'] = float(contributor['total_kontribusi'])
                 
-                if 'total_kontribusi' in contributor:
-                    contributor['total_kontribusi_formatted'] = f"Rp {contributor['total_kontribusi']:,.0f}"
+                kontribusi_value = None
+                for key in ['total_kontribusi', 'total_kontribusi_setahun', 'kontribusi']:
+                    if key in contributor and contributor[key] is not None:
+                        kontribusi_value = contributor[key]
+                        break
+                
+                if kontribusi_value is not None:
+                    if isinstance(kontribusi_value, Decimal):
+                        kontribusi_float = float(kontribusi_value)
+                    elif isinstance(kontribusi_value, (int, float)):
+                        kontribusi_float = float(kontribusi_value)
+                    else:
+                        kontribusi_float = 0.0
+                else:
+                    kontribusi_float = 0.0
+                
+                contributor['total_kontribusi'] = kontribusi_float
+                contributor['total_kontribusi_setahun'] = kontribusi_float
+                contributor['total_kontribusi_formatted'] = f"Rp {kontribusi_float:,.0f}"
+                
+                if 'nama_adopter' not in contributor or contributor['nama_adopter'] is None:
+                    contributor['nama_adopter'] = 'Unknown'
                 
                 top_contributors.append(contributor)
             
@@ -1265,7 +1281,10 @@ def daftar_adopter(request):
                 
                 if isinstance(adopter['id_adopter'], uuid.UUID):
                     adopter['id_adopter'] = str(adopter['id_adopter'])
-                if isinstance(adopter['total_kontribusi'], Decimal):
+                
+                if adopter['total_kontribusi'] is None:
+                    adopter['total_kontribusi'] = 0.0
+                elif isinstance(adopter['total_kontribusi'], Decimal):
                     adopter['total_kontribusi'] = float(adopter['total_kontribusi'])
                 
                 adopter['dapat_dihapus'] = adopter['adopsi_aktif_count'] == 0
@@ -1300,7 +1319,10 @@ def daftar_adopter(request):
                 
                 if isinstance(adopter['id_adopter'], uuid.UUID):
                     adopter['id_adopter'] = str(adopter['id_adopter'])
-                if isinstance(adopter['total_kontribusi'], Decimal):
+                
+                if adopter['total_kontribusi'] is None:
+                    adopter['total_kontribusi'] = 0.0
+                elif isinstance(adopter['total_kontribusi'], Decimal):
                     adopter['total_kontribusi'] = float(adopter['total_kontribusi'])
                 
                 adopter['dapat_dihapus'] = adopter['adopsi_aktif_count'] == 0

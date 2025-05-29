@@ -76,7 +76,6 @@
 {% endblock meta %}
 
 {% block content %}
-{% include 'navbar/pengunjung_sebagai_adopter.html' %}
 {% include 'message_display.html' %}
 
 <div class="bg-[#e8f4ea] min-h-screen flex flex-col items-center font-[Poppins] p-8">
@@ -92,9 +91,6 @@
         <div class="certificate-container bg-white">
             <div class="certificate-header">
                 <div class="flex items-center justify-center mb-4">
-                    <div class="w-16 h-16 bg-[#008000] rounded-full flex items-center justify-center mr-4">
-                        <span class="text-white text-2xl">🦁</span>
-                    </div>
                     <div>
                         <h1 class="text-3xl font-bold text-[#008000] mb-2">Sertifikat Adopsi Satwa</h1>
                         <p class="text-sm text-[#008000]/70">SIZOPI - Program Adopsi Simbolis</p>
@@ -118,7 +114,6 @@
                 
                 <div class="flex items-center justify-center space-x-8 mb-6 p-6 bg-[#008000]/5 rounded-lg">
                     <div class="text-center">
-                        <div class="text-2xl mb-2">🦁</div>
                         <p class="font-semibold text-lg">{{ adoption_data.species }}</p>
                         <p class="text-xl font-bold text-[#008000]">"{{ adoption_data.nama_hewan }}"</p>
                     </div>

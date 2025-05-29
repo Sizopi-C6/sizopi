@@ -37,11 +37,86 @@
             background-color: white;
             color: #000;
         }
+
+        /* Animal Image Styles */
+        .animal-image-container {
+            position: relative;
+            width: 320px; /* w-80 */
+            height: 320px; /* h-80 */
+            overflow: hidden;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 0.5rem;
+            border: 2px solid #008000;
+            margin: 0 auto;
+        }
+        
+        .animal-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.3s ease;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            opacity: 0;
+        }
+        
+        .animal-image.loaded {
+            opacity: 1;
+        }
+        
+        .animal-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            color: #64748b;
+            z-index: 1;
+        }
+        
+        .animal-emoji {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .animal-name-placeholder {
+            font-size: 1rem;
+            font-weight: 500;
+            text-align: center;
+            opacity: 0.8;
+        }
+
+        /* Loading animation */
+        .loading-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #008000;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 3;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
     </style>
 {% endblock meta %}
 
 {% block content %}
-{% include 'navbar/pengunjung_sebagai_adopter.html' %}
 {% include 'message_display.html' %}
 
 <div class="bg-[#e8f4ea] min-h-screen flex flex-col items-center font-[Poppins] p-8">
@@ -58,9 +133,28 @@
             <!-- Title -->
             <h1 class="text-4xl font-bold text-[#008000] mb-8 text-center">LAPORAN KONDISI SATWA</h1>
             
-            <!-- Animal Photo - Centered -->
+            <!-- Animal Photo - Centered with new image system -->
             <div class="flex justify-center mb-8">
-                <img src="{{ animal.url_foto }}" alt="{{ animal.nama_hewan }}" class="w-80 h-80 object-cover rounded-lg border-2 border-[#008000]">
+                <div class="animal-image-container">
+                    <!-- Loading Spinner -->
+                    <div class="loading-spinner" id="report-spinner"></div>
+                    
+                    <!-- Placeholder Background -->
+                    <div class="animal-placeholder">
+                        <div class="animal-emoji" data-animal="{{ animal.nama_hewan|lower }}" data-species="{{ animal.species|lower }}">🐾</div>
+                        <div class="animal-name-placeholder">{{ animal.nama_hewan }}</div>
+                    </div>
+                    
+                    <!-- Main Image -->
+                    <img src="{{ animal.url_foto }}" 
+                         alt="{{ animal.nama_hewan }}" 
+                         class="animal-image"
+                         data-species="{{ animal.species|lower }}"
+                         data-name="{{ animal.nama_hewan|lower }}"
+                         onload="handleImageLoad(this)"
+                         onerror="handleImageError(this)"
+                         loading="lazy">
+                </div>
             </div>
             
             <!-- Animal Information - Centered, Simple Format -->
@@ -153,5 +247,67 @@
             © 2025 SIZOPI. All rights reserved.
         </footer>
     </div>
+
+    <script>
+        function getAnimalEmoji(animalName, species) {
+            const name = animalName.toLowerCase();
+            const spec = species.toLowerCase();
+            
+            // Tigers
+            if (name.includes('shere') || name.includes('khan') || name.includes('rajah') || name.includes('tiger') || name.includes('stripe') || name.includes('whiskers') || spec.includes('tigris')) return '🐅';
+            // Bears
+            if (name.includes('baloo') || name.includes('bear') || name.includes('snowy') || name.includes('polar') || name.includes('bearie') || spec.includes('ursus')) return '🐻';
+            // Camels
+            if (name.includes('sahara') || name.includes('desert') || name.includes('oasis') || name.includes('wind') || spec.includes('camelus')) return '🐪';
+            // Snow Leopards  
+            if (name.includes('everest') || name.includes('iceberg') || spec.includes('uncia')) return '🐆';
+            // Crocodiles
+            if (name.includes('puddle') || name.includes('marsh') || name.includes('splash') || name.includes('snap') || spec.includes('crocodylus')) return '🐊';
+            // Eagles
+            if (name.includes('swift') || name.includes('river') || spec.includes('haliaeetus')) return '🦅';
+            // Sharks
+            if (name.includes('sandy') || name.includes('sharky') || spec.includes('carcharhinus')) return '🦈';
+            // Monkeys/Gibbons
+            if (name.includes('mangrove') || name.includes('swing') || spec.includes('hylobates')) return '🐵';
+            // Turtles
+            if (name.includes('coastal') || name.includes('wave') || spec.includes('chelonia')) return '🐢';
+            // Clams
+            if (name.includes('coral') || name.includes('pearl') || spec.includes('tridacna')) return '🐚';
+            // Deer
+            if (name.includes('valley') || name.includes('forest') || spec.includes('odocoileus')) return '🦌';
+            // Sheep
+            if (name.includes('rocky') || name.includes('boulder') || spec.includes('ovis')) return '🐑';
+            // Panthers/Leopards
+            if (name.includes('bagheera') || spec.includes('pardus')) return '🐆';
+            
+            return '🐾';
+        }
+
+        function hideLoadingSpinner() {
+            const spinner = document.getElementById('report-spinner');
+            if (spinner) {
+                spinner.style.display = 'none';
+            }
+        }
+
+        function handleImageLoad(img) {
+            img.classList.add('loaded');
+            hideLoadingSpinner();
+        }
+
+        function handleImageError(img) {
+            hideLoadingSpinner();
+            img.style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const emojiElement = document.querySelector('.animal-emoji');
+            if (emojiElement) {
+                const animalName = emojiElement.dataset.animal || '';
+                const species = emojiElement.dataset.species || '';
+                emojiElement.textContent = getAnimalEmoji(animalName, species);
+            }
+        });
+    </script>
 </div>
 {% endblock %}

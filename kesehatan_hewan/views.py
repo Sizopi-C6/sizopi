@@ -153,21 +153,21 @@ def handle_add_medical_record(request, animal_uuid, user):
     
     if not tanggal_pemeriksaan or not status_kesehatan:
         messages.error(request, 'Tanggal pemeriksaan dan status kesehatan harus diisi!')
-        return redirect('rekam_medis_hewan', animal_id=str(animal_uuid))
+        return redirect('kesehatan:rekam_medis_hewan', animal_id=str(animal_uuid))
     
     try:
         exam_date = datetime.strptime(tanggal_pemeriksaan, '%Y-%m-%d').date()
         if exam_date > date.today():
             messages.error(request, 'Tanggal pemeriksaan tidak boleh di masa depan!')
-            return redirect('rekam_medis_hewan', animal_id=str(animal_uuid))
+            return redirect('kesehatan:rekam_medis_hewan', animal_id=str(animal_uuid))
     except ValueError:
         messages.error(request, 'Format tanggal tidak valid!')
-        return redirect('rekam_medis_hewan', animal_id=str(animal_uuid))
+        return redirect('kesehatan:rekam_medis_hewan', animal_id=str(animal_uuid))
     
     if status_kesehatan == 'Sakit':
         if not diagnosis or not pengobatan:
             messages.error(request, 'Diagnosis dan pengobatan harus diisi jika status hewan sakit!')
-            return redirect('rekam_medis_hewan', animal_id=str(animal_uuid))
+            return redirect('kesehatan:rekam_medis_hewan', animal_id=str(animal_uuid))
     
     try:
         with connection.cursor() as cursor:
@@ -202,7 +202,7 @@ def handle_add_medical_record(request, animal_uuid, user):
         logger.error(f"Error adding medical record: {str(e)}")
         messages.error(request, 'Terjadi kesalahan saat menambahkan rekam medis.')
     
-    return redirect('rekam_medis_hewan', animal_id=str(animal_uuid))
+    return redirect('kesehatan:rekam_medis_hewan', animal_id=str(animal_uuid))
 
 def handle_edit_medical_record(request, animal_uuid):
     tanggal_pemeriksaan = request.POST.get('tanggal_pemeriksaan')
@@ -214,7 +214,7 @@ def handle_edit_medical_record(request, animal_uuid):
     
     if not all([tanggal_pemeriksaan, diagnosis_baru, pengobatan_baru]):
         messages.error(request, 'Tanggal, diagnosis baru, dan pengobatan baru harus diisi!')
-        return redirect('rekam_medis_hewan', animal_id=str(animal_uuid))
+        return redirect('kesehatan:rekam_medis_hewan', animal_id=str(animal_uuid))
     
     try:
         exam_date = None
@@ -237,7 +237,7 @@ def handle_edit_medical_record(request, animal_uuid):
     except ValueError:
         print(f"Date parsing failed for: '{tanggal_pemeriksaan}'") 
         messages.error(request, f'Format tanggal tidak valid: {tanggal_pemeriksaan}')
-        return redirect('rekam_medis_hewan', animal_id=str(animal_uuid))
+        return redirect('kesehatan:rekam_medis_hewan', animal_id=str(animal_uuid))
     
     try:
         with connection.cursor() as cursor:
@@ -255,7 +255,7 @@ def handle_edit_medical_record(request, animal_uuid):
         logger.error(f"Error updating medical record: {str(e)}")
         messages.error(request, 'Terjadi kesalahan saat memperbarui rekam medis.')
     
-    return redirect('rekam_medis_hewan', animal_id=str(animal_uuid))
+    return redirect('kesehatan:rekam_medis_hewan', animal_id=str(animal_uuid))
 
 def handle_delete_medical_record(request, animal_uuid):
     tanggal_pemeriksaan = request.POST.get('tanggal_pemeriksaan')
@@ -264,7 +264,7 @@ def handle_delete_medical_record(request, animal_uuid):
     
     if not tanggal_pemeriksaan:
         messages.error(request, 'Tanggal pemeriksaan harus diisi!')
-        return redirect('rekam_medis_hewan', animal_id=str(animal_uuid))
+        return redirect('kesehatan:rekam_medis_hewan', animal_id=str(animal_uuid))
     
     try:
         exam_date = None
@@ -289,7 +289,7 @@ def handle_delete_medical_record(request, animal_uuid):
     except ValueError:
         print(f"Date parsing failed for: '{tanggal_pemeriksaan}'") 
         messages.error(request, f'Format tanggal tidak valid: {tanggal_pemeriksaan}')
-        return redirect('rekam_medis_hewan', animal_id=str(animal_uuid))
+        return redirect('kesehatan:rekam_medis_hewan', animal_id=str(animal_uuid))
     
     try:
         with connection.cursor() as cursor:
@@ -307,7 +307,7 @@ def handle_delete_medical_record(request, animal_uuid):
         logger.error(f"Error deleting medical record: {str(e)}")
         messages.error(request, 'Terjadi kesalahan saat menghapus rekam medis.')
     
-    return redirect('rekam_medis_hewan', animal_id=str(animal_uuid))
+    return redirect('kesehatan:rekam_medis_hewan', animal_id=str(animal_uuid))
 
 def penjadwalan_pemeriksaan_kesehatan(request, animal_id):
     has_access, user = check_doctor_access(request)

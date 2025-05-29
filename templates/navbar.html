@@ -136,24 +136,27 @@
             {% if request.session.user.role %}
                 <a href="/dashboard" class="navbar-item">Dashboard</a>
                     {% if request.session.user.role == 'dokter_hewan' %}
-                        <a href="/kesehatan/daftar-hewan" class="navbar-item">Rekam Medis</a>
+                        <a href="{% url 'kesehatan:daftar_hewan' %}" class="navbar-item">Rekam Medis</a>
         
                     {% elif request.session.user.role == 'penjaga_hewan' %}
-                        <a href="/kesehatan/daftar-hewan" class="navbar-item">Catatan Perawatan Hewan</a>
+                        <a href="{% url 'kesehatan:daftar_hewan' %}" class="navbar-item">Catatan Perawatan Hewan</a>
         
                     {% elif request.session.user.role == 'staf_admin' %}
-                        <a href="/kelola-pengunjung" class="navbar-item">Kelola Pengunjung</a>
+                        <!-- TODO: GANTI URL -->
+                        <a href="/manajemen-wahana" class="navbar-item">Kelola Pengunjung</a>
                         <a href="{% url 'adopsi:adopsi_admin' %}" class="navbar-item">Kelola Adopsi</a>
                         <a href="{% url 'adopsi:daftar_adopter' %}" class="navbar-item">Kelola Adopter</a>
         
                     {% elif request.session.user.role == 'pelatih_hewan' %}
-                        <a href="/jadwal-pertunjukan" class="navbar-item">Jadwal Pertunjukan</a>
+                        <!-- TODO: GANTI URL -->
+                        <a href="/manajemen-atraksi" class="navbar-item">Jadwal Pertunjukan</a> 
         
                     {% elif request.session.user.role == 'pengunjung' %}
                         {% if is_adopter %}
-                            <a href="adopsi/" id="adopsi-link" class="navbar-item">Hewan Adopsi</a>
+                            <a href="{% url 'adopsi:program_adopsi_pengunjung' %}" id="adopsi-link" class="navbar-item">Hewan Adopsi</a>
                         {% else %}
                             <a href="{% url 'data_satwa_habitat:list_habitat' %}" class="navbar-item">Informasi Kebun Binatang</a>
+                            <!-- TODO: GANTI URL -->
                             <a href="/pengunjung-detail/" class="navbar-item">Reservasi Tiket</a>
                         {% endif %}
                     {% endif %}

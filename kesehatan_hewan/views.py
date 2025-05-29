@@ -171,13 +171,30 @@ def handle_add_medical_record(request, animal_uuid, user):
     
     try:
         with connection.cursor() as cursor:
+            cursor.execute("SELECT name FROM hewan WHERE id = %s", [animal_uuid])
+            animal_result = cursor.fetchone()
+            animal_name = animal_result[0] if animal_result else "Hewan"
+            
             cursor.execute("""
                 SELECT add_medical_record(%s, %s, %s, %s, %s, %s)
             """, [animal_uuid, user['username'], exam_date, diagnosis, pengobatan, status_kesehatan])
             
             result = cursor.fetchone()[0]
             if result.startswith('SUCCESS'):
-                messages.success(request, 'Rekam medis berhasil ditambahkan!')
+                
+                if status_kesehatan == 'Sakit':
+                    cursor.execute("""
+                        SELECT COUNT(*) FROM jadwal_pemeriksaan_kesehatan 
+                        WHERE id_hewan = %s 
+                        AND tgl_pemeriksaan_selanjutnya = %s
+                    """, [animal_uuid, exam_date + timedelta(days=7)])
+                    
+                    if cursor.fetchone()[0] > 0:
+                        messages.success(request, f'SUKSES: Jadwal pemeriksaan hewan "{animal_name}" telah diperbarui karena status kesehatan "Sakit".')
+
+                else:
+                    messages.success(request, 'Rekam medis berhasil ditambahkan!')
+
             else:
                 messages.error(request, result.replace('ERROR: ', ''))
                 
@@ -403,11 +420,36 @@ def handle_add_schedule(request, animal_uuid):
     
     try:
         with connection.cursor() as cursor:
+            cursor.execute("SELECT name FROM hewan WHERE id = %s", [animal_uuid])
+            animal_result = cursor.fetchone()
+            animal_name = animal_result[0] if animal_result else "Hewan"
+            
+            cursor.execute("SELECT get_animal_frequency(%s)", [animal_uuid])
+            frequency = cursor.fetchone()[0]
+            
+            cursor.execute("""
+                SELECT COUNT(*) FROM jadwal_pemeriksaan_kesehatan 
+                WHERE id_hewan = %s AND EXTRACT(YEAR FROM tgl_pemeriksaan_selanjutnya) = %s
+            """, [animal_uuid, exam_date.year])
+            schedules_before = cursor.fetchone()[0]
+            
             cursor.execute("SELECT add_health_schedule(%s, %s)", [animal_uuid, exam_date])
             result = cursor.fetchone()[0]
             
             if result.startswith('SUCCESS'):
-                messages.success(request, result.replace('SUCCESS: ', ''))
+                messages.success(request, 'Jadwal pemeriksaan berhasil ditambahkan!')
+                
+                # Count schedules after adding to see if additional schedules were created
+                cursor.execute("""
+                    SELECT COUNT(*) FROM jadwal_pemeriksaan_kesehatan 
+                    WHERE id_hewan = %s AND EXTRACT(YEAR FROM tgl_pemeriksaan_selanjutnya) = %s
+                """, [animal_uuid, exam_date.year])
+                schedules_after = cursor.fetchone()[0]
+                
+                if schedules_after > schedules_before + 1:
+                    messages.success(request, f'SUKSES: Jadwal pemeriksaan rutin hewan "{animal_name}" telah ditambahkan sesuai frekuensi.')
+                elif schedules_after == schedules_before + 1:
+                    messages.success(request, f'Jadwal pemeriksaan untuk hewan "{animal_name}" berhasil ditambahkan.')
             else:
                 messages.error(request, result.replace('ERROR: ', ''))
                 

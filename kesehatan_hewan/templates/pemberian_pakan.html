@@ -59,12 +59,12 @@
       <div class="card p-6 md:p-8 rounded-2xl shadow-lg border border-[#c8e1cc]">
         <div class="mb-6">
           <h1 class="text-3xl font-bold text-center text-[#008000] mb-2">PEMBERIAN PAKAN</h1>
-          <p class="text-center text-[#008000]/70">Sistem Informasi Zoo Pintar</p>
+          <p class="text-center text-[#008000]/70">{{ animal_name }}</p>
         </div>
 
         <div class="flex justify-end mb-6">
           <button 
-            onclick="openModal('add')" 
+            onclick="openAddModal()" 
             class="btn-primary px-6 py-2 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] focus:outline-none focus:ring-2 focus:ring-[#008000] focus:ring-opacity-50">
             + Tambah Jadwal Pemberian Pakan
           </button>
@@ -81,14 +81,55 @@
                 <th class="px-6 py-4">Aksi</th>
               </tr>
             </thead>
-            <tbody id="feedTable" class="text-center divide-y divide-[#e0f0e3]">
+            <tbody class="text-center divide-y divide-[#e0f0e3]">
+              {% for schedule in feeding_schedules %}
+              <tr>
+                <td class="px-6 py-4">{{ schedule.jenis }}</td>
+                <td class="px-6 py-4">{{ schedule.jumlah }}</td>
+                <td class="px-6 py-4">{{ schedule.jadwal|date:"d/m/Y H:i" }}</td>
+                <td class="px-6 py-4">
+                  {% if schedule.status == 'Selesai Diberikan' %}
+                    <span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Selesai Diberikan</span>
+                  {% else %}
+                    <span class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Menunggu Pemberian</span>
+                  {% endif %}
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex flex-wrap justify-center gap-2">
+                    {% if schedule.status != 'Selesai Diberikan' %}
+                      <button 
+                        onclick="markAsFed('{{ schedule.id_hewan|escapejs }}', '{{ schedule.jadwal|date:"Y-m-d H:i:s"|escapejs }}')" 
+                        class="btn-primary px-3 py-1 bg-[#008000] text-white text-xs rounded-lg hover:bg-[#006400] focus:outline-none">
+                        Beri Pakan
+                      </button>
+                    {% endif %}
+                    <button 
+                      onclick="openEditModal('{{ schedule.id_hewan|escapejs }}', '{{ schedule.jenis|escapejs }}', '{{ schedule.jumlah }}', '{{ schedule.jadwal|date:"Y-m-d H:i:s"|escapejs }}')" 
+                      class="btn-secondary px-3 py-1 bg-white text-[#008000] text-xs rounded-lg border border-[#008000] hover:bg-[#e0f0e3] focus:outline-none">
+                      Edit
+                    </button>
+                    <button 
+                      onclick="openDeleteModal('{{ schedule.id_hewan|escapejs }}', '{{ schedule.jadwal|date:"Y-m-d H:i:s"|escapejs }}')" 
+                      class="btn-secondary px-3 py-1 bg-white text-red-600 text-xs rounded-lg border border-red-600 hover:bg-red-50 focus:outline-none">
+                      Hapus
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                  Belum ada jadwal pemberian pakan untuk hewan ini
+                </td>
+              </tr>
+              {% endfor %}
             </tbody>
           </table>
         </div>
 
-        <div class=" mb-4">
+        <div class="mb-4">
           <h2 class="text-2xl font-bold text-[#008000]">RIWAYAT PEMBERIAN PAKAN</h2>
-          <p class="text-[#008000]/70 text-sm mb-4">Catatan pemberian pakan terdahulu</p>
+          <p class="text-[#008000]/70 text-sm mb-4">Catatan pemberian pakan yang telah dilakukan</p>
         </div>
         
         <div class="overflow-x-auto rounded-xl shadow">
@@ -107,17 +148,31 @@
               </tr>
             </thead>
             <tbody class="text-center divide-y divide-[#e0f0e3]">
+              {% for history in feeding_history %}
               <tr>
-                <td class="px-4 py-3">Bimo</td>
-                <td class="px-4 py-3">Gajah Sumatera</td>
-                <td class="px-4 py-3">Sumatera</td>
-                <td class="px-4 py-3">2015-06-12</td>
-                <td class="px-4 py-3">Hutan Tropis</td>
-                <td class="px-4 py-3"><span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Sehat</span></td>
-                <td class="px-4 py-3">Daging Ayam</td>
-                <td class="px-4 py-3">800</td>
-                <td class="px-4 py-3">2025-03-05 08:30:00</td>
+                <td class="px-4 py-3">{{ history.nama_hewan }}</td>
+                <td class="px-4 py-3">{{ history.spesies }}</td>
+                <td class="px-4 py-3">{{ history.asal_hewan }}</td>
+                <td class="px-4 py-3">{{ history.tanggal_lahir|date:"d/m/Y"|default:"-" }}</td>
+                <td class="px-4 py-3">{{ history.nama_habitat }}</td>
+                <td class="px-4 py-3">
+                  {% if history.status_kesehatan == 'Sehat' %}
+                    <span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Sehat</span>
+                  {% else %}
+                    <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">Sakit</span>
+                  {% endif %}
+                </td>
+                <td class="px-4 py-3">{{ history.jenis_pakan }}</td>
+                <td class="px-4 py-3">{{ history.jumlah_pakan }}</td>
+                <td class="px-4 py-3">{{ history.jadwal|date:"d/m/Y H:i" }}</td>
               </tr>
+              {% empty %}
+              <tr>
+                <td colspan="9" class="px-4 py-8 text-center text-gray-500">
+                  Belum ada riwayat pemberian pakan
+                </td>
+              </tr>
+              {% endfor %}
             </tbody>
           </table>
         </div>
@@ -128,32 +183,35 @@
       </p>
     </div>
 
-    <!-- Modal Tambah/Edit -->
-    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div id="addModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
       <div class="bg-white p-8 rounded-2xl w-full max-w-md shadow-xl border-2 border-[#c8e1cc]">
         <div class="flex justify-between items-center mb-6">
-          <h2 id="modalTitle" class="text-2xl font-bold text-[#008000]">Form Pemberian Pakan</h2>
-          <button onclick="closeModal()" class="text-2xl text-gray-500 hover:text-gray-700 transition-colors">&times;</button>
+          <h2 class="text-2xl font-bold text-[#008000]">Form Tambah Pemberian Pakan</h2>
+          <button onclick="closeModal('addModal')" class="text-2xl text-gray-500 hover:text-gray-700 transition-colors">&times;</button>
         </div>
         
-        <form onsubmit="saveFeed(event)" class="space-y-4">
+        <form method="post" class="space-y-4">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="add">
+          <input type="hidden" name="id_hewan" value="{{ animal_id }}">
+          
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Pakan:</label>
-            <input type="text" id="jenisPakan" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition" required>
+            <input type="text" name="jenis_pakan" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition" required>
           </div>
           
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Pakan (gram):</label>
-            <input type="number" id="jumlahPakan" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition" required>
+            <input type="number" name="jumlah_pakan" min="1" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition" required>
           </div>
           
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Jadwal:</label>
-            <input type="datetime-local" id="jadwalPakan" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition" required>
+            <input type="datetime-local" name="jadwal" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition" required>
           </div>
           
           <div class="flex justify-end gap-3 pt-4">
-            <button type="button" onclick="closeModal()" class="btn-secondary px-6 py-2 bg-white text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50">
+            <button type="button" onclick="closeModal('addModal')" class="btn-secondary px-6 py-2 bg-white text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50">
               Batal
             </button>
             <button type="submit" class="btn-primary px-6 py-2 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] focus:outline-none focus:ring-2 focus:ring-[#008000] focus:ring-opacity-50">
@@ -164,167 +222,143 @@
       </div>
     </div>
 
-    <!-- Modal Delete -->
-    <div id="modal-delete" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
       <div class="bg-white p-8 rounded-2xl w-full max-w-md shadow-xl border-2 border-[#c8e1cc]">
-        <h3 class="text-2xl font-bold text-[#008000] mb-4">Hapus Data</h3>
-        <p class="text-gray-600 mb-6">Apakah anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.</p>
-        <div class="flex justify-end gap-3">
-          <button onclick="closeDeleteModal()" class="btn-secondary px-6 py-2 bg-white text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50">
-            Batal
-          </button>
-          <button onclick="confirmDelete()" class="btn-secondary px-6 py-2 bg-white text-red-600 font-medium rounded-lg border border-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">
-            Hapus
-          </button>
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold text-[#008000]">Edit Pemberian Pakan</h2>
+          <button onclick="closeModal('editModal')" class="text-2xl text-gray-500 hover:text-gray-700 transition-colors">&times;</button>
         </div>
+        
+        <form method="post" class="space-y-4">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="edit">
+          <input type="hidden" id="editIdHewan" name="id_hewan">
+          <input type="hidden" id="editOldJadwal" name="old_jadwal">
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Pakan Baru:</label>
+            <input type="text" id="editJenisPakan" name="jenis_pakan_baru" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition" required>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Pakan Baru (gram):</label>
+            <input type="number" id="editJumlahPakan" name="jumlah_pakan_baru" min="1" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition" required>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Jadwal Baru:</label>
+            <input type="datetime-local" id="editJadwal" name="jadwal_baru" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition" required>
+          </div>
+          
+          <div class="flex justify-end gap-3 pt-4">
+            <button type="button" onclick="closeModal('editModal')" class="btn-secondary px-6 py-2 bg-white text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50">
+              Batal
+            </button>
+            <button type="submit" class="btn-primary px-6 py-2 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] focus:outline-none focus:ring-2 focus:ring-[#008000] focus:ring-opacity-50">
+              Simpan
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 
-    <!-- Toast -->
-    <div id="toast" class="fixed bottom-4 right-4 bg-[#008000] text-white px-6 py-3 rounded-lg shadow-lg hidden toast-animation flex items-center">
-      <span id="toastMessage">Berhasil disimpan!</span>
+    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+      <div class="bg-white p-8 rounded-2xl w-full max-w-md shadow-xl border-2 border-[#c8e1cc]">
+        <h3 class="text-2xl font-bold text-[#008000] mb-4">Hapus Pemberian Pakan</h3>
+        <p class="text-gray-600 mb-6">Apakah anda yakin ingin menghapus data pemberian pakan ini?</p>
+        
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="delete">
+          <input type="hidden" id="deleteIdHewan" name="id_hewan">
+          <input type="hidden" id="deleteJadwal" name="jadwal">
+          
+          <div class="flex justify-end gap-3">
+            <button type="button" onclick="closeModal('deleteModal')" class="btn-secondary px-6 py-2 bg-white text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50">
+              Tidak
+            </button>
+            <button type="submit" class="btn-secondary px-6 py-2 bg-red-600 text-white font-medium rounded-lg border border-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">
+              Ya
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
+
+    <form id="markFedForm" method="post" style="display: none;">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="mark_fed">
+      <input type="hidden" id="markFedIdHewan" name="id_hewan">
+      <input type="hidden" id="markFedJadwal" name="jadwal">
+    </form>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="fixed bottom-4 right-4 {% if message.tags == 'error' %}bg-red-600{% else %}bg-[#008000]{% endif %} text-white px-6 py-3 rounded-lg shadow-lg toast-animation flex items-center">
+          <span>{{ message }}</span>
+        </div>
+      {% endfor %}
+    {% endif %}
   </div>
 {% endblock content %}
 
 {% block scripts %}
 <script>
-  let feeds = [
-    { jenis: 'Pisang', jumlah: 150, jadwal: '2025-03-07T14:00', status: 'Menunggu' },
-    { jenis: 'Daging Ayam', jumlah: 800, jadwal: '2025-03-05T08:30', status: 'Selesai' }
-  ];
-  let editIndex = null;
-
-  function renderTable() {
-    const table = document.getElementById('feedTable');
-    table.innerHTML = '';
-    feeds.forEach((feed, index) => {
-      const statusClass = feed.status === 'Selesai' 
-        ? 'bg-green-100 text-green-800' 
-        : 'bg-yellow-100 text-yellow-800';
-      const statusText = feed.status === 'Selesai' 
-        ? 'Selesai Diberikan' 
-        : 'Menunggu Pemberian';
-      
-      table.innerHTML += `
-        <tr>
-          <td class="px-6 py-4">${feed.jenis}</td>
-          <td class="px-6 py-4">${feed.jumlah}</td>
-          <td class="px-6 py-4">${formatDateTime(feed.jadwal)}</td>
-          <td class="px-6 py-4">
-            <span class="px-3 py-1 rounded-full text-xs font-medium ${statusClass}">${statusText}</span>
-          </td>
-          <td class="px-6 py-4">
-            <div class="flex flex-wrap justify-center gap-2">
-              ${feed.status !== 'Selesai' ? 
-                `<button onclick="markAsGiven(${index})" class="btn-primary px-3 py-1 bg-[#008000] text-white text-xs rounded-lg hover:bg-[#006400] focus:outline-none">
-                  Beri Pakan
-                </button>` : ''
-              }
-              <button onclick="openModal('edit', ${index})" class="btn-secondary px-3 py-1 bg-white text-[#008000] text-xs rounded-lg border border-[#008000] hover:bg-[#e0f0e3] focus:outline-none">
-                Edit
-              </button>
-              <button onclick="openDeleteModal(${index})" class="btn-secondary px-3 py-1 bg-white text-red-600 text-xs rounded-lg border border-red-600 hover:bg-red-50 focus:outline-none">
-                Hapus
-              </button>
-            </div>
-          </td>
-        </tr>
-      `;
-    });
-  }
-  
-  function formatDateTime(dateTimeStr) {
-    const dt = new Date(dateTimeStr);
-    const date = dt.toLocaleDateString('id-ID', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    });
-    const time = dt.toLocaleTimeString('id-ID', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-    return `${date} ${time}`;
-  }
-
-  function openModal(mode, index = null) {
-    document.getElementById('modal').classList.replace('hidden', 'flex');
+  function openAddModal() {
+    document.getElementById('addModal').classList.remove('hidden');
+    document.getElementById('addModal').classList.add('flex');
     document.body.classList.add('overflow-hidden');
-    document.getElementById('modalTitle').innerText = mode === 'add' 
-      ? 'Form Tambah Pemberian Pakan' 
-      : 'Edit Pemberian Pakan';
     
-    if (mode === 'edit' && index !== null) {
-      document.getElementById('jenisPakan').value = feeds[index].jenis;
-      document.getElementById('jumlahPakan').value = feeds[index].jumlah;
-      document.getElementById('jadwalPakan').value = feeds[index].jadwal;
-      editIndex = index;
-    } else {
-      document.getElementById('jenisPakan').value = '';
-      document.getElementById('jumlahPakan').value = '';
-      document.getElementById('jadwalPakan').value = '';
-      editIndex = null;
-    }
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.querySelector('input[name="jadwal"]').min = now.toISOString().slice(0, 16);
   }
 
-  function closeModal() {
-    document.getElementById('modal').classList.replace('flex', 'hidden');
+  function openEditModal(idHewan, jenisPakan, jumlahPakan, jadwal) {
+    document.getElementById('editModal').classList.remove('hidden');
+    document.getElementById('editModal').classList.add('flex');
+    document.body.classList.add('overflow-hidden');
+    
+    document.getElementById('editIdHewan').value = idHewan;
+    document.getElementById('editOldJadwal').value = jadwal;
+    document.getElementById('editJenisPakan').value = jenisPakan;
+    document.getElementById('editJumlahPakan').value = jumlahPakan;
+    
+    const jadwalDate = new Date(jadwal);
+    const localISOTime = new Date(jadwalDate.getTime() - jadwalDate.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    document.getElementById('editJadwal').value = localISOTime;
+  }
+
+  function openDeleteModal(idHewan, jadwal) {
+    document.getElementById('deleteModal').classList.remove('hidden');
+    document.getElementById('deleteModal').classList.add('flex');
+    document.body.classList.add('overflow-hidden');
+    
+    document.getElementById('deleteIdHewan').value = idHewan;
+    document.getElementById('deleteJadwal').value = jadwal;
+  }
+
+  function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('flex');
+    document.getElementById(modalId).classList.add('hidden');
     document.body.classList.remove('overflow-hidden');
   }
 
-  function saveFeed(event) {
-    event.preventDefault();
-    const jenis = document.getElementById('jenisPakan').value;
-    const jumlah = document.getElementById('jumlahPakan').value;
-    const jadwal = document.getElementById('jadwalPakan').value;
-    
-    if (editIndex !== null) {
-      feeds[editIndex] = { jenis, jumlah, jadwal, status: feeds[editIndex].status };
-    } else {
-      feeds.push({ jenis, jumlah, jadwal, status: 'Menunggu' });
+  function markAsFed(idHewan, jadwal) {
+    if (confirm('Apakah Anda yakin ingin menandai pemberian pakan ini sebagai selesai?')) {
+      document.getElementById('markFedIdHewan').value = idHewan;
+      document.getElementById('markFedJadwal').value = jadwal;
+      document.getElementById('markFedForm').submit();
     }
-    
-    closeModal();
-    renderTable();
-    showToast('Berhasil disimpan!');
   }
 
-  function openDeleteModal(index) {
-    document.getElementById('modal-delete').classList.replace('hidden', 'flex');
-    document.body.classList.add('overflow-hidden');
-    window.deleteIndex = index;
-  }
-
-  function closeDeleteModal() {
-    document.getElementById('modal-delete').classList.replace('flex', 'hidden');
-    document.body.classList.remove('overflow-hidden');
-  }
-
-  function confirmDelete() {
-    feeds.splice(window.deleteIndex, 1);
-    closeDeleteModal();
-    renderTable();
-    showToast('Berhasil dihapus!');
-  }
-
-  function markAsGiven(index) {
-    feeds[index].status = 'Selesai';
-    renderTable();
-    showToast('Pakan berhasil diberikan!');
-  }
-
-  function showToast(message) {
-    const toast = document.getElementById('toast');
-    document.getElementById('toastMessage').innerText = message;
-    
-    toast.classList.remove('hidden');
-    
-    setTimeout(() => {
-      toast.classList.add('hidden');
-    }, 2000);
-  }
-
-  renderTable();
+  document.addEventListener('DOMContentLoaded', function() {
+    const toasts = document.querySelectorAll('.toast-animation');
+    toasts.forEach(toast => {
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 3000);
+    });
+  });
 </script>
 {% endblock scripts %}

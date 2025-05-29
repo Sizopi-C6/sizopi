@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block meta %}
-<title>Rekam Medis Hewan - SIZOPI</title>
+<title>Rekam Medis {{ animal_name }} - SIZOPI</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
   
@@ -49,24 +49,70 @@
 
 {% block content %}
 {% include 'navbar/dokter.html' %}
+
+<!-- Messages Display -->
+{% if messages %}
+    <div class="fixed top-4 right-4 z-50 space-y-2">
+        {% for message in messages %}
+            <div class="px-6 py-4 rounded-lg shadow-lg max-w-md 
+                {% if message.tags == 'success' %}
+                    bg-green-100 border border-green-400 text-green-700
+                {% elif message.tags == 'error' %}
+                    bg-red-100 border border-red-400 text-red-700
+                {% elif message.tags == 'warning' %}
+                    bg-yellow-100 border border-yellow-400 text-yellow-700
+                {% elif message.tags == 'info' %}
+                    bg-blue-100 border border-blue-400 text-blue-700
+                {% else %}
+                    bg-gray-100 border border-gray-400 text-gray-700
+                {% endif %}
+                alert alert-dismissible fade show" 
+                role="alert">
+                
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        {% if message.tags == 'success' %}
+                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                        {% elif message.tags == 'error' %}
+                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                        {% endif %}
+                        <span class="font-medium">{{ message }}</span>
+                    </div>
+                    <button type="button" class="ml-4 text-sm font-semibold" onclick="this.parentElement.parentElement.remove()">
+                        ×
+                    </button>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
 <body class="bg-[#e8f4ea] min-h-screen font-[Poppins]">
   <main class="pt-24 pb-12 px-4">
     <div class="mb-3 max-w-6xl mx-auto px-4 flex justify-between items-center">
-      <div class="flex items-center">
-        <h1 class="text-2xl font-bold text-[#008000]">SIZOPI - C6</h1>
+      <div class="flex items-center space-x-4">
+        <a href="{% url 'daftar_hewan' %}" class="btn-secondary px-4 py-2 bg-white text-[#008000] font-semibold rounded-lg border border-[#008000] hover:bg-[#f0f8f0] focus:outline-none focus:ring-2 focus:ring-[#008000] focus:ring-opacity-50">
+          ← Kembali ke Daftar Hewan
+        </a>
+        <h1 class="text-2xl font-bold text-[#008000]">Rekam Medis: {{ animal_name }}</h1>
       </div>
       <button class="btn-primary px-6 py-2 bg-[#008000] text-white font-semibold rounded-lg hover:bg-[#006400] focus:outline-none focus:ring-2 focus:ring-[#008000] focus:ring-opacity-50" onclick="openModal('tambahModal')">
         + Tambah Rekam Medis
       </button>
     </div>
     
-    <div class="max-w-6xl mx-auto ">
+    <div class="max-w-6xl mx-auto">
       <div class="card p-8 rounded-2xl shadow-lg border border-[#c8e1cc]">
         <div class="pulse-effect mb-6">
           <h2 class="text-4xl font-extrabold tracking-tight text-center text-[#008000]">REKAM MEDIS HEWAN</h2>
-          <p class="text-center text-[#008000]/70 mt-2">Sistem Informasi Zoo Pintar</p>
+          <p class="text-center text-[#008000]/70 mt-2">{{ animal_name }} - Sistem Informasi Zoo Pintar</p>
         </div>
         
+        {% if medical_records %}
         <div class="overflow-x-auto mt-6 rounded-xl shadow">
           <table class="w-full text-sm bg-white rounded-xl overflow-hidden table-hover">
             <thead class="text-xs text-[#006400] uppercase bg-[#d2e7d6]">
@@ -80,28 +126,50 @@
                 <th class="px-6 py-4">Aksi</th>
               </tr>
             </thead>
-            <tbody id="rekamMedisTable" class="divide-y divide-[#e0f0e3]">
+            <tbody class="divide-y divide-[#e0f0e3]">
+              {% for record in medical_records %}
               <tr>
-                <td class="px-6 py-4">2025-04-01</td>
-                <td class="px-6 py-4">Dr. Siti Aminah</td>
-                <td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">Sakit</span></td>
-                <td class="px-6 py-4">Infeksi saluran pernapasan</td>
-                <td class="px-6 py-4">Antibiotik selama 7 hari</td>
-                <td class="px-6 py-4">Evaluasi kondisi, perbaikan ventilasi kandang.</td>
+                <td class="px-6 py-4">{{ record.tanggal_pemeriksaan|date:"Y-m-d" }}</td>
+                <td class="px-6 py-4">{{ record.nama_dokter }}</td>
+                <td class="px-6 py-4">
+                  <span class="px-3 py-1 rounded-full text-xs font-medium 
+                    {% if record.status_kesehatan == 'Sehat' %}bg-green-100 text-green-800
+                    {% elif record.status_kesehatan == 'Sakit' %}bg-red-100 text-red-800
+                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                    {{ record.status_kesehatan }}
+                  </span>
+                </td>
+                <td class="px-6 py-4">{{ record.diagnosis|default:"-" }}</td>
+                <td class="px-6 py-4">{{ record.pengobatan|default:"-" }}</td>
+                <td class="px-6 py-4">{{ record.catatan_tindak_lanjut|default:"-" }}</td>
                 <td class="px-6 py-4">
                   <div class="flex space-x-2">
-                    <button class="btn-primary px-3 py-1 bg-[#008000] text-white text-xs rounded-lg hover:bg-[#006400] focus:outline-none focus:ring-2 focus:ring-[#008000] focus:ring-opacity-50" onclick="openEditModal(this)">
+                    {% if record.status_kesehatan == 'Sakit' %}
+                    <button class="btn-primary px-3 py-1 bg-[#008000] text-white text-xs rounded-lg hover:bg-[#006400] focus:outline-none focus:ring-2 focus:ring-[#008000] focus:ring-opacity-50" 
+                            onclick="openEditModal('{{ record.tanggal_pemeriksaan|date:"Y-m-d" }}', '{{ record.diagnosis|default:"" }}', '{{ record.pengobatan|default:"" }}', '{{ record.catatan_tindak_lanjut|default:"" }}')">
                       Edit
                     </button>
-                    <button class="btn-secondary px-3 py-1 bg-white text-red-600 text-xs rounded-lg border border-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50" onclick="openDeleteModal(this)">
+                    {% endif %}
+                    <button class="btn-secondary px-3 py-1 bg-white text-red-600 text-xs rounded-lg border border-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50" 
+                            onclick="openDeleteModal('{{ record.tanggal_pemeriksaan|date:"Y-m-d" }}')">
                       Hapus
                     </button>
                   </div>
                 </td>
               </tr>
+              {% endfor %}
             </tbody>
           </table>
         </div>
+        {% else %}
+        <div class="text-center py-12">
+          <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <h3 class="text-lg font-medium text-gray-600 mb-2">Belum ada rekam medis</h3>
+          <p class="text-gray-500">Belum ada catatan medis untuk {{ animal_name }}.</p>
+        </div>
+        {% endif %}
       </div>
       
       <p class="text-center text-[#008000]/60 mt-6 text-sm">
@@ -117,20 +185,19 @@
         <h3 class="text-2xl font-bold text-[#008000]">Form Rekam Medis</h3>
         <button onclick="closeModal('tambahModal')" class="text-2xl text-gray-500 hover:text-gray-700 transition-colors">&times;</button>
       </div>
-      <form id="formTambah" class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pemeriksaan</label>
-          <input type="date" name="tanggal" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition" required>
-        </div>
+      <form method="POST" class="space-y-4">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="add">
         
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Nama Dokter</label>
-          <input type="text" name="nama_dokter" placeholder="Masukkan nama dokter" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition" required>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pemeriksaan</label>
+          <input type="date" name="tanggal_pemeriksaan" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition" required>
         </div>
         
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Status Kesehatan</label>
-          <select name="status" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition" onchange="toggleSakitFields(this.value)">
+          <select name="status_kesehatan" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition" onchange="toggleSakitFields(this.value)" required>
+            <option value="">-- Pilih Status --</option>
             <option value="Sehat">Sehat</option>
             <option value="Sakit">Sakit</option>
           </select>
@@ -139,7 +206,7 @@
         <div id="sakitFields" class="hidden space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Diagnosa</label>
-            <input type="text" name="diagnosa" placeholder="Masukkan diagnosa" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition">
+            <input type="text" name="diagnosis" placeholder="Masukkan diagnosa" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition">
           </div>
           
           <div>
@@ -167,20 +234,24 @@
         <h3 class="text-2xl font-bold text-[#008000]">Edit Rekam Medis</h3>
         <button onclick="closeModal('editModal')" class="text-2xl text-gray-500 hover:text-gray-700 transition-colors">&times;</button>
       </div>
-      <form id="formEdit" class="space-y-4">
+      <form method="POST" class="space-y-4">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="edit">
+        <input type="hidden" name="tanggal_pemeriksaan" id="editTanggal">
+        
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Diagnosa Baru</label>
-          <input type="text" name="diagnosa_baru" placeholder="Update diagnosa" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition" required>
+          <input type="text" name="diagnosis_baru" id="editDiagnosis" placeholder="Update diagnosa" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition" required>
         </div>
         
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Pengobatan Baru</label>
-          <input type="text" name="pengobatan_baru" placeholder="Update pengobatan" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition" required>
+          <input type="text" name="pengobatan_baru" id="editPengobatan" placeholder="Update pengobatan" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition" required>
         </div>
         
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Catatan Tindak Lanjut</label>
-          <textarea name="catatan" placeholder="Tambahkan catatan" rows="3" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition"></textarea>
+          <textarea name="catatan_tindak_lanjut" id="editCatatan" placeholder="Tambahkan catatan" rows="3" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition"></textarea>
         </div>
         
         <div class="flex justify-end gap-3 pt-4">
@@ -200,23 +271,25 @@
     <div class="bg-white p-8 rounded-2xl w-full max-w-md shadow-xl border-2 border-[#c8e1cc]">
       <h3 class="text-2xl font-bold text-[#008000] mb-4">Hapus Rekam Medis</h3>
       <p class="text-gray-600 mb-6">Apakah anda yakin ingin menghapus rekam medis ini? Tindakan ini tidak dapat dibatalkan.</p>
-      <div class="flex justify-end gap-3">
-        <button onclick="closeModal('hapusModal')" class="btn-secondary px-6 py-2 bg-white text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50">
-          Batal
-        </button>
-        <button onclick="deleteRecord()" class="btn-secondary px-6 py-2 bg-white text-red-600 font-medium rounded-lg border border-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">
-          Hapus
-        </button>
-      </div>
+      <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="delete">
+        <input type="hidden" name="tanggal_pemeriksaan" id="deleteTanggal">
+        
+        <div class="flex justify-end gap-3">
+          <button type="button" onclick="closeModal('hapusModal')" class="btn-secondary px-6 py-2 bg-white text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50">
+            Batal
+          </button>
+          <button type="submit" class="btn-secondary px-6 py-2 bg-white text-red-600 font-medium rounded-lg border border-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">
+            Hapus
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </body>
-{% endblock content %}
 
-{% block scripts %}
 <script>
-let rowToEdit, rowToDelete;
-
 function openModal(id) {
   document.getElementById(id).classList.remove('hidden');
   document.body.classList.add('overflow-hidden');
@@ -229,76 +302,45 @@ function closeModal(id) {
 
 function toggleSakitFields(value) {
   const fields = document.getElementById('sakitFields');
-  fields.classList.toggle('hidden', value !== 'Sakit');
-}
-
-document.getElementById('formTambah').onsubmit = function(e) {
-  e.preventDefault();
-  const form = e.target;
-  const table = document.getElementById('rekamMedisTable');
-  const newRow = table.insertRow();
+  const diagnosisInput = document.querySelector('input[name="diagnosis"]');
+  const pengobatanInput = document.querySelector('input[name="pengobatan"]');
   
-  const status = form.status.value;
-  const statusStyle = status === 'Sakit' 
-    ? '<span class="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">Sakit</span>'
-    : '<span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Sehat</span>';
-
-  newRow.innerHTML = `
-    <td class="px-6 py-4">${form.tanggal.value}</td>
-    <td class="px-6 py-4">${form.nama_dokter.value}</td>
-    <td class="px-6 py-4">${statusStyle}</td>
-    <td class="px-6 py-4">${form.diagnosa ? form.diagnosa.value : '-'}</td>
-    <td class="px-6 py-4">${form.pengobatan ? form.pengobatan.value : '-'}</td>
-    <td class="px-6 py-4">-</td>
-    <td class="px-6 py-4">
-      <div class="flex space-x-2">
-        <button class="btn-primary px-3 py-1 bg-[#008000] text-white text-xs rounded-lg hover:bg-[#006400] focus:outline-none focus:ring-2 focus:ring-[#008000] focus:ring-opacity-50" onclick="openEditModal(this)">
-          Edit
-        </button>
-        <button class="btn-secondary px-3 py-1 bg-white text-red-600 text-xs rounded-lg border border-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50" onclick="openDeleteModal(this)">
-          Hapus
-        </button>
-      </div>
-    </td>
-  `;
-
-  closeModal('tambahModal');
-  form.reset();
-  toggleSakitFields('Sehat');
+  if (value === 'Sakit') {
+    fields.classList.remove('hidden');
+    diagnosisInput.required = true;
+    pengobatanInput.required = true;
+  } else {
+    fields.classList.add('hidden');
+    diagnosisInput.required = false;
+    pengobatanInput.required = false;
+    diagnosisInput.value = '';
+    pengobatanInput.value = '';
+  }
 }
 
-function openEditModal(el) {
-  rowToEdit = el.closest('tr');
+function openEditModal(tanggal, diagnosis, pengobatan, catatan) {
+  document.getElementById('editTanggal').value = tanggal;
+  document.getElementById('editDiagnosis').value = diagnosis === '-' ? '' : diagnosis;
+  document.getElementById('editPengobatan').value = pengobatan === '-' ? '' : pengobatan;
+  document.getElementById('editCatatan').value = catatan === '-' ? '' : catatan;
   openModal('editModal');
-  
-  // Pre-fill the form with existing values
-  const form = document.getElementById('formEdit');
-  form.diagnosa_baru.value = rowToEdit.cells[3].textContent;
-  form.pengobatan_baru.value = rowToEdit.cells[4].textContent;
-  
-  const catatanText = rowToEdit.cells[5].textContent;
-  form.catatan.value = catatanText === '-' ? '' : catatanText;
 }
 
-document.getElementById('formEdit').onsubmit = function(e) {
-  e.preventDefault();
-  const form = e.target;
-
-  rowToEdit.cells[3].innerText = form.diagnosa_baru.value;
-  rowToEdit.cells[4].innerText = form.pengobatan_baru.value;
-  rowToEdit.cells[5].innerText = form.catatan.value || '-';
-
-  closeModal('editModal');
-}
-
-function openDeleteModal(el) {
-  rowToDelete = el.closest('tr');
+function openDeleteModal(tanggal) {
+  document.getElementById('deleteTanggal').value = tanggal;
   openModal('hapusModal');
 }
 
-function deleteRecord() {
-  rowToDelete.remove();
-  closeModal('hapusModal');
-}
+// Auto-hide messages after 5 seconds
+setTimeout(function() {
+    const messages = document.querySelectorAll('.alert');
+    messages.forEach(function(message) {
+        message.style.transition = 'opacity 0.5s';
+        message.style.opacity = '0';
+        setTimeout(function() {
+            message.remove();
+        }, 500);
+    });
+}, 5000);
 </script>
-{% endblock scripts %}
+{% endblock content %}

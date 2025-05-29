@@ -16,11 +16,6 @@ def validate_email(email):
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return re.match(pattern, email) is not None
 
-def validate_phone(phone):
-    pattern = r'^(08|62)[0-9]{8,12}$'
-    clean_phone = phone.replace('-', '').replace(' ', '').replace('+', '')
-    return re.match(pattern, clean_phone) is not None
-
 def validate_username(username):
     if len(username) < 3 or len(username) > 50:
         return False
@@ -166,10 +161,6 @@ def register_pengunjung(request):
             messages.error(request, 'Format email tidak valid!')
             return render(request, 'register_pengunjung.html')
         
-        if not validate_phone(no_telepon):
-            messages.error(request, 'Format nomor telepon tidak valid! Gunakan format 08xxxxxxxxxx atau 62xxxxxxxxxx')
-            return render(request, 'register_pengunjung.html')
-        
         if not validate_name(nama_depan):
             messages.error(request, 'Nama depan hanya boleh mengandung huruf dan spasi!')
             return render(request, 'register_pengunjung.html')
@@ -260,11 +251,7 @@ def register_dokter_hewan(request):
         if not validate_email(email):
             messages.error(request, 'Format email tidak valid!')
             return render(request, 'register_dokter_hewan.html')
-        
-        if not validate_phone(no_telepon):
-            messages.error(request, 'Format nomor telepon tidak valid! Gunakan format 08xxxxxxxxxx atau 62xxxxxxxxxx')
-            return render(request, 'register_dokter_hewan.html')
-        
+                
         if not validate_name(nama_depan):
             messages.error(request, 'Nama depan hanya boleh mengandung huruf dan spasi!')
             return render(request, 'register_dokter_hewan.html')
@@ -378,11 +365,7 @@ def register_staff(request):
         if not validate_email(email):
             messages.error(request, 'Format email tidak valid!')
             return render(request, 'register_staff.html')
-        
-        if not validate_phone(no_telepon):
-            messages.error(request, 'Format nomor telepon tidak valid! Gunakan format 08xxxxxxxxxx atau 62xxxxxxxxxx')
-            return render(request, 'register_staff.html')
-        
+                
         if not validate_name(nama_depan):
             messages.error(request, 'Nama depan hanya boleh mengandung huruf dan spasi!')
             return render(request, 'register_staff.html')

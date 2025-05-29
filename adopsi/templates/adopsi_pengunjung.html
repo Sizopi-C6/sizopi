@@ -1,0 +1,359 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+    <title>Program Adopsi Satwa - Pengunjung</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        
+        .card-gradient {
+            background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
+            border: 1px solid #c8e1cc;
+        }
+        
+        .animal-card {
+            transition: all 0.3s ease;
+        }
+        
+        .animal-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 100, 0, 0.15);
+        }
+    </style>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar/pengunjung_sebagai_adopter.html' %}
+{% include 'message_display.html' %}
+
+<div class="bg-[#e8f4ea] min-h-screen flex flex-col items-center font-[Poppins] p-8">
+    <div class="w-full max-w-6xl">
+        <!-- Hero Section -->
+        <div class="card-gradient rounded-2xl shadow-lg p-8 mb-8 text-center">
+            <h1 class="text-4xl font-bold text-[#008000] mb-3">PROGRAM ADOPSI SATWA</h1>
+            <p class="text-xl text-[#008000]/80 mb-6">Bantu mereka dengan cinta dan dukungan Anda</p>
+            <div class="mt-4 text-[#008000]/80">
+                <p>Terima kasih telah mewujudkan kepedulian Anda terhadap satwa!</p>
+                <p>Dapatkan sertifikat digital dan laporan berkala tentang kondisi hewan yang Anda dukung.</p>
+            </div>
+        </div>
+
+        <!-- Debug Info -->
+        {% if user %}
+        <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4" style="display: none;" id="debugInfo">
+            <strong>Debug Info:</strong>
+            <p>Username: {{ username }}</p>
+            <p>User Role: {{ user.role }}</p>
+            <p>Animals Count: {{ adopted_animals|length }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Hewan yang Diadopsi -->
+        <section class="mt-8">
+            <h2 class="text-2xl font-bold text-[#008000] mb-6 text-center">Hewan yang Sedang Anda Adopsi</h2>
+            {% if adopted_animals %}
+            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {% for animal in adopted_animals %}
+                <div class="animal-card bg-white rounded-2xl shadow-md overflow-hidden">
+                    <img src="{{ animal.url_foto }}" alt="{{ animal.nama_hewan }}" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold text-[#008000] mb-2">{{ animal.nama_hewan }}</h3>
+                        <div class="space-y-2 mb-4">
+                            <p class="text-sm text-[#008000]/80">
+                                <span class="font-medium">Jenis:</span> {{ animal.species }}
+                            </p>
+                            <p class="text-sm text-[#008000]/80">
+                                <span class="font-medium">Kondisi:</span> 
+                                <span class="{% if animal.status_kesehatan == 'Sehat' %}text-green-600{% elif animal.status_kesehatan == 'Sakit' %}text-red-600{% else %}text-yellow-600{% endif %}">
+                                    {{ animal.status_kesehatan }}
+                                </span>
+                            </p>
+                            <p class="text-sm text-[#008000]/80">
+                                <span class="font-medium">Status Pembayaran:</span> 
+                                <span class="{% if animal.status_pembayaran == 'Lunas' %}text-green-600{% else %}text-red-600{% endif %}">
+                                    {{ animal.status_pembayaran }}
+                                </span>
+                            </p>
+                        </div>
+                        <button 
+                            data-info-modal 
+                            data-animal-id="{{ animal.id }}"
+                            data-animal-name="{{ animal.nama_hewan }}"
+                            data-animal-species="{{ animal.species }}"
+                            data-animal-habitat="{{ animal.nama_habitat }}"
+                            data-animal-photo="{{ animal.url_foto }}"
+                            data-tgl-mulai="{{ animal.tgl_mulai_adopsi }}"
+                            data-tgl-berhenti="{{ animal.tgl_berhenti_adopsi }}"
+                            class="w-full py-2 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors"
+                            onclick="console.log('Button clicked for animal:', '{{ animal.id }}');"
+                        >
+                            Lihat Detail
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-12">
+                <div class="text-6xl text-[#008000]/20 mb-4">🐾</div>
+                <h3 class="text-xl text-[#008000]/80 mb-2">Belum ada hewan yang Anda adopsi</h3>
+                <p class="text-[#008000]/60">Mulai program adopsi simbolis untuk membantu satwa yang membutuhkan</p>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Modal Info -->
+        <div id="infoModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
+            <div class="card-gradient rounded-2xl shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-2xl font-bold text-[#008000]">Informasi Hewan Adopsi</h3>
+                        <button onclick="toggleModal('infoModal')" class="text-[#008000] hover:text-[#006400] text-2xl">
+                            ✕
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="relative h-64 w-full rounded-lg overflow-hidden">
+                            <img id="modalAnimalPhoto" src="" alt="Hewan" class="w-full h-full object-cover">
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-[#008000]/80">Nama Hewan</label>
+                                <p id="modalAnimalName" class="text-lg font-semibold text-[#008000]">-</p>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-[#008000]/80">Jenis Hewan</label>
+                                <p id="modalAnimalSpecies" class="text-[#008000]">-</p>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-[#008000]/80">Habitat</label>
+                                <p id="modalAnimalHabitat" class="text-[#008000]">-</p>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-[#008000]/80">Mulai Adopsi</label>
+                                    <p id="modalTglMulai" class="text-[#008000]">-</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-[#008000]/80">Akhir Adopsi</label>
+                                    <p id="modalTglBerhenti" class="text-[#008000]">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tombol -->
+                    <div class="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <button 
+                            id="btnLaporan"
+                            onclick="redirectToLaporan()"
+                            class="py-2 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors text-center"
+                        >
+                            Pantau Kondisi Hewan
+                        </button>
+
+                        <button 
+                            id="btnSertifikat"
+                            onclick="redirectToSertifikat()"
+                            class="py-2 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors text-center"
+                        >
+                            Lihat Sertifikat Adopsi
+                        </button>
+
+                        <button 
+                            data-berhenti 
+                            class="py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                        >
+                            Berhenti Adopsi
+                        </button>
+
+                        <button
+                            id="btnPerpanjang"
+                            onclick="redirectToPerpanjang()"
+                            class="py-2 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors text-center"
+                        >
+                            Perpanjang Periode
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Berhenti -->
+        <div id="berhentiModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
+            <div class="card-gradient rounded-2xl shadow-lg w-full max-w-xl">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-semibold text-[#008000]">Konfirmasi Berhenti Adopsi</h3>
+                        <button onclick="toggleModal('berhentiModal')" class="text-[#008000] hover:text-[#006400] text-xl">
+                            ✕
+                        </button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <p class="text-[#008000]">Apakah Anda yakin ingin berhenti mengadopsi satwa ini?</p>
+                        <p class="text-sm text-[#008000]/70">Setelah berhenti, Anda tidak akan mendapatkan laporan kondisi hewan dan sertifikat adopsi tidak berlaku lagi.</p>
+                    </div>
+
+                    <form id="formBerhentiAdopsi" method="POST" action="{% url 'adopsi:berhenti_adopsi' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="animal_id" id="berhentiAnimalId">
+                        
+                        <div class="mt-6 flex justify-end space-x-4">
+                            <button 
+                                type="submit"
+                                class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                            >
+                                Iya, Berhenti
+                            </button>
+                            <button 
+                                type="button"
+                                onclick="toggleModal('berhentiModal')" 
+                                class="px-6 py-2 bg-gray-100 text-[#008000] rounded-lg hover:bg-gray-200"
+                            >
+                                Batal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Debug Toggle -->
+        <button onclick="toggleDebug()" class="fixed bottom-4 right-4 bg-blue-500 text-white px-3 py-1 rounded text-xs">
+            Debug
+        </button>
+
+        <script>
+            let currentAnimalId = null;
+
+            function toggleDebug() {
+                const debugInfo = document.getElementById('debugInfo');
+                if (debugInfo.style.display === 'none') {
+                    debugInfo.style.display = 'block';
+                } else {
+                    debugInfo.style.display = 'none';
+                }
+            }
+
+            function toggleModal(modalId) {
+                const modal = document.getElementById(modalId);
+                modal.classList.toggle('hidden');
+                modal.classList.toggle('flex');
+            }
+
+            function redirectToLaporan() {
+                if (currentAnimalId) {
+                    const url = "{% url 'adopsi:laporan_kondisi_hewan' %}?animal_id=" + encodeURIComponent(currentAnimalId);
+                    console.log('Redirecting to laporan:', url);
+                    window.location.href = url;
+                } else {
+                    console.error('No animal ID selected');
+                    alert('Error: Tidak ada hewan yang dipilih');
+                }
+            }
+
+            function redirectToSertifikat() {
+                if (currentAnimalId) {
+                    const url = "{% url 'adopsi:sertifikat_adopsi' %}?animal_id=" + encodeURIComponent(currentAnimalId);
+                    console.log('Redirecting to sertifikat:', url);
+                    window.location.href = url;
+                } else {
+                    console.error('No animal ID selected');
+                    alert('Error: Tidak ada hewan yang dipilih');
+                }
+            }
+
+            function redirectToPerpanjang() {
+                if (currentAnimalId) {
+                    const url = "{% url 'adopsi:perpanjang_periode' %}?animal_id=" + encodeURIComponent(currentAnimalId);
+                    console.log('Redirecting to perpanjang:', url);
+                    window.location.href = url;
+                } else {
+                    console.error('No animal ID selected');
+                    alert('Error: Tidak ada hewan yang dipilih');
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('DOM loaded, setting up event listeners');
+                
+                document.querySelectorAll('[data-info-modal]').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        console.log('Detail button clicked');
+                        
+                        const animalId = e.target.getAttribute('data-animal-id');
+                        const animalName = e.target.getAttribute('data-animal-name');
+                        const animalSpecies = e.target.getAttribute('data-animal-species');
+                        const animalHabitat = e.target.getAttribute('data-animal-habitat');
+                        const animalPhoto = e.target.getAttribute('data-animal-photo');
+                        const tglMulai = e.target.getAttribute('data-tgl-mulai');
+                        const tglBerhenti = e.target.getAttribute('data-tgl-berhenti');
+                        
+                        console.log('Animal data:', {
+                            id: animalId,
+                            name: animalName,
+                            species: animalSpecies,
+                            habitat: animalHabitat,
+                            photo: animalPhoto,
+                            tglMulai: tglMulai,
+                            tglBerhenti: tglBerhenti
+                        });
+                        
+                        currentAnimalId = animalId;
+                        
+                        document.getElementById('modalAnimalPhoto').src = animalPhoto;
+                        document.getElementById('modalAnimalName').textContent = animalName;
+                        document.getElementById('modalAnimalSpecies').textContent = animalSpecies;
+                        document.getElementById('modalAnimalHabitat').textContent = animalHabitat || '-';
+                        document.getElementById('modalTglMulai').textContent = formatDate(tglMulai);
+                        document.getElementById('modalTglBerhenti').textContent = formatDate(tglBerhenti);
+                        
+                        console.log('Modal updated, showing modal');
+                        toggleModal('infoModal');
+                    });
+                });
+
+                document.querySelectorAll('[data-berhenti]').forEach(button => {
+                    button.addEventListener('click', () => {
+                        console.log('Berhenti button clicked for animal:', currentAnimalId);
+                        document.getElementById('berhentiAnimalId').value = currentAnimalId;
+                        toggleModal('infoModal');
+                        toggleModal('berhentiModal');
+                    });
+                });
+            });
+
+            function formatDate(dateString) {
+                if (!dateString) return '-';
+                
+                try {
+                    const date = new Date(dateString);
+                    const options = { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                    };
+                    return date.toLocaleDateString('id-ID', options);
+                } catch (e) {
+                    console.error('Error formatting date:', e);
+                    return dateString;
+                }
+            }
+
+            console.log('Script loaded successfully');
+            console.log('Available animals:', {{ adopted_animals|length }});
+        </script>
+
+        <!-- Footer -->
+        <footer class="mt-8 text-center text-sm text-[#008000]/60">
+            © 2025 SIZOPI. All rights reserved.
+        </footer>
+    </div>
+</div>
+{% endblock %}

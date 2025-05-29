@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+  <title>Form Tambah Wahana - SIZOPI</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Flatpickr Timepicker -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  
+  <!-- Select2 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #e8f4ea;
+    }
+    
+    .btn-primary {
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 128, 0, 0.25);
+    }
+    
+    .card {
+      background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      border: 1px solid #c8e1cc;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid #b8d8be;
+      background-color: white;
+      transition: all 0.3s ease;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 128, 0, 0.2);
+      border-color: #008000;
+    }
+    
+    .timepicker {
+      appearance: none;
+    }
+    
+    .add-button {
+      background-color: #008000;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.875rem;
+      border: none;
+    }
+    
+    .add-button:hover {
+      background-color: #006400;
+      transform: translateY(-2px);
+    }
+    
+    .remove-button {
+      color: #dc2626;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
+    }
+    
+    .remove-button:hover {
+      color: #b91c1c;
+      text-decoration: underline;
+    }
+    
+    .peraturan-item {
+      margin-bottom: 1rem;
+    }
+    
+    .peraturan-container {
+      margin-bottom: 1rem;
+    }
+    
+    /* Select2 customization */
+    .select2-container--default .select2-selection--multiple {
+      border: 1px solid #b8d8be !important;
+      border-radius: 8px !important;
+      padding: 0.25rem !important;
+      min-height: 2.5rem !important;
+      background-color: white !important;
+    }
+    
+    .select2-container--default .select2-selection--multiple:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 128, 0, 0.2);
+      border-color: #008000 !important;
+    }
+    
+    .select2-container--default.select2-container--focus .select2-selection--multiple {
+      border-color: #008000 !important;
+    }
+    
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+      background-color: #e0f0e3 !important;
+      border: 1px solid #b8d8be !important;
+      color: #006400 !important;
+    }
+  </style>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar/staff_administrator.html' %}
+<div class="min-h-screen p-8 font-[Poppins] flex items-center justify-center">
+  <div class="w-full max-w-2xl">
+    <div class="card p-8 rounded-2xl shadow-lg">
+      <h2 class="text-3xl font-bold text-[#008000] mb-6 text-center">Form Tambah Wahana</h2>
+
+      <form method="POST" action="{% url 'tambah_wahana' %}" id="wahanaForm" class="space-y-6">
+        {% csrf_token %}
+        
+        <div class="grid grid-cols-1 gap-6">
+          <!-- Nama Wahana -->
+          <div>
+            <label for="namaWahana" class="block text-sm font-medium text-[#006400] mb-2">Nama Wahana</label>
+            <input type="text" id="namaWahana" name="namaWahana" required
+                   placeholder="Masukkan nama wahana"
+                   class="form-input">
+          </div>
+          
+          <!-- Kapasitas -->
+          <div>
+            <label for="kapasitas" class="block text-sm font-medium text-[#006400] mb-2">
+              Kapasitas Maksimum
+            </label>
+            <div class="flex items-center gap-2">
+              <input type="number" id="kapasitas" name="kapasitas" min="1" required
+                    placeholder="Masukkan kapasitas maksimum"
+                    class="form-input w-full">
+              <span class="text-sm text-[#006400]">orang</span>
+            </div>
+          </div>
+
+          <!-- Jadwal -->
+          <div>
+            <label for="jadwal" class="block text-sm font-medium text-[#006400] mb-2">Jadwal</label>
+            <input type="text" id="jadwal" name="jadwal" required
+                   class="form-input timepicker"
+                   placeholder="Pilih waktu">
+          </div>
+
+          <!-- Peraturan -->
+          <div>
+            <label class="block text-sm font-medium text-[#006400] mb-2">Peraturan</label>
+            <div id="peraturan-container" class="peraturan-container">
+              <div class="peraturan-item">
+                <label for="peraturan_1" class="block text-sm text-[#006400] mb-1">Peraturan 1</label>
+                <div class="flex gap-2">
+                  <input type="text" id="peraturan_1" name="peraturan_1" required
+                         class="form-input flex-1"
+                         placeholder="Masukkan peraturan 1">
+                </div>
+              </div>
+            </div>
+            <div class="flex justify-end">
+              <button type="button" id="add-peraturan" class="add-button">+ Tambah Peraturan</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-center gap-4 mt-8">
+          <button type="submit" 
+            class="btn-primary px-6 py-3 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] transition duration-200 shadow-md">
+            Simpan
+          </button>
+          <button type="button" 
+            onclick="window.location.href='{% url 'data_wahana' %}'"
+            class="btn-primary px-6 py-3 bg-white text-[#dc2626] border border-[#dc2626] font-medium rounded-lg hover:bg-[#fef2f2] transition duration-200 shadow-md">
+            Batal
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Footer -->
+<footer class="mt-8 text-center text-sm text-[#008000]/60">
+  © 2025 SIZOPI. All rights reserved.
+</footer>
+<!-- JavaScript Libraries -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+  $(document).ready(function() {
+    // Initialize Select2
+    $('#hewan').select2({
+      placeholder: "Pilih hewan",
+      allowClear: true,
+      width: '100%'
+    });
+    
+    // Initialize Timepicker
+    flatpickr(".timepicker", {
+      enableTime: true,
+      noCalendar: true,
+      dateFormat: "H:i",
+      time_24hr: true,
+      minuteIncrement: 5
+    });
+  });
+  
+  function updatePeraturanLabels() {
+    const items = document.querySelectorAll('#peraturan-container .peraturan-item');
+    items.forEach((item, index) => {
+      const number = index + 1;
+      const label = item.querySelector('label');
+      const input = item.querySelector('input');
+  
+      label.textContent = `Peraturan ${number}`;
+      label.setAttribute('for', `peraturan_${number}`);
+      input.setAttribute('id', `peraturan_${number}`);
+      input.setAttribute('name', `peraturan_${number}`);
+      input.setAttribute('placeholder', `Masukkan peraturan ${number}`);
+    });
+  }
+  
+  function attachRemoveHandlers() {
+    document.querySelectorAll('.remove-peraturan').forEach(button => {
+      button.onclick = function () {
+        button.closest('.peraturan-item').remove();
+        updatePeraturanLabels();
+      };
+    });
+  }
+  
+  document.getElementById('add-peraturan').addEventListener('click', function() {
+    const peraturanContainer = document.getElementById('peraturan-container');
+    const newIndex = peraturanContainer.children.length + 1;
+    
+    const newPeraturanDiv = document.createElement('div');
+    newPeraturanDiv.classList.add('peraturan-item');
+    
+    const label = document.createElement('label');
+    label.classList.add('block', 'text-sm', 'text-[#006400]', 'mb-1');
+    
+    const inputWrapper = document.createElement('div');
+    inputWrapper.classList.add('flex', 'gap-2');
+    
+    const input = document.createElement('input');
+    input.setAttribute('type', 'text');
+    input.required = true;
+    input.classList.add('form-input', 'flex-1');
+    
+    const removeButton = document.createElement('button');
+    removeButton.type = 'button';
+    removeButton.classList.add('remove-button', 'remove-peraturan');
+    removeButton.textContent = 'Hapus';
+    
+    inputWrapper.appendChild(input);
+    inputWrapper.appendChild(removeButton);
+    
+    newPeraturanDiv.appendChild(label);
+    newPeraturanDiv.appendChild(inputWrapper);
+    peraturanContainer.appendChild(newPeraturanDiv);
+    
+    attachRemoveHandlers();
+    updatePeraturanLabels();
+  });
+  
+  // Initialize for the first rule
+  attachRemoveHandlers();
+</script>
+{% endblock %}

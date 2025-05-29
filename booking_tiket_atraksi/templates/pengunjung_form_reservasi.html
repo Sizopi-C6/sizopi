@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+  <title>Form Reservasi Tiket - SIZOPI</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Flatpickr Timepicker -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #e8f4ea;
+    }
+    
+    .btn-primary {
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 128, 0, 0.25);
+    }
+    
+    .card {
+      background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      border: 1px solid #c8e1cc;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid #b8d8be;
+      background-color: white;
+      transition: all 0.3s ease;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 128, 0, 0.2);
+      border-color: #008000;
+    }
+    
+    .timepicker {
+      appearance: none;
+    }
+    
+    .readonly-input {
+      background-color: #f0f7f1;
+      color: #4a6b52;
+    }
+  </style>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar/pengunjung.html' %}
+<div class="min-h-screen p-8 font-[Poppins] flex items-center justify-center">
+  <div class="w-full max-w-2xl">
+    <div class="card p-8 rounded-2xl shadow-lg">
+      <h2 class="text-3xl font-bold text-[#008000] mb-6 text-center">Form Reservasi Tiket</h2>
+
+      <form method="POST" action="{% url 'pengunjung_reservasi_tiket' %}" id="reservasiForm" class="space-y-6">
+        {% csrf_token %}
+        
+        <div class="grid grid-cols-1 gap-6">
+          <!-- Nama Atraksi -->
+          <div>
+            <label for="atraksi" class="block text-sm font-medium text-[#006400] mb-2">Nama Atraksi</label>
+            <select id="atraksi" name="atraksi" required class="form-input">
+              <option value="">-- Pilih Atraksi --</option>
+              {% for atraksi in atraksi_list %}
+                <option value="{{ atraksi.nama_atraksi }}">{{ atraksi.nama_atraksi }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          
+          <!-- Lokasi -->
+          <div>
+            <label for="lokasi" class="block text-sm font-medium text-[#006400] mb-2">Lokasi</label>
+            <input type="text" id="lokasi" name="lokasi" readonly class="form-input readonly-input">
+          </div>
+          
+          <!-- Jam -->
+          <div>
+            <label for="jam" class="block text-sm font-medium text-[#006400] mb-2">Jam</label>
+            <input type="text" id="jam" name="jam" readonly class="form-input readonly-input">
+          </div>
+
+          <!-- Tanggal -->
+          <div>
+            <label for="tanggal" class="block text-sm font-medium text-[#006400] mb-2">Tanggal</label>
+            <input type="text" id="tanggal" name="tanggal" required class="form-input timepicker" placeholder="Pilih tanggal">
+          </div>
+
+          <!-- Jumlah Tiket -->
+          <div>
+            <label for="jumlah-tiket" class="block text-sm font-medium text-[#006400] mb-2">Jumlah Tiket</label>
+            <input type="number" id="jumlah-tiket" name="jumlah-tiket" min="1" required placeholder="Masukkan jumlah tiket" class="form-input">
+          </div>
+
+          <div class="flex justify-center gap-4 mt-8">
+            <button type="submit" class="btn-primary px-6 py-3 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] transition duration-200 shadow-md">
+              Simpan
+            </button>
+            <button type="button" class="btn-primary px-6 py-3 bg-white text-[#dc2626] border border-[#dc2626] font-medium rounded-lg hover:bg-[#fef2f2] transition duration-200 shadow-md">
+              Batal
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Footer -->
+<footer class="mt-8 text-center text-sm text-[#008000]/60">
+  © 2025 SIZOPI. All rights reserved.
+</footer>
+
+<!-- JavaScript Libraries -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+  $(document).ready(function() {
+    // Initialize Datepicker
+    flatpickr(".timepicker", {
+      dateFormat: "d/m/Y",
+      minDate: "today",
+    });
+
+    const atraksiData = {
+      {% for atraksi in atraksi_list %}
+        "{{ atraksi.nama_atraksi }}": {
+          lokasi: "{{ atraksi.lokasi }}",
+          jam: "{{ atraksi.jam }}",
+        },
+      {% endfor %}
+    };
+
+    $('#atraksi').on('change', function() {
+      const selectedAtraksi = $(this).val();
+      if (atraksiData[selectedAtraksi]) {
+        $('#lokasi').val(atraksiData[selectedAtraksi].lokasi);
+        $('#jam').val(atraksiData[selectedAtraksi].jam);
+      } else {
+        $('#lokasi').val('');
+        $('#jam').val('');
+      }
+    });
+  });
+</script>
+{% endblock %}

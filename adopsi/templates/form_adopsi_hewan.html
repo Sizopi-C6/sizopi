@@ -1,0 +1,881 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+    <title>Form Adopsi Hewan</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        
+        .btn-primary {
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 128, 0, 0.25);
+        }
+        
+        .card-gradient {
+            background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
+            border: 1px solid #c8e1cc;
+        }
+        
+        .form-control:focus {
+            border-color: #008000;
+            box-shadow: 0 0 0 0.2rem rgba(0, 128, 0, 0.25);
+        }
+        
+        .error-border {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+        }
+        
+        /* Animal Preview Styles */
+        .animal-image-container {
+            position: relative;
+            width: 100%;
+            height: 160px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .animal-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.3s ease;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            opacity: 0;
+            border-radius: 12px;
+        }
+        
+        .animal-image.loaded {
+            opacity: 1;
+        }
+        
+        .animal-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            color: #64748b;
+            z-index: 1;
+            border-radius: 12px;
+        }
+        
+        .animal-emoji {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .animal-name-placeholder {
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-align: center;
+            opacity: 0.8;
+        }
+        
+        .preview-container {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 2px solid #e0f2fe;
+            transition: all 0.3s ease;
+        }
+        
+        .preview-container.visible {
+            transform: scale(1.02);
+            border-color: #4ade80;
+        }
+        
+        .preview-info {
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+        
+        .preview-species {
+            font-size: 0.75rem;
+            color: #6b7280;
+            font-style: italic;
+        }
+        
+        .readonly-field {
+            background-color: #f8fafc !important;
+            cursor: not-allowed;
+            border-color: #d1d5db !important;
+        }
+        
+        .info-message {
+            font-size: 0.875rem;
+            color: #2563eb;
+            margin-top: 0.25rem;
+            font-style: italic;
+            display: flex;
+            align-items: center;
+        }
+        
+        .info-message i {
+            margin-right: 0.25rem;
+        }
+        
+        .lock-message {
+            font-size: 0.875rem;
+            color: #059669;
+            margin-top: 0.5rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            background-color: #d1fae5;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .lock-message i {
+            margin-right: 0.25rem;
+        }
+        
+        input[type="radio"]:disabled + span {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .adopter-type-section {
+            transition: all 0.3s ease;
+        }
+        
+        .adopter-type-section.locked {
+            background-color: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+
+        /* Validation Notice Styles */
+        .period-notice {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar/staff_administrator.html' %}
+
+<div class="bg-[#e8f4ea] min-h-screen flex flex-col items-center font-[Poppins] p-8">
+    <div class="w-full max-w-4xl">
+        <!-- Header Section -->
+        <div class="card-gradient rounded-2xl shadow-lg p-8 mb-8 text-center">
+            <h1 class="text-4xl font-bold text-[#008000] mb-3">FORM ADOPSI SATWA</h1>
+            <p class="text-[#008000]/70">Daftarkan adopter untuk hewan tertentu</p>
+        </div>
+
+        <!-- Step 1: Pendataan Adopter -->
+        <div id="step1" class="card-gradient rounded-2xl shadow-lg p-8 mb-8">
+            {% csrf_token %}
+            <h3 class="text-2xl font-semibold text-[#008000] mb-6 text-center">Pendataan Adopter</h3>
+            
+            <div class="mb-6">
+                <label for="adopter_username" class="block text-sm font-medium text-[#008000]/80 mb-2">Username calon adopter:</label>
+                <input type="text" id="adopter_username" 
+                    class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]"
+                    placeholder="Masukkan username pengunjung">
+            </div>
+            
+            <div class="mb-6 adopter-type-section">
+                <label class="block text-sm font-medium text-[#008000]/80 mb-2">Calon Adopter akan mengadopsi satwa sebagai</label>
+                <div class="flex space-x-6">
+                    <label class="flex items-center cursor-pointer">
+                        <input type="radio" name="adopter_type" value="individu" checked 
+                            class="text-[#008000] focus:ring-[#008000] h-5 w-5">
+                        <span class="ml-2 text-lg">Individu</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer">
+                        <input type="radio" name="adopter_type" value="organisasi" 
+                            class="text-[#008000] focus:ring-[#008000] h-5 w-5">
+                        <span class="ml-2 text-lg">Organisasi</span>
+                    </label>
+                </div>
+            </div>
+
+            <div id="step1ErrorMessage" class="mb-4 text-red-500 text-sm hidden"></div>
+            
+            <div class="flex justify-center space-x-4">
+                <a href="{% url 'adopsi:adopsi_admin' %}" 
+                    class="px-6 py-3 bg-gray-100 text-[#008000] rounded-lg hover:bg-gray-200 transition-colors">
+                    Batal
+                </a>
+                <button type="button" onclick="verifyAccount()" 
+                    class="px-6 py-3 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors">
+                    Verifikasi Akun
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 2: Form Adopsi Satwa (Hidden initially) -->
+        <div id="step2" class="card-gradient rounded-2xl shadow-lg p-8 mb-8 hidden">
+            <form id="adopsiForm" method="POST" action="{% url 'adopsi:submit_adoption_form' %}">
+                {% csrf_token %}
+                
+                <h3 class="text-2xl font-semibold text-[#008000] mb-6 text-center">FORM ADOPSI SATWA</h3>
+                
+                <!-- Hidden Fields -->
+                <input type="hidden" name="adopter_username" id="form_adopter_username">
+                <input type="hidden" name="tipe_adopter" id="form_tipe_adopter">
+                {% if selected_animal %}
+                <input type="hidden" name="animal_id" value="{{ selected_animal.id }}">
+                {% endif %}
+                
+                <!-- Animal Preview (if selected) -->
+                {% if selected_animal %}
+                <div class="mb-6">
+                    <h4 class="text-lg font-medium text-[#008000] mb-3 text-center">Hewan yang Akan Diadopsi</h4>
+                    <div class="preview-container mx-auto max-w-xs">
+                        <div class="animal-image-container">
+                            <div class="animal-placeholder">
+                                <div class="animal-emoji">🐾</div>
+                                <div class="animal-name-placeholder">{{ selected_animal.name }}</div>
+                            </div>
+                            <img src="{{ selected_animal.url_foto }}" alt="{{ selected_animal.name }}" 
+                                 class="animal-image" onload="handleImageLoad(this)" onerror="handleImageError(this)">
+                        </div>
+                        <div class="preview-info">
+                            <div class="font-medium text-[#008000]">{{ selected_animal.name }}</div>
+                            <div class="preview-species">{{ selected_animal.species }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Adopter Info Display -->
+                <div class="mb-6">
+                    <h4 class="font-medium text-[#008000] mb-4">Pihak di bawah ini,</h4>
+                    
+                    <!-- Nama -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-[#008000]/80 mb-2">Nama:</label>
+                        <input type="text" id="display_nama" readonly
+                            class="w-full p-3 bg-gray-100 rounded-lg border border-[#c8e1cc] readonly-field">
+                    </div>
+                    
+                    <!-- Field khusus untuk Individu - NIK -->
+                    <div id="individual_section" class="hidden">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-[#008000]/80 mb-2">NIK:</label>
+                            <input type="text" id="nik" name="nik" maxlength="16"
+                                class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]"
+                                placeholder="Masukkan NIK 16 digit">
+                        </div>
+                    </div>
+                    
+                    <!-- Field khusus untuk Organisasi -->
+                    <div id="organization_section" class="hidden">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-[#008000]/80 mb-2">NPP:</label>
+                            <input type="text" id="npp" name="npp" maxlength="8"
+                                class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]"
+                                placeholder="Masukkan NPP 8 digit">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-[#008000]/80 mb-2">Nama Organisasi:</label>
+                            <input type="text" id="nama_organisasi" name="nama_organisasi"
+                                class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]"
+                                placeholder="Masukkan nama organisasi">
+                        </div>
+                    </div>
+                    
+                    <!-- Alamat -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-[#008000]/80 mb-2">Alamat:</label>
+                        <textarea id="display_alamat" readonly rows="3"
+                            class="w-full p-3 bg-gray-100 rounded-lg border border-[#c8e1cc] readonly-field"></textarea>
+                    </div>
+                    
+                    <!-- Nomor Telepon -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-[#008000]/80 mb-2">Nomor telepon:</label>
+                        <input type="tel" id="display_telepon" readonly
+                            class="w-full p-3 bg-gray-100 rounded-lg border border-[#c8e1cc] readonly-field">
+                    </div>
+                    
+                    <p class="text-sm text-gray-600 mb-4">(selanjutnya disebut sebagai Adopter)</p>
+                    <p class="text-sm text-gray-600 mb-4">dengan ini menyatakan kepedulian dan minat untuk mengadopsi secara simbolis satwa</p>
+                    
+                    {% if selected_animal %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-[#008000]/80 mb-2">Nama:</label>
+                            <input type="text" value="{{ selected_animal.name }}" readonly
+                                class="w-full p-3 bg-gray-100 rounded-lg border border-[#c8e1cc] readonly-field">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-[#008000]/80 mb-2">Jenis:</label>
+                            <input type="text" value="{{ selected_animal.species }}" readonly
+                                class="w-full p-3 bg-gray-100 rounded-lg border border-[#c8e1cc] readonly-field">
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Financial Contribution Section -->
+                <div class="mb-6">
+                    <p class="mb-4 text-gray-700">Adopter juga bersedia memberikan kontribusi finansial kepada pihak taman safari sebagai dukungan untuk pemeliharaan satwa:</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="nominal" class="block text-sm font-medium text-[#008000]/80 mb-2">Nominal Kontribusi (Rp) *</label>
+                            <input 
+                                type="number" 
+                                id="nominal" 
+                                name="nominal" 
+                                required 
+                                min="1"
+                                step="1"
+                                placeholder="Masukkan nominal kontribusi"
+                                class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]"
+                            >
+                            <p class="text-xs text-[#008000]/60 mt-1">Kontribusi harus lebih besar dari Rp 0</p>
+                        </div>
+                        
+                        <div>
+                            <label for="periode" class="block text-sm font-medium text-[#008000]/80 mb-2">untuk periode adopsi selama:</label>
+                            <select id="periode" name="periode" required
+                                class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]">
+                                <option value="">-- Pilih Periode --</option>
+                                <option value="3">3 bulan</option>
+                                <option value="6">6 bulan</option>
+                                <option value="12">12 bulan</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="errorMessage" class="mb-4 text-red-500 text-sm hidden"></div>
+
+                <div class="flex justify-center space-x-4 mt-8">
+                    <button type="button" onclick="backToStep1()" 
+                        class="px-6 py-3 bg-gray-100 text-[#008000] rounded-lg hover:bg-gray-200 transition-colors">
+                        Kembali
+                    </button>
+                    <button type="submit" 
+                        class="px-6 py-3 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors">
+                        Submit Form
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-8 text-center text-sm text-[#008000]/60">
+            © 2025 SIZOPI. All rights reserved.
+        </footer>
+    </div>
+
+    <script>
+        function getAnimalEmoji(animalName, species) {
+            const name = animalName.toLowerCase();
+            const spec = species.toLowerCase();
+            
+            // Lions
+            if (name.includes('simba') || name.includes('lion') || spec.includes('leo')) return '🦁';
+            // Elephants  
+            if (name.includes('manny') || name.includes('tiny') || name.includes('elephant') || spec.includes('elephas') || spec.includes('loxodonta')) return '🐘';
+            // Tigers
+            if (name.includes('shere') || name.includes('khan') || name.includes('rajah') || name.includes('tiger') || name.includes('stripe') || name.includes('whiskers') || spec.includes('tigris')) return '🐅';
+            // Bears
+            if (name.includes('baloo') || name.includes('bear') || name.includes('snowy') || name.includes('polar') || name.includes('bearie') || spec.includes('ursus')) return '🐻';
+            // Camels
+            if (name.includes('sahara') || name.includes('desert') || name.includes('oasis') || name.includes('wind') || spec.includes('camelus')) return '🐪';
+            // Snow Leopards  
+            if (name.includes('everest') || name.includes('iceberg') || spec.includes('uncia')) return '🐆';
+            // Crocodiles
+            if (name.includes('puddle') || name.includes('marsh') || name.includes('splash') || name.includes('snap') || spec.includes('crocodylus')) return '🐊';
+            // Eagles
+            if (name.includes('swift') || name.includes('river') || spec.includes('haliaeetus')) return '🦅';
+            // Sharks
+            if (name.includes('sandy') || name.includes('sharky') || spec.includes('carcharhinus')) return '🦈';
+            // Monkeys/Gibbons
+            if (name.includes('mangrove') || name.includes('swing') || spec.includes('hylobates')) return '🐵';
+            // Turtles
+            if (name.includes('coastal') || name.includes('wave') || spec.includes('chelonia')) return '🐢';
+            // Clams
+            if (name.includes('coral') || name.includes('pearl') || spec.includes('tridacna')) return '🐚';
+            // Deer
+            if (name.includes('valley') || name.includes('forest') || spec.includes('odocoileus')) return '🦌';
+            // Sheep
+            if (name.includes('rocky') || name.includes('boulder') || spec.includes('ovis')) return '🐑';
+            // Panthers/Leopards
+            if (name.includes('bagheera') || spec.includes('pardus')) return '🐆';
+            
+            return '🐾';
+        }
+
+        function verifyAccount() {
+            const username = document.getElementById('adopter_username').value.trim();
+            const adopterTypeRadios = document.querySelectorAll('input[name="adopter_type"]');
+            const selectedType = document.querySelector('input[name="adopter_type"]:checked')?.value;
+            
+            if (!username) {
+                showError('Username harus diisi!', 'step1');
+                return;
+            }
+            
+            hideError('step1');
+            
+            console.log('Verifying account for:', username);
+            
+            const formData = new FormData();
+            formData.append('username', username);
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+            
+            fetch('{% url "adopsi:verify_adopter_account" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    const userData = data.data;
+                    
+                    if (userData.is_adopter) {
+                        handleExistingAdopter(userData, username);
+                    } else {
+                        handleNewAdopter(userData, selectedType, username);
+                    }
+                    
+                    document.getElementById('step1').style.display = 'none';
+                    document.getElementById('step2').classList.remove('hidden');
+                    document.getElementById('step2').style.display = 'block';
+                    
+                    console.log('Successfully moved to step 2');
+                } else {
+                    showError(data.message, 'step1');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('Terjadi kesalahan saat verifikasi akun!', 'step1');
+            });
+        }
+
+        function handleExistingAdopter(userData, username) {
+            console.log('Handling existing adopter:', userData);
+            
+            fillBasicUserData(userData);
+            
+            document.getElementById('form_adopter_username').value = username;
+            document.getElementById('form_tipe_adopter').value = userData.adopter_type;
+            
+            const adopterTypeRadios = document.querySelectorAll('input[name="adopter_type"]');
+            adopterTypeRadios.forEach(radio => {
+                if (radio.value === userData.adopter_type) {
+                    radio.checked = true;
+                }
+                radio.disabled = true;
+            });
+            
+            const typeSection = document.querySelector('input[name="adopter_type"]').closest('.mb-6');
+            let lockMessage = typeSection.querySelector('.lock-message');
+            if (!lockMessage) {
+                lockMessage = document.createElement('div');
+                lockMessage.className = 'lock-message text-sm text-green-600 mt-2 font-medium bg-green-50 p-2 rounded border border-green-200';
+                lockMessage.innerHTML = `🔒 Tipe adopter dikunci sesuai data yang sudah terdaftar`;
+                typeSection.appendChild(lockMessage);
+            }
+            
+            const individualSection = document.getElementById('individual_section');
+            const organizationSection = document.getElementById('organization_section');
+            
+            if (userData.adopter_type === 'individu') {
+                individualSection.classList.remove('hidden');
+                organizationSection.classList.add('hidden');
+                
+                const nikField = document.getElementById('nik');
+                nikField.value = userData.existing_nik;
+                nikField.readOnly = true;
+                nikField.classList.add('readonly-field');
+                
+                const nikContainer = nikField.parentElement;
+                let infoDiv = nikContainer.querySelector('.info-message');
+                if (!infoDiv) {
+                    infoDiv = document.createElement('div');
+                    infoDiv.className = 'info-message text-sm text-blue-600 mt-1';
+                    infoDiv.textContent = 'NIK sudah terdaftar sebagai adopter individu';
+                    nikContainer.appendChild(infoDiv);
+                }
+                
+            } else if (userData.adopter_type === 'organisasi') {
+                individualSection.classList.add('hidden');
+                organizationSection.classList.remove('hidden');
+                
+                const nppField = document.getElementById('npp');
+                const namaOrganisasiField = document.getElementById('nama_organisasi');
+                
+                nppField.value = userData.existing_npp;
+                nppField.readOnly = true;
+                nppField.classList.add('readonly-field');
+                
+                namaOrganisasiField.value = userData.existing_org_name;
+                namaOrganisasiField.readOnly = true;
+                namaOrganisasiField.classList.add('readonly-field');
+                
+                const nppContainer = nppField.parentElement;
+                const orgContainer = namaOrganisasiField.parentElement;
+                
+                let nppInfoDiv = nppContainer.querySelector('.info-message');
+                if (!nppInfoDiv) {
+                    nppInfoDiv = document.createElement('div');
+                    nppInfoDiv.className = 'info-message text-sm text-blue-600 mt-1';
+                    nppInfoDiv.textContent = 'NPP sudah terdaftar sebagai adopter organisasi';
+                    nppContainer.appendChild(nppInfoDiv);
+                }
+                
+                let orgInfoDiv = orgContainer.querySelector('.info-message');
+                if (!orgInfoDiv) {
+                    orgInfoDiv = document.createElement('div');
+                    orgInfoDiv.className = 'info-message text-sm text-blue-600 mt-1';
+                    orgInfoDiv.textContent = 'Nama organisasi sudah terdaftar';
+                    orgContainer.appendChild(orgInfoDiv);
+                }
+            }
+        }
+
+        function handleNewAdopter(userData, selectedType, username) {
+            console.log('Handling new adopter:', userData, 'selected type:', selectedType);
+            
+            fillBasicUserData(userData);
+            
+            document.getElementById('form_adopter_username').value = username;
+            document.getElementById('form_tipe_adopter').value = selectedType;
+            
+            const adopterTypeRadios = document.querySelectorAll('input[name="adopter_type"]');
+            adopterTypeRadios.forEach(radio => {
+                radio.disabled = false;
+            });
+            
+            const lockMessage = document.querySelector('.lock-message');
+            if (lockMessage) {
+                lockMessage.remove();
+            }
+            
+            showAdopterTypeSection(selectedType);
+            
+            adopterTypeRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const newType = this.value;
+                    document.getElementById('form_tipe_adopter').value = newType;
+                    showAdopterTypeSection(newType);
+                });
+            });
+        }
+
+        function fillBasicUserData(userData) {
+            const namaLengkap = `${userData.nama_depan || ''} ${userData.nama_tengah ? userData.nama_tengah + ' ' : ''}${userData.nama_belakang || ''}`.trim();
+            document.getElementById('display_nama').value = namaLengkap;
+            document.getElementById('display_alamat').value = userData.alamat || '';
+            document.getElementById('display_telepon').value = userData.no_telepon || '';
+        }
+
+        function showAdopterTypeSection(type) {
+            const individualSection = document.getElementById('individual_section');
+            const organizationSection = document.getElementById('organization_section');
+            const nikField = document.getElementById('nik');
+            const nppField = document.getElementById('npp');
+            const namaOrganisasiField = document.getElementById('nama_organisasi');
+            
+            if (type === 'individu') {
+                individualSection.classList.remove('hidden');
+                organizationSection.classList.add('hidden');
+                
+                nikField.value = '';
+                nikField.readOnly = false;
+                nikField.classList.remove('readonly-field');
+                nikField.required = true;
+                
+                if (nppField) nppField.required = false;
+                if (namaOrganisasiField) namaOrganisasiField.required = false;
+                
+            } else if (type === 'organisasi') {
+                individualSection.classList.add('hidden');
+                organizationSection.classList.remove('hidden');
+                
+                nppField.value = '';
+                nppField.readOnly = false;
+                nppField.classList.remove('readonly-field');
+                nppField.required = true;
+                
+                namaOrganisasiField.value = '';
+                namaOrganisasiField.readOnly = false;
+                namaOrganisasiField.classList.remove('readonly-field');
+                namaOrganisasiField.required = true;
+                
+                if (nikField) nikField.required = false;
+            }
+            
+            const infoMessages = document.querySelectorAll('.info-message');
+            infoMessages.forEach(msg => {
+                if (!msg.textContent.includes('sudah terdaftar')) {
+                    msg.remove();
+                }
+            });
+        }
+
+        function validateForm() {
+            const nominalInput = document.getElementById('nominal');
+            const periodeSelect = document.getElementById('periode');
+            
+            const nominalValue = parseInt(nominalInput.value) || 0;
+            if (nominalValue <= 0) {
+                showError('Kontribusi harus lebih besar dari Rp 0!', 'step2');
+                nominalInput.focus();
+                return false;
+            }
+            
+            if (!periodeSelect.value) {
+                showError('Periode adopsi harus dipilih!', 'step2');
+                periodeSelect.focus();
+                return false;
+            }
+            
+            const adopterType = document.getElementById('form_tipe_adopter').value;
+            
+            if (adopterType === 'individu') {
+                const nikInput = document.getElementById('nik');
+                if (!nikInput.readOnly) {
+                    if (!nikInput.value.trim()) {
+                        showError('NIK harus diisi!', 'step2');
+                        nikInput.focus();
+                        return false;
+                    }
+                    
+                    if (nikInput.value.length !== 16) {
+                        showError('NIK harus terdiri dari 16 digit!', 'step2');
+                        nikInput.focus();
+                        return false;
+                    }
+                }
+            } else if (adopterType === 'organisasi') {
+                const nppInput = document.getElementById('npp');
+                const namaOrganisasiInput = document.getElementById('nama_organisasi');
+                
+                if (!nppInput.readOnly) {
+                    if (!nppInput.value.trim()) {
+                        showError('NPP harus diisi!', 'step2');
+                        nppInput.focus();
+                        return false;
+                    }
+                    
+                    if (nppInput.value.length !== 8) {
+                        showError('NPP harus terdiri dari 8 digit!', 'step2');
+                        nppInput.focus();
+                        return false;
+                    }
+                }
+                
+                if (!namaOrganisasiInput.readOnly) {
+                    if (!namaOrganisasiInput.value.trim()) {
+                        showError('Nama organisasi harus diisi!', 'step2');
+                        namaOrganisasiInput.focus();
+                        return false;
+                    }
+                }
+            }
+            
+            hideError('step2');
+            return true;
+        }
+
+        function backToStep1() {
+            document.getElementById('step2').style.display = 'none';
+            document.getElementById('step1').style.display = 'block';
+            
+            document.getElementById('adopter_username').value = '';
+            document.getElementById('display_nama').value = '';
+            document.getElementById('display_alamat').value = '';
+            document.getElementById('display_telepon').value = '';
+            
+            const adopterTypeRadios = document.querySelectorAll('input[name="adopter_type"]');
+            adopterTypeRadios.forEach(radio => {
+                radio.disabled = false;
+                if (radio.value === 'individu') {
+                    radio.checked = true;
+                }
+            });
+            
+            const nikField = document.getElementById('nik');
+            const namaOrganisasiField = document.getElementById('nama_organisasi');
+            const nppField = document.getElementById('npp');
+            
+            if (nikField) {
+                nikField.value = '';
+                nikField.readOnly = false;
+                nikField.classList.remove('readonly-field');
+                nikField.required = false;
+            }
+            if (namaOrganisasiField) {
+                namaOrganisasiField.value = '';
+                namaOrganisasiField.readOnly = false;
+                namaOrganisasiField.classList.remove('readonly-field');
+                namaOrganisasiField.required = false;
+            }
+            if (nppField) {
+                nppField.value = '';
+                nppField.readOnly = false;
+                nppField.classList.remove('readonly-field');
+                nppField.required = false;
+            }
+            
+            document.getElementById('individual_section').classList.add('hidden');
+            document.getElementById('organization_section').classList.add('hidden');
+            
+            const infoMessages = document.querySelectorAll('.info-message, .lock-message');
+            infoMessages.forEach(msg => msg.remove());
+            
+            const periodNotices = document.querySelectorAll('.period-notice');
+            periodNotices.forEach(notice => notice.remove());
+            
+            document.getElementById('nominal').value = '';
+            document.getElementById('periode').value = '';
+            
+            hideError('step1');
+            hideError('step2');
+        }
+
+        function showError(message, step = 'step2') {
+            const errorDiv = step === 'step1' ? 
+                document.getElementById('step1ErrorMessage') : 
+                document.getElementById('errorMessage');
+                
+            if (errorDiv) {
+                errorDiv.textContent = message;
+                errorDiv.classList.remove('hidden');
+                console.log('Showing error:', message, 'in', step);
+            } else {
+                alert(message);
+            }
+        }
+
+        function hideError(step = 'step2') {
+            const errorDiv = step === 'step1' ? 
+                document.getElementById('step1ErrorMessage') : 
+                document.getElementById('errorMessage');
+                
+            if (errorDiv) {
+                errorDiv.classList.add('hidden');
+            }
+        }
+
+        function handleImageLoad(img) {
+            img.classList.add('loaded');
+        }
+
+        function handleImageError(img) {
+            img.style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if selected_animal %}
+            const animalName = "{{ selected_animal.name|lower }}";
+            const species = "{{ selected_animal.species|lower }}";
+            const emojiElement = document.querySelector('.animal-emoji');
+            if (emojiElement) {
+                emojiElement.textContent = getAnimalEmoji(animalName, species);
+            }
+            {% endif %}
+
+            const nominalInput = document.getElementById('nominal');
+            const adopsiForm = document.getElementById('adopsiForm');
+            const periodeSelect = document.getElementById('periode');
+            
+            if (nominalInput) {
+                nominalInput.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/\D/g, '');
+                    e.target.value = value;
+                });
+            }
+            
+            if (adopsiForm) {
+                adopsiForm.addEventListener('submit', function(e) {
+                    if (!validateForm()) {
+                        e.preventDefault();
+                        return false;
+                    }
+                });
+            }
+            
+            if (periodeSelect) {
+                periodeSelect.addEventListener('change', function(e) {
+                    const selectedPeriod = e.target.value;
+                    const nominalValue = parseInt(nominalInput.value) || 0;
+                    
+                    const existingNotice = document.querySelector('.period-notice');
+                    if (existingNotice) {
+                        existingNotice.remove();
+                    }
+                });
+            }
+
+            const nikInput = document.getElementById('nik');
+            const nppInput = document.getElementById('npp');
+            
+            if (nikInput) {
+                nikInput.addEventListener('input', function(e) {
+                    if (!this.readOnly) {
+                        this.value = this.value.replace(/[^0-9]/g, '');
+                    }
+                });
+            }
+            
+            if (nppInput) {
+                nppInput.addEventListener('input', function(e) {
+                    if (!this.readOnly) {
+                        this.value = this.value.replace(/[^0-9]/g, '');
+                    }
+                });
+            }
+            
+            const adopterTypeRadios = document.querySelectorAll('input[name="adopter_type"]');
+            adopterTypeRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (!this.disabled) {
+                        const selectedType = this.value;
+                        document.getElementById('form_tipe_adopter').value = selectedType;
+                        showAdopterTypeSection(selectedType);
+                    }
+                });
+            });
+        });
+    </script>
+</div>
+{% endblock %}

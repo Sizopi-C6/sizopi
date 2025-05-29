@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+  <title>Edit Data Satwa - SIZOPI</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #e8f4ea;
+    }
+    
+    .btn-primary {
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 128, 0, 0.25);
+    }
+    
+    .card {
+      background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid #b8d8be;
+      background-color: white;
+      transition: all 0.3s ease;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 128, 0, 0.2);
+      border-color: #008000;
+    }
+    
+    select.form-input {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23008000' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      background-size: 16px 12px;
+    }
+    
+    .readonly-field {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid #b8d8be;
+      background-color: #f0f7f1;
+      color: #2d3748;
+    }
+  </style>
+{% endblock meta %}
+
+{% block content %}
+<div class="min-h-screen p-8 font-[Poppins] flex items-center justify-center">
+  <div class="w-full max-w-4xl">
+    <div class="card p-8 rounded-2xl shadow-lg border border-[#c8e1cc]">
+      <h2 class="text-3xl font-bold text-[#008000] mb-6 text-center">Form Edit Satwa</h2>
+
+      {% if form.non_field_errors %}
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+          {% for error in form.non_field_errors %}
+        <p class="font-medium">{{ error }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+        
+        <div class="grid grid-cols-1 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-[#006400] mb-2">
+              {{ form.name.label }}
+            </label>
+            {{ form.name }}
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-[#006400] mb-2">
+              {{ form.species.label }}
+            </label>
+            {{ form.species }}
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-[#006400] mb-2">
+              {{ form.asal_hewan.label }}
+            </label>
+            <input type="text" name="{{ form.asal_hewan.name }}" value="{{ form.asal_hewan.value }}" 
+                   class="form-input" id="id_asal_hewan">
+            {% if form.asal_hewan.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ form.asal_hewan.errors }}</p>
+            {% endif %}
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-[#006400] mb-2">
+              {{ form.tanggal_lahir.label }}
+            </label>
+            {{ form.tanggal_lahir }}
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-[#006400] mb-2">
+              {{ form.status_kesehatan.label }}
+            </label>
+            <select name="{{ form.status_kesehatan.name }}" class="form-input" id="id_status_kesehatan">
+              {% for value, label in form.status_kesehatan.field.choices %}
+                <option value="{{ value }}" {% if form.status_kesehatan.value == value %}selected{% endif %}>
+                  {{ label }}
+                </option>
+              {% endfor %}
+            </select>
+            {% if form.status_kesehatan.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ form.status_kesehatan.errors }}</p>
+            {% endif %}
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-[#006400] mb-2">
+              {{ form.nama_habitat.label }}
+            </label>
+            <select name="{{ form.nama_habitat.name }}" class="form-input" id="id_nama_habitat">
+              {% for value, label in form.nama_habitat.field.choices %}
+                <option value="{{ value }}" {% if form.nama_habitat.value == value %}selected{% endif %}>
+                  {{ label }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-[#006400] mb-2">
+              {{ form.url_foto.label }}
+            </label>
+            {{ form.url_foto }}
+          </div>
+        </div>
+
+        <div class="flex justify-center mt-8 space-x-4">
+          <button type="submit" class="btn-primary px-6 py-3 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] transition duration-200 shadow-md">
+            Simpan Perubahan
+          </button>
+          <a href="{% url 'data_satwa_habitat:show_list_satwa' %}" class="px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition duration-200 shadow-md">
+            Batal
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

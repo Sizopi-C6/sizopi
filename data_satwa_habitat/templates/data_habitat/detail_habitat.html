@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+  <title>Detail Habitat - SIZOPI</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #e8f4ea;
+    }
+    
+    .btn-primary {
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 128, 0, 0.25);
+    }
+    
+    .card {
+      background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .info-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .table-header {
+      background-color: #008000;
+      color: white;
+    }
+    
+    .table-row:nth-child(even) {
+      background-color: #e0f0e3;
+    }
+    
+    .table-row:nth-child(odd) {
+      background-color: #d2e7d6;
+    }
+    
+    .status-badge {
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-bottom: 1rem;
+      border-radius: 12px;
+    }
+
+    .table-responsive {
+      min-width: 800px;
+      width: 100%;
+    }
+
+    /* Custom scrollbar */
+    .table-wrapper::-webkit-scrollbar {
+      height: 10px;
+    }
+
+    .table-wrapper::-webkit-scrollbar-track {
+      background: #d2e7d6;
+      border-radius: 10px;
+    }
+
+    .table-wrapper::-webkit-scrollbar-thumb {
+      background-color: #008000;
+      border-radius: 10px;
+      border: 2px solid #d2e7d6;
+    }
+
+    .table-wrapper::-webkit-scrollbar-thumb:hover {
+      background-color: #006400;
+    }
+  </style>
+{% endblock meta %}
+
+{% block content %}
+<div class="min-h-screen p-8 font-[Poppins]">
+  <div class="max-w-7xl mx-auto">
+    <h2 class="text-3xl font-bold text-[#008000] mb-6">DETAIL HABITAT: {{ habitat.nama }}</h2>
+
+    <div class="info-card p-6 mb-8 border border-[#c8e1cc]">
+      <div class="flex flex-col md:flex-row justify-between items-start gap-4">
+        <div class="space-y-2">
+          <p class="text-gray-700"><span class="font-semibold text-[#006400]">Luas Area:</span> {{ habitat.luas_area }} m²</p>
+          <p class="text-gray-700"><span class="font-semibold text-[#006400]">Status Habitat:</span> 
+            <span class="status-badge
+              {% if habitat.status == 'Baik' %}
+                bg-green-100 text-green-800
+              {% elif habitat.status == 'Perlu Perbaikan' %}
+                bg-yellow-100 text-yellow-800
+              {% elif habitat.status == 'Sedang Direstorasi' %}
+                bg-red-100 text-red-800
+              {% else %}
+                bg-gray-100 text-gray-800
+              {% endif %}">
+              {{ habitat.status }}
+            </span>
+          </p>
+          <p class="text-gray-700"><span class="font-semibold text-[#006400]">Kapasitas Maksimal:</span> {{ habitat.kapasitas }} hewan</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <a href="{% url 'data_satwa_habitat:edit_habitat' habitat.nama %}" 
+             class="btn-primary px-4 py-2 bg-yellow-500 text-white font-medium rounded-lg hover:bg-yellow-600 transition duration-200 shadow-md">
+            Edit Habitat
+          </a>
+          <form action="{% url 'data_satwa_habitat:delete_habitat' habitat.nama %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition duration-200 shadow-md">
+              Hapus Habitat
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Animal List Card -->
+    <div class="card p-6 rounded-2xl shadow-lg border border-[#c8e1cc]">
+      <h3 class="text-2xl font-bold mb-4 text-[#008000]">Daftar Hewan dalam Habitat</h3>
+
+      <div class="table-container">
+        <div class="table-wrapper">
+          <table class="table-responsive min-w-full divide-y divide-gray-200">
+            <thead>
+              <tr class="table-header">
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Nama Individu</th>
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Spesies</th>
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Asal Hewan</th>
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Tanggal Lahir</th>
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Status Kesehatan</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              {% for hewan in hewan_list %}
+              <tr class="table-row hover:bg-[#c8e1cc] transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{{ hewan.name }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ hewan.species }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ hewan.asal_hewan }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ hewan.tanggal_lahir }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                  <span class="status-badge
+                    {% if hewan.status_kesehatan|lower == 'sehat' %}
+                      bg-green-100 text-green-800
+                    {% elif hewan.status_kesehatan|lower == 'sakit' %}
+                      bg-red-100 text-red-800
+                    {% elif hewan.status_kesehatan|lower == 'dalam pemantauan' %}
+                      bg-yellow-100 text-yellow-800
+                    {% else %}
+                      bg-gray-100 text-gray-800
+                    {% endif %}">
+                    {{ hewan.status_kesehatan }}
+                  </span>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="5" class="px-6 py-10 text-center text-sm text-gray-500">Tidak ada hewan di habitat ini.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

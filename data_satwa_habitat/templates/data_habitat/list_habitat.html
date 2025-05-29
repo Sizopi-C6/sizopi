@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+  <title>Daftar Habitat - SIZOPI</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #e8f4ea;
+    }
+    
+    .btn-primary {
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 128, 0, 0.25);
+    }
+    
+    .card {
+      background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .table-header {
+      background-color: #008000;
+      color: white;
+    }
+    
+    .table-row:nth-child(even) {
+      background-color: #e0f0e3;
+    }
+    
+    .table-row:nth-child(odd) {
+      background-color: #d2e7d6;
+    }
+    
+    .status-badge {
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    /* Horizontal scrolling */
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-bottom: 1rem;
+      border-radius: 12px;
+    }
+
+    .table-responsive {
+      min-width: 800px;
+      width: 100%;
+    }
+
+    /* Custom scrollbar */
+    .table-wrapper::-webkit-scrollbar {
+      height: 10px;
+    }
+
+    .table-wrapper::-webkit-scrollbar-track {
+      background: #d2e7d6;
+      border-radius: 10px;
+    }
+
+    .table-wrapper::-webkit-scrollbar-thumb {
+      background-color: #008000;
+      border-radius: 10px;
+      border: 2px solid #d2e7d6;
+    }
+
+    .table-wrapper::-webkit-scrollbar-thumb:hover {
+      background-color: #006400;
+    }
+  </style>
+{% endblock meta %}
+
+{% block content %}
+<div class="min-h-screen p-8 font-[Poppins]">
+  <div class="max-w-7xl mx-auto">
+    <div class="card p-8 rounded-2xl shadow-lg border border-[#c8e1cc] mb-8">
+      <h2 class="text-3xl font-bold text-[#008000] mb-6">Daftar Habitat</h2>
+
+      <div class="mb-6">
+        <a href="{% url 'data_satwa_habitat:tambah_habitat' %}" 
+           class="btn-primary inline-block px-6 py-3 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] transition duration-200 shadow-md">
+          + Tambah Habitat
+        </a>
+      </div>
+
+      <div class="table-container">
+        <div class="table-wrapper">
+          <table class="table-responsive min-w-full divide-y divide-gray-200">
+            <thead>
+              <tr class="table-header">
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Nama Habitat</th>
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Luas Area (m²)</th>
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Kapasitas Maksimal</th>
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Status Lingkungan</th>
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              {% for habitat in daftar_habitat %}
+              <tr class="table-row hover:bg-[#c8e1cc] transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{{ habitat.nama }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ habitat.luas_area|floatformat:2 }} m²</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ habitat.kapasitas }} hewan</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <span class="status-badge
+                    {% if habitat.status == 'Baik' %}
+                      bg-green-100 text-green-800
+                    {% elif habitat.status == 'Perlu Perbaikan' %}
+                      bg-yellow-100 text-yellow-800
+                    {% elif habitat.status == 'Sedang Direstorasi' %}
+                      bg-red-100 text-red-800
+                    {% else %}
+                      bg-gray-100 text-gray-800
+                    {% endif %}">
+                    {{ habitat.status }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                  <a href="{% url 'data_satwa_habitat:detail_habitat' habitat.nama %}" class="text-[#008000] hover:text-[#006400]">Detail</a>
+                  <span class="text-gray-400">|</span>
+                  <a href="{% url 'data_satwa_habitat:edit_habitat' habitat.nama %}" class="text-[#008000] hover:text-[#006400]">Edit</a>
+                  <span class="text-gray-400">|</span>
+                  <form action="{% url 'data_satwa_habitat:delete_habitat' habitat.nama %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="text-red-600 hover:text-red-800 bg-transparent border-0 p-0 cursor-pointer font-medium">
+                      Hapus
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="5" class="px-6 py-10 text-center text-sm text-gray-500">Tidak ada data habitat.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

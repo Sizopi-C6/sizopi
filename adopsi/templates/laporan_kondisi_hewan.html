@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+    <title>Laporan Kondisi Hewan - Program Adopsi Satwa</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        
+        .card-gradient {
+            background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
+            border: 1px solid #c8e1cc;
+        }
+        
+        .medical-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+            background: white;
+        }
+        
+        .medical-table th,
+        .medical-table td {
+            border: 2px solid #000000;
+            padding: 12px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 14px;
+        }
+        
+        .medical-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .medical-table td {
+            background-color: white;
+            color: #000;
+        }
+    </style>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar/pengunjung_sebagai_adopter.html' %}
+{% include 'message_display.html' %}
+
+<div class="bg-[#e8f4ea] min-h-screen flex flex-col items-center font-[Poppins] p-8">
+    <div class="w-full max-w-6xl">
+        <!-- Breadcrumb -->
+        <div class="mb-6">
+            <a href="{% url 'adopsi:adopsi_pengunjung' %}" class="text-[#008000] hover:text-[#006400]">Program Adopsi</a>
+            <span class="mx-2 text-[#008000]/60">></span>
+            <span class="text-[#008000]/80">Laporan Kondisi Hewan</span>
+        </div>
+
+        <!-- Main Content Card -->
+        <div class="card-gradient rounded-2xl shadow-lg p-8 mb-8">
+            <!-- Title -->
+            <h1 class="text-4xl font-bold text-[#008000] mb-8 text-center">LAPORAN KONDISI SATWA</h1>
+            
+            <!-- Animal Photo - Centered -->
+            <div class="flex justify-center mb-8">
+                <img src="{{ animal.url_foto }}" alt="{{ animal.nama_hewan }}" class="w-80 h-80 object-cover rounded-lg border-2 border-[#008000]">
+            </div>
+            
+            <!-- Animal Information - Centered, Simple Format -->
+            <div class="text-center space-y-3 mb-12 text-lg text-[#008000]">
+                <p><strong>Nama:</strong> {{ animal.nama_hewan|default:"[nama hewan](kalau ada)" }}</p>
+                <p><strong>Jenis:</strong> {{ animal.species|default:"[jenis hewan]" }}</p>
+                <p><strong>Habitat:</strong> {{ animal.habitat_name|default:animal.nama_habitat|default:"[habitat hewan]" }}</p>
+            </div>
+            
+            <!-- Medical Records Section -->
+            <h2 class="text-2xl font-bold text-[#008000] mb-6 text-center">Rekam Medis Satwa</h2>
+            
+            <div class="overflow-x-auto">
+                <table class="medical-table">
+                    <thead>
+                        <tr>
+                            <th>Tanggal<br>Pemeriksaan</th>
+                            <th>Nama Dokter</th>
+                            <th>Status<br>Kesehatan</th>
+                            <th>Diagnosa</th>
+                            <th>Pengobatan</th>
+                            <th>Catatan<br>Tindak<br>Lanjut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if medical_records %}
+                            {% for record in medical_records %}
+                            <tr>
+                                <td>{{ record.tanggal_pemeriksaan|date:"Y-m-d" }}</td>
+                                <td>{{ record.nama_dokter }}</td>
+                                <td>{{ record.status_kesehatan }}</td>
+                                <td>{{ record.diagnosis|default:"-" }}</td>
+                                <td>{{ record.pengobatan|default:"-" }}</td>
+                                <td>{{ record.catatan_tindak_lanjut|default:"-" }}</td>
+                            </tr>
+                            {% endfor %}
+                            <!-- Dots row to indicate more data could be available -->
+                            <tr>
+                                <td>:</td>
+                                <td>:</td>
+                                <td>:</td>
+                                <td>:</td>
+                                <td>:</td>
+                                <td>:</td>
+                            </tr>
+                        {% else %}
+                            <!-- Show example row when no data, like in the image -->
+                            <tr>
+                                <td>2025-04-01</td>
+                                <td>Dr. Siti<br>Aminah</td>
+                                <td>Sakit</td>
+                                <td>Infeksi<br>saluran<br>pernapasan</td>
+                                <td>Antibiotik<br>selama 7 hari</td>
+                                <td>Evaluasi<br>kondisi<br>perbaikan<br>ventilasi<br>kandang.</td>
+                            </tr>
+                            <tr>
+                                <td>:</td>
+                                <td>:</td>
+                                <td>:</td>
+                                <td>:</td>
+                                <td>:</td>
+                                <td>:</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Keterangan -->
+            <p class="text-sm text-[#008000] mt-6">
+                <strong>Keterangan:</strong> cukup tampilkan rekam medis satwa dengan tanggal pemeriksaan setelah tanggal mulai adopsi
+                {% if tgl_mulai_adopsi %} ({{ tgl_mulai_adopsi|date:"d M Y" }}){% endif %}
+            </p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-center mt-8 space-x-4">            
+            <a href="{% url 'adopsi:adopsi_pengunjung' %}" class="px-6 py-2 bg-gray-100 text-[#008000] rounded-lg hover:bg-gray-200 transition-colors">
+                Kembali
+            </a>
+            {% if animal.id %}
+            <a href="{% url 'adopsi:sertifikat_adopsi' %}?animal_id={{ animal.id }}" class="px-6 py-2 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors">
+                Lihat Sertifikat
+            </a>
+            {% endif %}
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-8 text-center text-sm text-[#008000]/60">
+            © 2025 SIZOPI. All rights reserved.
+        </footer>
+    </div>
+</div>
+{% endblock %}

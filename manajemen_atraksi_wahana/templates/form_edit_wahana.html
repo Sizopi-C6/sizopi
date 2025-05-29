@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+  <title>Form Edit Wahana - SIZOPI</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #e8f4ea;
+    }
+    
+    .btn-primary {
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 128, 0, 0.25);
+    }
+    
+    .card {
+      background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid #b8d8be;
+      background-color: white;
+      transition: all 0.3s ease;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 128, 0, 0.2);
+      border-color: #008000;
+    }
+    
+    select.form-input {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23008000' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      background-size: 16px 12px;
+    }
+    
+    .readonly-field {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid #b8d8be;
+      background-color: #f0f7f1;
+      color: #2d3748;
+    }
+
+    /* Peraturan styles */
+    .peraturan-item {
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .add-button {
+      background-color: #008000;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      font-size: 14px;
+      margin-top: 8px;
+    }
+    
+    .add-button:hover {
+      background-color: #006400;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 128, 0, 0.25);
+    }
+    
+    .remove-peraturan {
+      color: #dc2626;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
+    }
+    
+    .remove-peraturan:hover {
+      color: #b91c1c;
+      text-decoration: underline;
+    }
+  </style>
+
+  <!-- JavaScript Libraries -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar/staff_administrator.html' %}
+<div class="min-h-screen p-8 font-[Poppins] flex items-center justify-center">
+  <div class="w-full max-w-4xl">
+    <div class="card p-8 rounded-2xl shadow-lg border border-[#c8e1cc]">
+      <h2 class="text-3xl font-bold text-[#008000] mb-6 text-center">Form Edit Wahana</h2>
+
+      <form method="POST" action="{% url 'edit_wahana' wahana.nama_wahana %}" id="wahanaForm" class="space-y-6">
+        {% csrf_token %}
+
+        <div class="grid grid-cols-1 gap-6">
+          <!-- Nama Wahana -->
+          <div>
+            <label class="block text-sm font-medium text-[#006400] mb-2">
+              Nama Wahana
+            </label>
+            <input type="text" id="namaWahana" name="namaWahana" required
+                   placeholder="Masukkan nama wahana"
+                   value="{{ wahana.nama_wahana }}"
+                   class="form-input">
+          </div>
+
+          <!-- Kapasitas -->
+          <div>
+            <label for="kapasitas" class="block text-sm font-medium text-[#006400] mb-2">
+              Kapasitas Maksimum
+            </label>
+            <div class="flex items-center gap-2">
+              <input type="number" id="kapasitas" name="kapasitas" min="1" required
+                    placeholder="Masukkan kapasitas maksimum"
+                    class="form-input w-full"
+                    value="{{ wahana.kapasitas_max }}">
+              <span class="text-sm text-[#006400]">orang</span>
+            </div>
+          </div>
+
+
+          <!-- Jadwal -->
+          <div>
+            <label class="block text-sm font-medium text-[#006400] mb-2">
+              Jadwal
+            </label>
+            <input type="text" id="jadwal" name="jadwal" required
+                   class="form-input timepicker"
+                   placeholder="Pilih jadwal"
+                   value="{{ wahana.jadwal }}">
+          </div>
+
+        <div class="flex justify-center gap-4 mt-8">
+          <button type="submit" 
+            class="btn-primary px-6 py-3 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] transition duration-200 shadow-md">
+            Simpan Perubahan
+          </button>
+          <button type="button" 
+            onclick="window.location.href='{% url 'data_wahana' %}'"
+            class="btn-primary px-6 py-3 bg-white text-[#dc2626] border border-[#dc2626] font-medium rounded-lg hover:bg-[#fef2f2] transition duration-200 shadow-md">
+            Batal
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <!-- Footer -->
+  <footer class="mt-8 text-center text-sm text-[#008000]/60">
+    © 2025 SIZOPI. All rights reserved.
+  </footer>
+</div>
+
+<script>
+    // Initialize flatpickr
+    flatpickr(".timepicker", {
+      enableTime: true,
+      noCalendar: true,
+      dateFormat: "H:i",
+      time_24hr: true,
+      minuteIncrement: 5
+    });
+</script>
+{% endblock %}

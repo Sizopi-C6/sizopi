@@ -28,5 +28,5 @@ urlpatterns = [
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('', include('manajemen_atraksi_wahana.urls')),
     path('reservasi/', include('booking_tiket_atraksi.urls')),
-    path('kesehatan/', include('kesehatan_hewan.urls')),
+    path('kesehatan/', include('kesehatan_hewan.urls', namespace='kesehatan')),
 ]

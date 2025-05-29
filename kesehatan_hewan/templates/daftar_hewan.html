@@ -167,14 +167,14 @@
             <div class="space-y-2">
               {% if user.role == 'dokter_hewan' %}
                 <!-- Doctor actions -->
-                <a href="{% url 'rekam_medis_hewan' animal.id %}" 
+                <a href="{% url 'kesehatan:rekam_medis_hewan' animal.id %}" 
                    class="action-btn w-full inline-block px-4 py-2 bg-[#008000] text-white font-semibold rounded-lg hover:bg-[#006400] focus:outline-none focus:ring-2 focus:ring-[#008000] focus:ring-opacity-50 text-center">
                   <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                   </svg>
                   Rekam Medis
                 </a>
-                <a href="{% url 'penjadwalan_pemeriksaan_kesehatan' animal.id %}" 
+                <a href="{% url 'kesehatan:penjadwalan_pemeriksaan_kesehatan' animal.id %}" 
                    class="action-btn w-full inline-block px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 text-center">
                   <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
@@ -183,7 +183,7 @@
                 </a>
               {% elif user.role == 'penjaga_hewan' %}
                 <!-- Keeper actions -->
-                <a href="{% url 'pemberian_pakan' animal.id %}" 
+                <a href="{% url 'kesehatan:pemberian_pakan' animal.id %}" 
                    class="action-btn w-full inline-block px-4 py-2 bg-[#008000] text-white font-semibold rounded-lg hover:bg-[#006400] focus:outline-none focus:ring-2 focus:ring-[#008000] focus:ring-opacity-50 text-center">
                   <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>

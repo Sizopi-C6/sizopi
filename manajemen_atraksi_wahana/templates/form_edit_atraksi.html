@@ -105,7 +105,8 @@
             <input type="text" id="namaAtraksi" name="namaAtraksi" required
                    placeholder="Masukkan nama atraksi"
                    value="{{ atraksi.nama_atraksi }}"
-                   class="form-input">
+                   class="form-input bg-gray-100 text-black-500 cursor-not-allowed"
+                   readonly>
           </div>
 
           <!-- Lokasi -->
@@ -116,7 +117,8 @@
             <input type="text" id="lokasi" name="lokasi" required
                    placeholder="Masukkan lokasi"
                    value="{{ atraksi.lokasi }}"
-                   class="form-input">
+                   class="readonly-field cursor-not-allowed bg-gray-100">
+
           </div>
           
           <!-- Kapasitas -->
@@ -135,12 +137,13 @@
             <label class="block text-sm font-medium text-[#006400] mb-2">
               Pelatih Pertunjukan
             </label>
-            <select id="pelatih" name="pelatih" required class="form-input">
+            <select id="pelatih" name="pelatih_display" disabled class="form-input bg-gray-100 cursor-not-allowed">
               <option value="">-- Pilih Pelatih --</option>
               {% for pelatih in pelatih_list %}
                 <option value="{{ pelatih }}" {% if pelatih == atraksi.pelatih %}selected{% endif %}>{{ pelatih }}</option>
               {% endfor %}
             </select>
+            <input type="hidden" name="pelatih" value="{{ atraksi.pelatih }}">
           </div>
 
           <!-- Jadwal -->
@@ -148,7 +151,7 @@
             <label class="block text-sm font-medium text-[#006400] mb-2">
               Jadwal
             </label>
-            <input type="text" id="jadwal" name="jadwal" required
+            <input type="text" id="jadwal_waktu" name="jadwal_waktu" required
                    class="form-input timepicker"
                    placeholder="Pilih waktu"
                    value="{{ atraksi.jadwal }}">
@@ -159,12 +162,14 @@
             <label class="block text-sm font-medium text-[#006400] mb-2">
               Hewan yang Terlibat
             </label>
-            <select name="hewan" id="hewan" class="js-example-basic-multiple w-full form-input" multiple="multiple">
+            <select name="hewan_display" id="hewan" class="w-full form-input bg-gray-100 text-gray-500 cursor-not-allowed" multiple disabled>
               {% for hewan in hewan_list %}
                 <option value="{{ hewan }}" {% if hewan in atraksi.hewan %}selected{% endif %}>{{ hewan }}</option>
               {% endfor %}
             </select>
-          </div>
+            {% for hewan in atraksi.hewan %}
+              <input type="hidden" name="hewan" value="{{ hewan }}">
+            {% endfor %}
         </div>
 
         <div class="flex justify-center gap-4 mt-8">
@@ -181,16 +186,14 @@
       </form>
     </div>
   </div>
-</div>
-<!-- Footer -->
-<footer class="mt-8 text-center text-sm text-[#008000]/60">
+  <footer class="mt-8 text-center text-sm text-[#008000]/60">
   © 2025 SIZOPI. All rights reserved.
-</footer>
+  </footer>
+</div>
 
 <script>
   $(document).ready(function() {
     $('#hewan').select2({
-      placeholder: "Pilih hewan",
       allowClear: true,
       width: '100%'
     });

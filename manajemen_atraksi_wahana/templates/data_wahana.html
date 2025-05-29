@@ -184,11 +184,17 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ wahana.kapasitas_max }} orang</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ wahana.jadwal }}</td>
                 <td class="px-6 py-4 text-sm text-gray-900">
-                  <ol type="1">
-                    {% for peraturan in wahana.peraturan %}
-                    <li>{{ peraturan }}</li>
-                    {% endfor %}
-                  </ol>                                    
+                  {% if wahana.peraturan|length > 1 %}
+                    <ol type="1">
+                      {% for peraturan in wahana.peraturan %}
+                        <li>{{ peraturan }}</li>
+                      {% endfor %}
+                    </ol>
+                  {% elif wahana.peraturan|length == 1 %}
+                    {{ wahana.peraturan.0 }}
+                  {% else %}
+                    <em>Tidak ada peraturan</em>
+                  {% endif %}                                 
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                   <a href="{% url 'edit_wahana' wahana.nama_wahana %}" class="text-[#008000] hover:text-yellow-800">Edit</a>
@@ -246,7 +252,7 @@
 
   function konfirmasiHapus() {
     if (wahanaYangDihapus) {
-      window.location.href = "";
+      window.location.href = `/manajemen-wahana/hapus/${encodeURIComponent(wahanaYangDihapus)}/`;
     } else {
       window.location.href = "";
     }

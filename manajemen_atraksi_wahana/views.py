@@ -1,4 +1,7 @@
-from django.shortcuts import render
+from collections import defaultdict
+from datetime import date, datetime, time
+from django.utils import timezone
+from django.http import HttpResponse
 from django.db import connection
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -68,14 +71,14 @@ def dashboard_view(request):
                 SELECT id_staf FROM penjaga_hewan
                 WHERE username_jh = %s
             """, [username])
-            id_staf = cursor.fetchone()
+            no_str = cursor.fetchone()
             role_data['id_staf'] = id_staf[0] if id_staf else '-'
         elif role == 'pelatih_hewan':
             cursor.execute("""
                 SELECT id_staf FROM pelatih_hewan
                 WHERE username_lh = %s
             """, [username])
-            id_staf = cursor.fetchone()
+            no_str = cursor.fetchone()
             role_data['id_staf'] = id_staf[0] if id_staf else '-'
             
     data_umum = {
@@ -96,157 +99,368 @@ def dashboard_view(request):
     return render(request, 'dashboard.html', context)
 
 def data_atraksi(request):
-    data_atraksi = [
-        {
-            'nama_atraksi': 'Wahana Safari',
-            'lokasi': 'Zona A',
-            'kapasitas_max': '34',
-            'jadwal': '8:00',
-            'nama_hewan': [
-                'Sahara (Camelus dromedarius)',
-                'Rocky (Ovis canadensis)',
-                'Wave (Chelonia mydas)'
-            ],
-            'nama_depan': 'Xavier',
-            'nama_tengah': 'Genesis',
-            'nama_belakang': 'Patel'
-        },
-        {
-            'nama_atraksi': 'Reptile Encounter',
-            'lokasi': 'Zona E',
-            'kapasitas_max': '89',
-            'jadwal': '7:45',
-            'nama_hewan': [
-                'Polar (Ursus maritimus)'
-            ],
-            'nama_depan': 'Dominic',
-            'nama_tengah': 'Morgan',
-            'nama_belakang': 'Dixon'
-        }
-    ]
-    
-    context = {
-        'data_atraksi': data_atraksi
-    }
-    
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT
+              a.nama_atraksi,
+              a.lokasi,
+              TO_CHAR(f.jadwal, 'HH24:MI') AS jam,
+              f.kapasitas_max,
+              h.name AS nama_hewan,
+              p.nama_depan,
+              p.nama_tengah,
+              p.nama_belakang
+            FROM atraksi a
+            JOIN fasilitas f ON a.nama_atraksi = f.nama
+            LEFT JOIN berpartisipasi b ON a.nama_atraksi = b.nama_fasilitas
+            LEFT JOIN hewan h ON b.id_hewan = h.id
+            LEFT JOIN jadwal_penugasan j ON a.nama_atraksi = j.nama_atraksi
+            LEFT JOIN pengguna p ON j.username_lh = p.username
+            ORDER BY a.nama_atraksi
+        """)
+        rows = cursor.fetchall()
+
+    data_dict = defaultdict(lambda: {
+        'nama_atraksi': '',
+        'lokasi': '',
+        'jadwal': '',
+        'kapasitas_max': 0,
+        'nama_hewan': set(),
+        'nama_pelatih': set()
+    })
+
+    for nama_atraksi, lokasi, jam, kapasitas, nama_hewan, nama_depan, nama_tengah, nama_belakang in rows:
+        entry = data_dict[nama_atraksi]
+        entry['nama_atraksi'] = nama_atraksi
+        entry['lokasi'] = lokasi
+        entry['jadwal'] = jam
+        entry['kapasitas_max'] = kapasitas
+
+        if nama_hewan:
+            entry['nama_hewan'].add(nama_hewan)
+
+        if nama_depan or nama_belakang:
+            nama_lengkap = " ".join(filter(None, [nama_depan, nama_tengah, nama_belakang]))
+            entry['nama_pelatih'].add(nama_lengkap)
+
+    data_atraksi = []
+    for item in data_dict.values():
+        data_atraksi.append({
+            'nama_atraksi': item['nama_atraksi'],
+            'lokasi': item['lokasi'],
+            'jadwal': item['jadwal'],
+            'kapasitas_max': item['kapasitas_max'],
+            'nama_hewan': list(item['nama_hewan']) if item['nama_hewan'] else [],
+            'nama_pelatih': list(item['nama_pelatih']) if item['nama_pelatih'] else ["Belum ditugaskan"]
+        })
+
+    context = {'data_atraksi': data_atraksi}
     return render(request, 'data_atraksi.html', context)
 
 def tambah_atraksi(request):
-    hewan_list = ["Sahara (Camelus dromedarius)", "Rocky (Ovis canadensis)", "Wave (Chelonia mydas)"] 
-    pelatih_list = ["Xavier Genesis Patel", "Dominic Morgan Dixon"] 
+    if request.method == 'POST':
+        data = request.POST
+        nama_atraksi = data.get('nama_atraksi')
+        lokasi = data.get('lokasi')
+        jam_input = data.get('jadwal')  
+        kapasitas = data.get('kapasitas_max')
+        pelatih_fullname = data.get('pelatih')
+        hewan_terpilih = data.getlist('hewan')
+
+        # Validasi input
+        if not all([nama_atraksi, lokasi, jam_input, kapasitas, pelatih_fullname]):
+            return HttpResponse("Data tidak lengkap", status=400)
+
+        try:
+            kapasitas = int(kapasitas)
+            waktu = datetime.strptime(jam_input, "%H:%M").time()
+        except ValueError:
+            return HttpResponse("Format jam harus HH:MM dan kapasitas harus angka", status=400)
+
+        # Gabungkan tanggal sekarang dengan waktu input user
+        jadwal_timestamp = datetime.combine(timezone.now().date(), waktu)
+
+        with connection.cursor() as cursor:
+            # Ambil username pelatih dari fullname
+            cursor.execute("""
+                SELECT p.username_lh
+                FROM pelatih_hewan p
+                JOIN pengguna u ON p.username_lh = u.username
+                WHERE CONCAT_WS(' ', u.nama_depan, u.nama_tengah, u.nama_belakang) = %s
+            """, [pelatih_fullname])
+            result = cursor.fetchone()
+            if not result:
+                return HttpResponse("Pelatih tidak ditemukan", status=400)
+            username_pelatih = result[0]
+
+            # Insert ke tabel fasilitas
+            cursor.execute("""
+                INSERT INTO fasilitas (nama, jadwal, kapasitas_max)
+                VALUES (%s, %s, %s)
+            """, [nama_atraksi, jadwal_timestamp, kapasitas])
+
+            # Insert ke tabel atraksi
+            cursor.execute("""
+                INSERT INTO atraksi (nama_atraksi, lokasi)
+                VALUES (%s, %s)
+            """, [nama_atraksi, lokasi])
+
+            # Insert jadwal penugasan pakai jadwal_timestamp juga
+            cursor.execute("""
+                INSERT INTO jadwal_penugasan (nama_atraksi, username_lh, tgl_penugasan)
+                VALUES (%s, %s, %s)
+            """, [nama_atraksi, username_pelatih, jadwal_timestamp])
+
+            # Insert relasi hewan yang berpartisipasi
+            for hewan in hewan_terpilih:
+                nama_hewan = hewan.split(' (')[0]
+                cursor.execute("SELECT id FROM hewan WHERE name = %s", [nama_hewan])
+                hasil = cursor.fetchone()
+                if hasil:
+                    cursor.execute("""
+                        INSERT INTO berpartisipasi (nama_fasilitas, id_hewan)
+                        VALUES (%s, %s)
+                    """, [nama_atraksi, hasil[0]])
+
+        return redirect('data_atraksi')
+
+    # GET: Ambil data pelatih & hewan untuk form
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT CONCAT_WS(' ', u.nama_depan, u.nama_tengah, u.nama_belakang)
+            FROM pelatih_hewan p
+            JOIN pengguna u ON p.username_lh = u.username
+        """)
+        pelatih_list = [row[0] for row in cursor.fetchall()]
+
+        cursor.execute("SELECT name, species FROM hewan")
+        hewan_list = [f"{name} ({species})" for name, species in cursor.fetchall()]
 
     return render(request, 'form_tambah_atraksi.html', {
-        'hewan_list': hewan_list,
-        'pelatih_list': pelatih_list
+        'pelatih_list': pelatih_list,
+        'hewan_list': hewan_list
     })
 
 def edit_atraksi(request, nama_atraksi):
-    data_edit_atraksi = [
-        {
-            'nama_atraksi': 'Wahana Safari',
-            'lokasi': 'Zona A',
-            'kapasitas_max': '34',
-            'jadwal': '8:00',
-            'nama_hewan': [
-                'Sahara (Camelus dromedarius)',
-                'Rocky (Ovis canadensis)',
-                'Wave (Chelonia mydas)'
-            ],
-            'nama_depan': 'Xavier',
-            'nama_tengah': 'Genesis',
-            'nama_belakang': 'Patel'
-        },
-        {
-            'nama_atraksi': 'Reptile Encounter',
-            'lokasi': 'Zona E',
-            'kapasitas_max': '89',
-            'jadwal': '7:45:00',
-            'nama_hewan': [
-                'Polar (Ursus maritimus)'
-            ],
-            'nama_depan': 'Dominic',
-            'nama_tengah': 'Morgan',
-            'nama_belakang': 'Dixon'
+    if request.method == 'POST':
+        # Ambil data dari form
+        kapasitas = request.POST.get('kapasitas')
+        jadwal_waktu = request.POST.get('jadwal_waktu')
+
+        jadwal = datetime.today().strftime('%Y-%m-%d') + ' ' + jadwal_waktu
+
+        # Simpan perubahan ke DB
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                UPDATE fasilitas
+                SET kapasitas_max = %s,
+                    jadwal = %s::timestamp
+                WHERE nama = %s
+            """, [kapasitas, jadwal, nama_atraksi])
+
+        return redirect('data_atraksi')
+
+    # GET: ambil data untuk form
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT
+              a.nama_atraksi,
+              a.lokasi,
+              TO_CHAR(f.jadwal, 'HH24:MI') AS jam,
+              f.kapasitas_max,
+              p.nama_depan,
+              p.nama_tengah,
+              p.nama_belakang
+            FROM atraksi a
+            JOIN fasilitas f ON a.nama_atraksi = f.nama
+            LEFT JOIN jadwal_penugasan j ON a.nama_atraksi = j.nama_atraksi
+            LEFT JOIN pengguna p ON j.username_lh = p.username
+            WHERE a.nama_atraksi = %s
+            LIMIT 1
+        """, [nama_atraksi])
+        row = cursor.fetchone()
+
+        if not row:
+            return redirect('data_atraksi')
+
+        atraksi = {
+            'nama_atraksi': row[0],
+            'lokasi': row[1],
+            'jadwal': row[2],
+            'kapasitas_max': row[3],
+            'nama_depan': row[4] or '',
+            'nama_tengah': row[5] or '',
+            'nama_belakang': row[6] or '',
         }
-    ]
+        atraksi['pelatih'] = f"{atraksi['nama_depan']} {atraksi['nama_tengah']} {atraksi['nama_belakang']}".strip()
 
-    atraksi = next((item for item in data_edit_atraksi if item['nama_atraksi'] == nama_atraksi), None)
+        # Daftar pelatih
+        cursor.execute("""
+            SELECT DISTINCT p.nama_depan, p.nama_tengah, p.nama_belakang
+            FROM pengguna p
+            JOIN jadwal_penugasan j ON p.username = j.username_lh
+        """)
+        pelatih_rows = cursor.fetchall()
+        pelatih_list = [
+            f"{r[0]} {r[1]} {r[2]}".strip() if r[1] else f"{r[0]} {r[2]}".strip()
+            for r in pelatih_rows
+        ]
 
-    hewan_list = ["Harimau", "Gajah", "Kera", "Burung"]
-    pelatih_list = ["Dominic Morgan Dixon", "Zavier Genasis Patel"]
-    atraksi['pelatih'] = f"{atraksi['nama_depan']} {atraksi['nama_tengah']} {atraksi['nama_belakang']}"
+        # Hewan atraksi ini
+        cursor.execute("""
+            SELECT h.name
+            FROM berpartisipasi b
+            JOIN hewan h ON b.id_hewan = h.id
+            WHERE b.nama_fasilitas = %s
+        """, [nama_atraksi])
+        atraksi_hewan_rows = cursor.fetchall()
+        atraksi['hewan'] = [r[0] for r in atraksi_hewan_rows]
 
+        # Semua hewan
+        cursor.execute("SELECT name FROM hewan")
+        hewan_all_rows = cursor.fetchall()
+        hewan_list = [r[0] for r in hewan_all_rows]
 
     return render(request, 'form_edit_atraksi.html', {
         'atraksi': atraksi,
-        'hewan_list': hewan_list,
         'pelatih_list': pelatih_list,
+        'hewan_list': hewan_list,
     })
-    
+
+def hapus_atraksi(request, nama_atraksi):
+    with connection.cursor() as cursor:
+        cursor.execute("DELETE FROM berpartisipasi WHERE nama_fasilitas = %s", [nama_atraksi])
+        cursor.execute("DELETE FROM jadwal_penugasan WHERE nama_atraksi = %s", [nama_atraksi])
+        cursor.execute("DELETE FROM atraksi WHERE nama_atraksi = %s", [nama_atraksi])
+        cursor.execute("DELETE FROM fasilitas WHERE nama = %s", [nama_atraksi])
+
+    return redirect('data_atraksi')
+
 def data_wahana(request):
-    data_wahana = [
-        {
-            'nama_wahana': 'Komedi Putar',
-            'kapasitas_max': '40',
-            'jadwal': '9:00:00',
-            'peraturan': [
-                'Anak di bawah 5 tahun harus didampingi orang dewasa.',
-                'Dilarang berdiri atau bergerak saat wahana beroperasi.',
-                'Pengunjung dengan gangguan jantung disarankan tidak ikut.'
-            ]
-        },
-        {
-            'nama_wahana': 'Kereta Gantung',
-            'kapasitas_max': '25',
-            'jadwal': '8:30:00',
-            'peraturan': [
-                'Anak di bawah 5 tahun harus didampingi orang dewasa.',
-                'Berat maksimum per kereta adalah 150 kg.',
-                'Dilarang membuka pintu atau menggoyangkan kereta gantung.'
-            ]
-        }
-    ]
-    
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT w.nama_wahana, w.peraturan, TO_CHAR(f.jadwal, 'HH24:MI') AS jadwal, f.kapasitas_max
+            FROM wahana w
+            JOIN fasilitas f ON w.nama_wahana = f.nama
+        """)
+        rows = cursor.fetchall()
+
+    data_wahana = []
+    for nama_wahana, peraturan_str, jadwal, kapasitas_max in rows:
+        if peraturan_str:
+            # Asumsi peraturan disimpan newline separated
+            peraturan_list = peraturan_str.strip().split("\n")
+        else:
+            peraturan_list = []
+
+        data_wahana.append({
+            'nama_wahana': nama_wahana,
+            'peraturan': peraturan_list,
+            'jadwal': jadwal,
+            'kapasitas_max': kapasitas_max,
+        })
+
     context = {
         'data_wahana': data_wahana
     }
-    
     return render(request, 'data_wahana.html', context)
 
 def tambah_wahana(request):
+    if request.method == 'POST':
+        data = request.POST
+        nama_wahana = data.get('nama_wahana')
+        kapasitas_max = data.get('kapasitas_max')
+        jadwal_input = data.get('jadwal') 
+        peraturan_list = []
+        for key, value in request.POST.items():
+            print(f"{key}: {value}")
+
+        for key in data.keys():
+            if key.startswith('peraturan_'):
+                peraturan_list.append(data.get(key))
+
+        if not all([nama_wahana, kapasitas_max, jadwal_input]):
+            return HttpResponse("Data tidak lengkap", status=400)
+
+        try:
+            kapasitas_max = int(kapasitas_max)
+            waktu = datetime.strptime(jadwal_input, "%H:%M").time()
+        except ValueError:
+            return HttpResponse("Format waktu harus HH:MM dan kapasitas harus angka", status=400)
+
+        jadwal_timestamp = datetime.combine(timezone.now().date(), waktu)
+
+        peraturan_text = "\n".join(peraturan_list) if peraturan_list else ""
+
+        with connection.cursor() as cursor:
+            # Insert ke fasilitas
+            cursor.execute("""
+                INSERT INTO fasilitas (nama, jadwal, kapasitas_max)
+                VALUES (%s, %s, %s)
+            """, [nama_wahana, jadwal_timestamp, kapasitas_max])
+
+            # Insert ke wahana (nama_wahana dan peraturan)
+            cursor.execute("""
+                INSERT INTO wahana (nama_wahana, peraturan)
+                VALUES (%s, %s)
+            """, [nama_wahana, peraturan_text])
+
+        return redirect('data_wahana')
+
     return render(request, 'form_tambah_wahana.html')
 
 def edit_wahana(request, nama_wahana):
-    data_edit_wahana = [
-        {
-            'nama_wahana': 'Komedi Putar',
-            'kapasitas_max': '40',
-            'jadwal': '9:00:00',
-            'peraturan': [
-                'Anak di bawah 5 tahun harus didampingi orang dewasa.',
-                'Dilarang berdiri atau bergerak saat wahana beroperasi.',
-                'Pengunjung dengan gangguan jantung disarankan tidak ikut.'
-            ]
-        },
-        {
-            'nama_wahana': 'Kereta Gantung',
-            'kapasitas_max': '25',
-            'jadwal': '8:30:00',
-            'peraturan': [
-                'Anak di bawah 5 tahun harus didampingi orang dewasa.',
-                'Berat maksimum per kereta adalah 150 kg.',
-                'Dilarang membuka pintu atau menggoyangkan kereta gantung.'
-            ]
+    if request.method == 'POST':
+        kapasitas = request.POST.get('kapasitas')
+        jadwal_waktu = request.POST.get('jadwal_waktu')
+
+        jadwal = datetime.today().strftime('%Y-%m-%d') + ' ' + jadwal_waktu
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                UPDATE fasilitas SET kapasitas_max = %s, jadwal = %s::timestamp
+                WHERE nama = %s
+            """, [kapasitas, jadwal, nama_wahana])
+
+        return redirect('data_wahana')
+
+    # GET request
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT w.nama_wahana, TO_CHAR(f.jadwal, 'HH24:MI') AS jadwal, f.kapasitas_max
+            FROM wahana w
+            JOIN fasilitas f ON w.nama_wahana = f.nama
+            WHERE w.nama_wahana = %s
+        """, [nama_wahana])
+        row = cursor.fetchone()
+
+    if row:
+        nama_wahana, jadwal, kapasitas_max = row
+        wahana = {
+            'nama_wahana': nama_wahana,
+            'jadwal': jadwal,
+            'kapasitas_max': kapasitas_max,
         }
-    ]
-
-    wahana = next((item for item in data_edit_wahana if item['nama_wahana'] == nama_wahana), None)
-
-    hewan_list = ["Harimau", "Gajah", "Kera", "Burung"]
-    pelatih_list = ["Dominic Morgan Dixon", "Zavier Genasis Patel"]
+    else:
+        return redirect('data_wahana')
 
     return render(request, 'form_edit_wahana.html', {
         'wahana': wahana,
-        'hewan_list': hewan_list,
-        'pelatih_list': pelatih_list,
     })
+
+def hapus_wahana(request, nama_wahana):
+    with connection.cursor() as cursor:
+        cursor.execute("DELETE FROM berpartisipasi WHERE nama_fasilitas = %s", [nama_wahana])
+        
+        try:
+            cursor.execute("DELETE FROM jadwal_penugasan WHERE nama_wahana = %s", [nama_wahana])
+        except Exception as e:
+            if 'column "nama_wahana" does not exist' in str(e):
+                pass
+            else:
+                raise 
+            
+        cursor.execute("DELETE FROM wahana WHERE nama_wahana = %s", [nama_wahana])
+        cursor.execute("DELETE FROM fasilitas WHERE nama = %s", [nama_wahana])
+
+    return redirect('data_wahana')

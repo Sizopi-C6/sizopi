@@ -109,7 +109,6 @@ def login_page(request):
                 if user and password == user.get('password'):
                     request.session['user'] = user
                     request.session.save()
-                    print(request.session.items())
                     
                     messages.success(request, f"Selamat datang, {user.get('nama_depan')} {user.get('nama_belakang')}!")
                     

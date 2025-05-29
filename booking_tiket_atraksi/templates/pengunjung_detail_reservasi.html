@@ -102,12 +102,31 @@
     ul li {
       margin-bottom: 4px;
     }
+
+    #batalkanModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #batalkanModal.show {
+      display: flex;
+    }
   </style>
 {% endblock meta %}
 
 {% block content %}
 
 {% include 'navbar/pengunjung.html' %}
+
+<!-- Tambahkan input csrf token tersembunyi supaya bisa diambil JS -->
+<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
 <div class="min-h-screen p-8 font-[Poppins]">
   <div class="max-w-4xl mx-auto">
     <h2 class="text-3xl font-bold text-[#008000] mb-6">DETAIL RESERVASI</h2>
@@ -166,11 +185,16 @@
       </div>
 
       <div class="flex flex-wrap justify-center gap-4 mt-6">
-        <a href="{% url 'pengunjung_edit_reservasi' username=data.username_p nama_atraksi=data.nama_atraksi tanggal_kunjungan=data.tanggal|date:'Y-m-d' %}"  class="px-6 py-2 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] transition duration-200 shadow-md">
+        <a href="{% url 'pengunjung_edit_reservasi' username=data.username_p nama_atraksi=data.nama_atraksi tanggal_kunjungan=data.tanggal|date:'Y-m-d' %}"  
+           class="px-6 py-2 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] transition duration-200 shadow-md">
           Edit
         </a>
-        <button type="button" onclick="bukaModal()" class="px-6 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition duration-200 shadow-md">
-          Batalkan Reservasi
+
+        <button type="button" class="btn-cancel btn-danger px-6 py-2 rounded-lg shadow-md"
+          data-username="{{ data.username_p }}"
+          data-nama-atraksi="{{ data.nama_atraksi }}"
+          data-tanggal="{{ data.tanggal|date:'Y-m-d' }}">
+          Batalkan
         </button>
       </div>
     </div>
@@ -182,37 +206,86 @@
 </footer>
 
 <!-- Modal -->
-<div id="hapusModal">
+<div id="batalkanModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalText">
   <div class="modal-content">
-    <h2>Batalkan Reservasi</h2>
-    <p>Apakah anda yakin ingin membatalkan reservasi ini?</p>
+    <h2 id="modalTitle">Batalkan Reservasi</h2>
+    <p id="modalText">Apakah anda yakin ingin membatalkan reservasi ini?</p>
     <div class="modal-buttons">
-      <button type="button" onclick="konfirmasiHapus()" 
-              class="btn-primary px-6 py-3 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] transition duration-200 shadow-md">
-        Ya
-      </button>
-      <button type="button" onclick="tutupModal()"
-              class="btn-danger px-6 py-3 font-medium rounded-lg hover:bg-[#fef2f2] transition duration-200 shadow-md">
-        Tidak
-      </button>
+      <button id="confirmCancelBtn" class="btn-danger px-4 py-2 rounded">Ya</button>
+      <button id="cancelModalBtn" class="btn-primary px-4 py-2 rounded">Tidak</button>
     </div>
   </div>
 </div>
 
 <script>
-  function bukaModal() {
-    document.getElementById("hapusModal").style.display = "flex";
-  }
+document.addEventListener('DOMContentLoaded', () => {
+  const modal = document.getElementById('batalkanModal');
+  const modalText = document.getElementById('modalText');
+  const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+  const cancelModalBtn = document.getElementById('cancelModalBtn');
 
-  function tutupModal() {
-    document.getElementById("hapusModal").style.display = "none";
+  const csrfTokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
+  if (!csrfTokenInput) {
+    console.error('CSRF token tidak ditemukan!');
+    return;
   }
+  const csrfToken = csrfTokenInput.value;
 
-  function konfirmasiHapus() {
-    window.location.href = "{% url 'pengunjung_data_booking' %}";
-  }
+  let selectedBookingData = null;
+  const statusBadge = document.querySelector('.status-badge');
+
+  const btnCancels = document.querySelectorAll('.btn-cancel');
+  btnCancels.forEach(btnCancel => {
+    btnCancel.addEventListener('click', (e) => {
+      e.preventDefault();
+      console.log('Tombol Batalkan ditekan');
+
+      selectedBookingData = {
+        username: btnCancel.getAttribute('data-username'),
+        nama_atraksi: btnCancel.getAttribute('data-nama-atraksi'),
+        tanggal_kunjungan: btnCancel.getAttribute('data-tanggal'),
+      };
+
+      const nama = selectedBookingData.nama_atraksi;
+      modalText.textContent = `Apakah Anda yakin ingin membatalkan reservasi "${nama}"?`;
+      modal.classList.add('show');
+      confirmCancelBtn.focus();
+    });
+  });
+
+  cancelModalBtn.addEventListener('click', () => {
+    modal.classList.remove('show');
+    selectedBookingData = null;
+  });
+
+  confirmCancelBtn.addEventListener('click', () => {
+    if (!selectedBookingData) return;
+
+    fetch('/reservasi/pengunjung/batalkan-reservasi/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrfToken,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(selectedBookingData)
+    })
+    .then(response => {
+      if (response.ok) {
+        statusBadge.textContent = 'Dibatalkan';
+        statusBadge.classList.remove('bg-green-100', 'text-green-800');
+        statusBadge.classList.add('bg-red-100', 'text-red-800');
+
+        modal.classList.remove('show');
+        selectedBookingData = null;
+      } else {
+        alert('Gagal membatalkan reservasi');
+      }
+    })
+    .catch(() => {
+      alert('Terjadi kesalahan jaringan');
+    });
+  });
+});
 </script>
 
-</body>
-</html>
 {% endblock %}

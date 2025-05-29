@@ -200,7 +200,10 @@
                     <div class="action-buttons">
                       <a href="{% url 'pengunjung_edit_reservasi' username=booking.username nama_atraksi=booking.nama_atraksi tanggal_kunjungan=booking.tanggal_kunjungan|date:'Y-m-d' %}" class="btn-edit">Edit</a>
                       <span class="separator">|</span>
-                      <a href="#" class="btn-cancel" id="cancel-{{ booking.id }}">Batalkan</a>
+                      <a href="#" class="btn-cancel" 
+                        data-username="{{ booking.username }}"
+                        data-nama-atraksi="{{ booking.nama_atraksi }}"
+                        data-tanggal="{{ booking.tanggal_kunjungan|date:'Y-m-d' }}">Batalkan</a>
                     </div>
                   </td>
                 </tr>
@@ -238,67 +241,63 @@
     const cancelModalBtn = document.getElementById('cancelModalBtn');
     const csrfToken = document.getElementById('csrfToken').value;
 
-    let selectedBookingId = null;
     let selectedRow = null;
+    let selectedBookingData = null;
 
     document.querySelectorAll('.btn-cancel').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
-        const row = btn.closest('tr');
-        const nama = row.querySelector('td:nth-child(2)').textContent.trim();
-        selectedBookingId = btn.id.replace('cancel-', '');
-        selectedRow = row;
+        selectedRow = btn.closest('tr');
+        selectedBookingData = {
+          username: btn.getAttribute('data-username'),
+          nama_atraksi: btn.getAttribute('data-nama-atraksi'),
+          tanggal_kunjungan: btn.getAttribute('data-tanggal'),
+        };
+
+        const nama = selectedRow.querySelector('td:nth-child(2)').textContent.trim();
         modalText.textContent = `Apakah Anda yakin ingin membatalkan reservasi "${nama}"?`;
         modal.style.display = 'flex';
-        // For accessibility: focus on modal confirm button
         confirmCancelBtn.focus();
       });
     });
 
     cancelModalBtn.addEventListener('click', () => {
       modal.style.display = 'none';
-      selectedBookingId = null;
       selectedRow = null;
+      selectedBookingData = null;
     });
 
     confirmCancelBtn.addEventListener('click', () => {
-      if (!selectedBookingId) return;
+      if (!selectedRow || !selectedBookingData) return;
 
-      fetch(`/pengunjung/batalkan-reservasi/${selectedBookingId}/`, {
+      fetch('/reservasi/pengunjung/batalkan-reservasi/', {
         method: 'POST',
         headers: {
           'X-CSRFToken': csrfToken,
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify(selectedBookingData)
       })
       .then(response => {
         if (response.ok) {
+          // Update status di UI
+          const statusBadge = selectedRow.querySelector('.status-badge');
+          statusBadge.textContent = 'Dibatalkan';
+          statusBadge.classList.remove('status-terjadwal');
+          statusBadge.classList.add('status-dibatalkan');
+
+          // Tutup modal
           modal.style.display = 'none';
-
-          if(selectedRow){
-            const statusCell = selectedRow.querySelector('td:nth-child(5) span.status-badge');
-            if(statusCell){
-              statusCell.textContent = 'Dibatalkan';
-              statusCell.classList.remove('status-terjadwal');
-              statusCell.classList.add('status-dibatalkan');
-            }
-
-            const actionCell = selectedRow.querySelector('td:nth-child(6) .action-buttons');
-            if(actionCell){
-              actionCell.innerHTML = '<span style="color:#991b1b; font-weight:600;">Reservasi Dibatalkan</span>';
-            }
-          }
-
-          selectedBookingId = null;
           selectedRow = null;
+          selectedBookingData = null;
         } else {
           alert('Gagal membatalkan reservasi');
         }
       })
-      .catch(() => {
-        alert('Terjadi kesalahan jaringan');
-      });
+    .catch(() => {
+      alert('Terjadi kesalahan jaringan');
     });
   });
+});
 </script>
 {% endblock %}

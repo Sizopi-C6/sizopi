@@ -1,9 +1,8 @@
+import json
 from django.contrib import messages
 from django.db import connection
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404, render, redirect
-from django.urls import reverse
-from django.utils.timezone import make_aware
+from django.shortcuts import render, redirect
 from datetime import datetime
 
 def pengunjung_data_reservasi(request):
@@ -524,32 +523,23 @@ def staf_edit_reservasi(request, username, nama_atraksi, tanggal_kunjungan):
 
     return render(request, 'staf_edit_reservasi.html', {'reservasi': reservasi})
 
-def batalkan_reservasi(request, username, nama_atraksi, tanggal_kunjungan):
-    if request.method != 'POST':
-        return JsonResponse({'error': 'Method not allowed'}, status=405)
-
+def batalkan_reservasi(request):
     try:
-        tanggal_obj = datetime.strptime(tanggal_kunjungan, '%Y-%m-%d').date()
-    except ValueError:
-        return JsonResponse({'error': 'Format tanggal salah, harus YYYY-MM-DD'}, status=400)
+        print(request.body)
+        data = json.loads(request.body)
+        username = data['username']
+        nama_atraksi = data['nama_atraksi']
+        tanggal_kunjungan = data['tanggal_kunjungan']  
+        
+        print("Data:", username, nama_atraksi, tanggal_kunjungan)
 
-    with connection.cursor() as cursor:
-        cursor.execute("""
-            SELECT status FROM reservasi
-            WHERE username_p=%s AND nama_atraksi=%s AND tanggal_kunjungan=%s
-        """, [username, nama_atraksi, tanggal_obj])
-        row = cursor.fetchone()
-        if not row:
-            return JsonResponse({'error': 'Reservasi tidak ditemukan'}, status=404)
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                UPDATE reservasi
+                SET status = 'Dibatalkan'
+                WHERE username_p = %s AND nama_atraksi = %s AND tanggal_kunjungan = %s
+            """, [username, nama_atraksi, tanggal_kunjungan])
 
-        current_status = row[0]
-        if current_status == 'Dibatalkan':
-            return JsonResponse({'error': 'Reservasi sudah dibatalkan'}, status=400)
-
-        cursor.execute("""
-            UPDATE reservasi
-            SET status = 'Dibatalkan'
-            WHERE username_p=%s AND nama_atraksi=%s AND tanggal_kunjungan=%s
-        """, [username, nama_atraksi, tanggal_obj])
-
-    return JsonResponse({'message': 'Reservasi berhasil dibatalkan'}, status=200)
+        return JsonResponse({'message': 'Reservasi berhasil dibatalkan'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

@@ -77,6 +77,32 @@
     color: #065f46;
     font-weight: 500;
   }
+
+  .history-btn {
+  background-color: #008000;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.3s;
+  border: none;
+  cursor: pointer;
+  display: inline-flex; 
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.history-btn i {
+  font-size: 1rem;
+  line-height: 1; /* Jaga agar ikon sejajar */
+}
+
+.history-btn-container {
+  margin-bottom: 16px;
+}
+
+
 </style>
 {% endblock %}
 
@@ -85,6 +111,12 @@
   <div class="max-w-7xl mx-auto">
     <div class="card p-8 rounded-2xl shadow-lg mb-8">
       <h2 class="text-3xl font-bold text-[#008000] mb-6">LIST DATA RESERVASI</h2>
+      <div class="history-btn-container">
+        <a href="/reservasi/pengunjung/booking/" class="history-btn">
+          <i class="fas fa-history"></i>
+          Lihat History Reservasi
+        </a>
+      </div>
 
       <div class="table-container">
         <div class="table-wrapper">

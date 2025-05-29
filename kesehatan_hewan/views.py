@@ -153,21 +153,21 @@ def handle_add_medical_record(request, animal_uuid, user):
     
     if not tanggal_pemeriksaan or not status_kesehatan:
         messages.error(request, 'Tanggal pemeriksaan dan status kesehatan harus diisi!')
-        return redirect('rekam_medis_hewan', animal_id=str(animal_uuid))
+        return redirect('kesehatan:rekam_medis_hewan', animal_id=str(animal_uuid))
     
     try:
         exam_date = datetime.strptime(tanggal_pemeriksaan, '%Y-%m-%d').date()
         if exam_date > date.today():
             messages.error(request, 'Tanggal pemeriksaan tidak boleh di masa depan!')
-            return redirect('rekam_medis_hewan', animal_id=str(animal_uuid))
+            return redirect('kesehatan:rekam_medis_hewan', animal_id=str(animal_uuid))
     except ValueError:
         messages.error(request, 'Format tanggal tidak valid!')
-        return redirect('rekam_medis_hewan', animal_id=str(animal_uuid))
+        return redirect('kesehatan:rekam_medis_hewan', animal_id=str(animal_uuid))
     
     if status_kesehatan == 'Sakit':
         if not diagnosis or not pengobatan:
             messages.error(request, 'Diagnosis dan pengobatan harus diisi jika status hewan sakit!')
-            return redirect('rekam_medis_hewan', animal_id=str(animal_uuid))
+            return redirect('kesehatan:rekam_medis_hewan', animal_id=str(animal_uuid))
     
     try:
         with connection.cursor() as cursor:
@@ -202,7 +202,7 @@ def handle_add_medical_record(request, animal_uuid, user):
         logger.error(f"Error adding medical record: {str(e)}")
         messages.error(request, 'Terjadi kesalahan saat menambahkan rekam medis.')
     
-    return redirect('rekam_medis_hewan', animal_id=str(animal_uuid))
+    return redirect('kesehatan:rekam_medis_hewan', animal_id=str(animal_uuid))
 
 def handle_edit_medical_record(request, animal_uuid):
     tanggal_pemeriksaan = request.POST.get('tanggal_pemeriksaan')
@@ -214,7 +214,7 @@ def handle_edit_medical_record(request, animal_uuid):
     
     if not all([tanggal_pemeriksaan, diagnosis_baru, pengobatan_baru]):
         messages.error(request, 'Tanggal, diagnosis baru, dan pengobatan baru harus diisi!')
-        return redirect('rekam_medis_hewan', animal_id=str(animal_uuid))
+        return redirect('kesehatan:rekam_medis_hewan', animal_id=str(animal_uuid))
     
     try:
         exam_date = None
@@ -237,7 +237,7 @@ def handle_edit_medical_record(request, animal_uuid):
     except ValueError:
         print(f"Date parsing failed for: '{tanggal_pemeriksaan}'") 
         messages.error(request, f'Format tanggal tidak valid: {tanggal_pemeriksaan}')
-        return redirect('rekam_medis_hewan', animal_id=str(animal_uuid))
+        return redirect('kesehatan:rekam_medis_hewan', animal_id=str(animal_uuid))
     
     try:
         with connection.cursor() as cursor:
@@ -255,7 +255,7 @@ def handle_edit_medical_record(request, animal_uuid):
         logger.error(f"Error updating medical record: {str(e)}")
         messages.error(request, 'Terjadi kesalahan saat memperbarui rekam medis.')
     
-    return redirect('rekam_medis_hewan', animal_id=str(animal_uuid))
+    return redirect('kesehatan:rekam_medis_hewan', animal_id=str(animal_uuid))
 
 def handle_delete_medical_record(request, animal_uuid):
     tanggal_pemeriksaan = request.POST.get('tanggal_pemeriksaan')
@@ -264,7 +264,7 @@ def handle_delete_medical_record(request, animal_uuid):
     
     if not tanggal_pemeriksaan:
         messages.error(request, 'Tanggal pemeriksaan harus diisi!')
-        return redirect('rekam_medis_hewan', animal_id=str(animal_uuid))
+        return redirect('kesehatan:rekam_medis_hewan', animal_id=str(animal_uuid))
     
     try:
         exam_date = None
@@ -289,7 +289,7 @@ def handle_delete_medical_record(request, animal_uuid):
     except ValueError:
         print(f"Date parsing failed for: '{tanggal_pemeriksaan}'") 
         messages.error(request, f'Format tanggal tidak valid: {tanggal_pemeriksaan}')
-        return redirect('rekam_medis_hewan', animal_id=str(animal_uuid))
+        return redirect('kesehatan:rekam_medis_hewan', animal_id=str(animal_uuid))
     
     try:
         with connection.cursor() as cursor:
@@ -307,7 +307,7 @@ def handle_delete_medical_record(request, animal_uuid):
         logger.error(f"Error deleting medical record: {str(e)}")
         messages.error(request, 'Terjadi kesalahan saat menghapus rekam medis.')
     
-    return redirect('rekam_medis_hewan', animal_id=str(animal_uuid))
+    return redirect('kesehatan:rekam_medis_hewan', animal_id=str(animal_uuid))
 
 def penjadwalan_pemeriksaan_kesehatan(request, animal_id):
     has_access, user = check_doctor_access(request)
@@ -374,16 +374,16 @@ def handle_set_frequency(request, animal_uuid):
     
     if not new_frequency:
         messages.error(request, 'Frekuensi pemeriksaan harus diisi!')
-        return redirect('penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
+        return redirect('kesehatan:penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
     
     try:
         frequency = int(new_frequency)
         if frequency < 1 or frequency > 12:
             messages.error(request, 'Frekuensi harus antara 1-12 bulan!')
-            return redirect('penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
+            return redirect('kesehatan:penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
     except ValueError:
         messages.error(request, 'Frekuensi harus berupa angka!')
-        return redirect('penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
+        return redirect('kesehatan:penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
     
     try:
         with connection.cursor() as cursor:
@@ -399,7 +399,7 @@ def handle_set_frequency(request, animal_uuid):
         logger.error(f"Error setting frequency: {str(e)}")
         messages.error(request, 'Terjadi kesalahan saat mengatur frekuensi pemeriksaan.')
     
-    return redirect('penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
+    return redirect('kesehatan:penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
 
 
 def handle_add_schedule(request, animal_uuid):
@@ -407,16 +407,16 @@ def handle_add_schedule(request, animal_uuid):
     
     if not tgl_pemeriksaan:
         messages.error(request, 'Tanggal pemeriksaan harus diisi!')
-        return redirect('penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
+        return redirect('kesehatan:penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
     
     try:
         exam_date = datetime.strptime(tgl_pemeriksaan, '%Y-%m-%d').date()
         if exam_date <= date.today():
             messages.error(request, 'Tanggal pemeriksaan harus di masa depan!')
-            return redirect('penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
+            return redirect('kesehatan:penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
     except ValueError:
         messages.error(request, 'Format tanggal tidak valid!')
-        return redirect('penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
+        return redirect('kesehatan:penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
     
     try:
         with connection.cursor() as cursor:
@@ -457,7 +457,7 @@ def handle_add_schedule(request, animal_uuid):
         logger.error(f"Error adding schedule: {str(e)}")
         messages.error(request, 'Terjadi kesalahan saat menambahkan jadwal pemeriksaan.')
     
-    return redirect('penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
+    return redirect('kesehatan:penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
 
 def handle_edit_schedule(request, animal_uuid):
     old_date = request.POST.get('old_date')
@@ -465,7 +465,7 @@ def handle_edit_schedule(request, animal_uuid):
     
     if not all([old_date, new_date]):
         messages.error(request, 'Tanggal lama dan baru harus diisi!')
-        return redirect('penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
+        return redirect('kesehatan:penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
     
     try:
         old_exam_date = datetime.strptime(old_date, '%Y-%m-%d').date()
@@ -473,10 +473,10 @@ def handle_edit_schedule(request, animal_uuid):
         
         if new_exam_date <= date.today():
             messages.error(request, 'Tanggal pemeriksaan baru harus di masa depan!')
-            return redirect('penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
+            return redirect('kesehatan:penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
     except ValueError:
         messages.error(request, 'Format tanggal tidak valid!')
-        return redirect('penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
+        return redirect('kesehatan:penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
     
     try:
         with connection.cursor() as cursor:
@@ -488,7 +488,7 @@ def handle_edit_schedule(request, animal_uuid):
             
             if cursor.fetchone()[0] > 0:
                 messages.error(request, 'Jadwal pemeriksaan untuk tanggal baru sudah ada!')
-                return redirect('penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
+                return redirect('kesehatan:penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
             
             cursor.execute("""
                 UPDATE jadwal_pemeriksaan_kesehatan 
@@ -505,23 +505,23 @@ def handle_edit_schedule(request, animal_uuid):
         logger.error(f"Error updating schedule: {str(e)}")
         messages.error(request, 'Terjadi kesalahan saat memperbarui jadwal pemeriksaan.')
     
-    return redirect('penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
+    return redirect('kesehatan:penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
 
 def handle_edit_frequency(request, animal_uuid):
     new_frequency = request.POST.get('new_frequency')
     
     if not new_frequency:
         messages.error(request, 'Frekuensi pemeriksaan harus diisi!')
-        return redirect('penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
+        return redirect('kesehatan:penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
     
     try:
         frequency = int(new_frequency)
         if frequency < 1 or frequency > 12:
             messages.error(request, 'Frekuensi harus antara 1-12 bulan!')
-            return redirect('penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
+            return redirect('kesehatan:penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
     except ValueError:
         messages.error(request, 'Frekuensi harus berupa angka!')
-        return redirect('penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
+        return redirect('kesehatan:penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
     
     try:        
         with connection.cursor() as cursor:
@@ -537,20 +537,20 @@ def handle_edit_frequency(request, animal_uuid):
         logger.error(f"Error updating frequency: {str(e)}")
         messages.error(request, 'Terjadi kesalahan saat memperbarui frekuensi pemeriksaan.')
     
-    return redirect('penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
+    return redirect('kesehatan:penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
 
 def handle_delete_schedule(request, animal_uuid):
     date_to_delete = request.POST.get('date_to_delete')
     
     if not date_to_delete:
         messages.error(request, 'Tanggal pemeriksaan harus diisi!')
-        return redirect('penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
+        return redirect('kesehatan:penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
     
     try:
         exam_date = datetime.strptime(date_to_delete, '%Y-%m-%d').date()
     except ValueError:
         messages.error(request, 'Format tanggal tidak valid!')
-        return redirect('penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
+        return redirect('kesehatan:penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
     
     try:
         with connection.cursor() as cursor:
@@ -568,7 +568,7 @@ def handle_delete_schedule(request, animal_uuid):
         logger.error(f"Error deleting schedule: {str(e)}")
         messages.error(request, 'Terjadi kesalahan saat menghapus jadwal pemeriksaan.')
     
-    return redirect('penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
+    return redirect('kesehatan:penjadwalan_pemeriksaan_kesehatan', animal_id=str(animal_uuid))
 
 def pemberian_pakan(request, animal_id):
     has_access, user = check_keeper_access(request)
@@ -662,22 +662,22 @@ def handle_add_feeding_for_animal(request, animal_uuid, user):
     
     if not all([jenis_pakan, jumlah_pakan, jadwal]):
         messages.error(request, 'Semua field harus diisi!')
-        return redirect('pemberian_pakan', animal_id=str(animal_uuid))
+        return redirect('kesehatan:pemberian_pakan', animal_id=str(animal_uuid))
     
     try:
         jumlah = int(jumlah_pakan)
         if jumlah <= 0:
             messages.error(request, 'Jumlah pakan harus lebih dari 0!')
-            return redirect('pemberian_pakan', animal_id=str(animal_uuid))
+            return redirect('kesehatan:pemberian_pakan', animal_id=str(animal_uuid))
             
         jadwal_datetime = datetime.strptime(jadwal, '%Y-%m-%dT%H:%M')
         if jadwal_datetime <= datetime.now():
             messages.error(request, 'Jadwal pemberian pakan harus di masa depan!')
-            return redirect('pemberian_pakan', animal_id=str(animal_uuid))
+            return redirect('kesehatan:pemberian_pakan', animal_id=str(animal_uuid))
             
     except (ValueError, TypeError):
         messages.error(request, 'Format data tidak valid!')
-        return redirect('pemberian_pakan', animal_id=str(animal_uuid))
+        return redirect('kesehatan:pemberian_pakan', animal_id=str(animal_uuid))
     
     try:
         with connection.cursor() as cursor:
@@ -688,7 +688,7 @@ def handle_add_feeding_for_animal(request, animal_uuid, user):
             
             if cursor.fetchone()[0] > 0:
                 messages.error(request, 'Sudah ada jadwal pemberian pakan untuk waktu ini!')
-                return redirect('pemberian_pakan', animal_id=str(animal_uuid))
+                return redirect('kesehatan:pemberian_pakan', animal_id=str(animal_uuid))
             
             cursor.execute("""
                 INSERT INTO pakan (id_hewan, jadwal, jenis, jumlah, status)
@@ -701,7 +701,7 @@ def handle_add_feeding_for_animal(request, animal_uuid, user):
         logger.error(f"Error adding feeding schedule: {str(e)}")
         messages.error(request, 'Terjadi kesalahan saat menambahkan jadwal pemberian pakan.')
     
-    return redirect('pemberian_pakan', animal_id=str(animal_uuid))
+    return redirect('kesehatan:pemberian_pakan', animal_id=str(animal_uuid))
 
 def handle_edit_feeding(request, user):
     """Handle editing feeding schedule"""
@@ -713,21 +713,21 @@ def handle_edit_feeding(request, user):
     
     if not all([id_hewan, old_jadwal, jenis_pakan_baru, jumlah_pakan_baru, jadwal_baru]):
         messages.error(request, 'Semua field harus diisi!')
-        return redirect('pemberian_pakan')
+        return redirect('kesehatan:pemberian_pakan')
     
     try:
         animal_uuid = id_hewan
         jumlah = int(jumlah_pakan_baru)
         if jumlah <= 0:
             messages.error(request, 'Jumlah pakan harus lebih dari 0!')
-            return redirect('pemberian_pakan')
+            return redirect('kesehatan:pemberian_pakan')
             
         old_jadwal_datetime = datetime.strptime(old_jadwal, '%Y-%m-%d %H:%M:%S')
         new_jadwal_datetime = datetime.strptime(jadwal_baru, '%Y-%m-%dT%H:%M')
         
     except (ValueError, TypeError):
         messages.error(request, 'Format data tidak valid!')
-        return redirect('pemberian_pakan')
+        return redirect('kesehatan:pemberian_pakan')
     
     try:
         with connection.cursor() as cursor:
@@ -746,7 +746,7 @@ def handle_edit_feeding(request, user):
         logger.error(f"Error updating feeding schedule: {str(e)}")
         messages.error(request, 'Terjadi kesalahan saat memperbarui jadwal pemberian pakan.')
     
-    return redirect('pemberian_pakan', animal_id=str(animal_uuid))
+    return redirect('kesehatan:pemberian_pakan', animal_id=str(animal_uuid))
 
 def handle_delete_feeding(request, user):
     """Handle deleting feeding schedule"""
@@ -755,14 +755,14 @@ def handle_delete_feeding(request, user):
     
     if not all([id_hewan, jadwal]):
         messages.error(request, 'Data tidak lengkap!')
-        return redirect('pemberian_pakan')
+        return redirect('kesehatan:pemberian_pakan')
     
     try:
         animal_uuid = id_hewan
         jadwal_datetime = datetime.strptime(jadwal, '%Y-%m-%d %H:%M:%S')
     except (ValueError, TypeError):
         messages.error(request, 'Format data tidak valid!')
-        return redirect('pemberian_pakan')
+        return redirect('kesehatan:pemberian_pakan')
     
     try:
         with connection.cursor() as cursor:
@@ -780,7 +780,7 @@ def handle_delete_feeding(request, user):
         logger.error(f"Error deleting feeding schedule: {str(e)}")
         messages.error(request, 'Terjadi kesalahan saat menghapus jadwal pemberian pakan.')
     
-    return redirect('pemberian_pakan', animal_id=str(animal_uuid))
+    return redirect('kesehatan:pemberian_pakan', animal_id=str(animal_uuid))
 
 def handle_mark_fed(request, user):
     """Handle marking feeding as completed"""
@@ -789,14 +789,14 @@ def handle_mark_fed(request, user):
     
     if not all([id_hewan, jadwal]):
         messages.error(request, 'Data tidak lengkap!')
-        return redirect('pemberian_pakan')
+        return redirect('kesehatan:pemberian_pakan')
     
     try:
         animal_uuid = id_hewan
         jadwal_datetime = datetime.strptime(jadwal, '%Y-%m-%d %H:%M:%S')
     except (ValueError, TypeError):
         messages.error(request, 'Format data tidak valid!')
-        return redirect('pemberian_pakan')
+        return redirect('kesehatan:pemberian_pakan')
     
     try:
         with connection.cursor() as cursor:
@@ -821,4 +821,4 @@ def handle_mark_fed(request, user):
         logger.error(f"Error marking feeding as completed: {str(e)}")
         messages.error(request, 'Terjadi kesalahan saat memperbarui status pemberian pakan.')
     
-    return redirect('pemberian_pakan', animal_id=str(animal_uuid))
+    return redirect('kesehatan:pemberian_pakan', animal_id=str(animal_uuid))

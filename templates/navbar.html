@@ -1,194 +1,299 @@
 {% load static %}
-<style>
-    /* CSS Umum Navbar */
-    .navbar {
-        background: #006400; 
-        padding: 1rem 2rem;
-        font-family: 'Segoe UI', sans-serif;
-        width: 100%;
-        box-sizing: border-box;
-    }
-    .navbar-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        max-width: 1200px;
-        margin: 0 auto;
-        width: 100%;
-    }
-    .navbar-brand {
-        display: flex;
-        align-items: center;
-        color: white;
-        font-weight: bold;
-        text-decoration: none;
-        font-size: 1.5rem;
-    }
-    .navbar-logo {
-        height: 40px;
-        margin-right: 10px;
-    }
-    .navbar-menu {
-        display: flex;
-        gap: 1.5rem;
-    }
-    .navbar-item {
-        color: #ecf0f1;
-        text-decoration: none;
-        padding: 0.5rem 1rem;
-        border-radius: 4px;
-        transition: all 0.3s;
-        white-space: nowrap;
-    }
-    .navbar-item:hover {
-        background: #005000; /* Hijau yang lebih tua untuk hover */
-    }
-    .navbar-item.cta {
-        background: #004d00; /* Hijau tua lebih kontras untuk tombol CTA */
-    }
-    .navbar-item.cta:hover {
-        background: #003b00; /* Hijau yang lebih tua lagi saat hover CTA */
-    }
-    
-    /* Hamburger menu untuk mobile */
-    .menu-toggle {
-        display: none;
-        cursor: pointer;
-        background: none;
-        border: none;
-        color: white;
-        font-size: 1.5rem;
-    }
-    
-    /* Media Queries untuk Responsive Design */
-    @media screen and (max-width: 960px) {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIZOPI</title>
+    <style>
+        /* CSS Umum Navbar */
         .navbar {
-            padding: 0.8rem 1.5rem;
-        }
-        
-        .navbar-brand {
-            font-size: 1.3rem;
-        }
-        
-        .navbar-menu {
-            gap: 1rem;
-        }
-        
-        .navbar-item {
-            padding: 0.4rem 0.8rem;
-            font-size: 0.9rem;
-        }
-    }
-    
-    @media screen and (max-width: 768px) {
-        .navbar {
-            padding: 0.8rem 1rem;
-        }
-        
-        .menu-toggle {
-            display: block;
-        }
-        
-        .navbar-menu {
-            display: none;
+            background: #006400; 
+            padding: 1rem 2rem;
+            font-family: 'Segoe UI', sans-serif;
             width: 100%;
-            flex-direction: column;
-            gap: 0.5rem;
-            margin-top: 1rem;
+            box-sizing: border-box;
         }
-        
         .navbar-container {
-            flex-wrap: wrap;
-        }
-        
-        .navbar-menu.active {
-            display: flex;
-        }
-        
-        .navbar-item {
-            text-align: center;
-            padding: 0.8rem;
-        }
-        
-        .mobile-nav-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
             width: 100%;
         }
-    }
-</style>
-
-<nav class="navbar">
-    <div class="navbar-container">
-        <div class="mobile-nav-container">
-            <a href="/" class="navbar-brand">
-                <img src="{% static 'images/lion.png' %}" alt="Logo" class="navbar-logo">
-                <span>SIZOPI</span>
-            </a>
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 1.5rem;
+        }
+        .navbar-logo {
+            height: 40px;
+            margin-right: 10px;
+        }
+        .navbar-menu {
+            display: flex;
+            gap: 1.5rem;
+        }
+        .navbar-item {
+            color: #ecf0f1;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        .navbar-item:hover {
+            background: #005000;
+        }
+        .navbar-item.cta {
+            background: #004d00;
+        }
+        .navbar-item.cta:hover {
+            background: #003b00;
+        }
+        
+        /* Dropdown Specific Styles */
+        .has-dropdown {
+            position: relative;
+        }
+        
+        .navbar-dropdown {
+            display: none;
+            position: absolute;
+            left: 0;
+            top: 100%;
+            background: #005000;
+            min-width: 200px;
+            border-radius: 0 0 4px 4px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        
+        .navbar-dropdown.is-active {
+            display: block;
+        }
+        
+        .navbar-dropdown .navbar-item {
+            padding: 0.8rem 1rem;
+            color: #ecf0f1;
+            border-bottom: 1px solid #004000;
+            display: block;
+        }
+        
+        .navbar-dropdown .navbar-item:last-child {
+            border-bottom: none;
+        }
+        
+        .navbar-dropdown .navbar-item:hover {
+            background: #004000;
+        }
+        
+        .has-dropdown.is-active .navbar-link {
+            background: #005000;
+            border-radius: 4px 4px 0 0;
+        }
+        
+        /* Hamburger menu untuk mobile */
+        .menu-toggle {
+            display: none;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        /* Media Queries untuk Responsive Design */
+        @media screen and (max-width: 960px) {
+            .navbar {
+                padding: 0.8rem 1.5rem;
+            }
             
-            <button class="menu-toggle" id="menuToggle">
-                ☰
-            </button>
-        </div>
+            .navbar-brand {
+                font-size: 1.3rem;
+            }
+            
+            .navbar-menu {
+                gap: 1rem;
+            }
+            
+            .navbar-item {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media screen and (max-width: 768px) {
+            .navbar {
+                padding: 0.8rem 1rem;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            .navbar-menu {
+                display: none;
+                width: 100%;
+                flex-direction: column;
+                gap: 0.5rem;
+                margin-top: 1rem;
+            }
+            
+            .navbar-container {
+                flex-wrap: wrap;
+            }
+            
+            .navbar-menu.active {
+                display: flex;
+            }
+            
+            .navbar-item {
+                text-align: center;
+                padding: 0.8rem;
+            }
+            
+            .mobile-nav-container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                width: 100%;
+            }
+            
+            /* Mobile dropdown styles */
+            .navbar-dropdown {
+                position: static;
+                display: none;
+                background: #004000;
+                box-shadow: none;
+            }
+            
+            .navbar-dropdown.is-active {
+                display: block;
+            }
+            
+            .has-dropdown.is-active .navbar-link {
+                border-radius: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="mobile-nav-container">
+                <a href="/" class="navbar-brand">
+                    <img src="{% static 'images/lion.png' %}" alt="Logo" class="navbar-logo">
+                    <span>SIZOPI</span>
+                </a>
+                
+                <button class="menu-toggle" id="menuToggle">
+                    ☰
+                </button>
+            </div>
 
-        <div class="navbar-menu" id="mainMenu">
-            {% if request.session.user.role %}
-                <a href="/dashboard" class="navbar-item">Dashboard</a>
-                    {% if request.session.user.role == 'dokter_hewan' %}
-                        <a href="{% url 'kesehatan:daftar_hewan' %}" class="navbar-item">Rekam Medis</a>
-        
-                    {% elif request.session.user.role == 'penjaga_hewan' %}
-                        <a href="{% url 'kesehatan:daftar_hewan' %}" class="navbar-item">Catatan Perawatan Hewan</a>
-        
-                    {% elif request.session.user.role == 'staf_admin' %}
-                        <a href="/manajemen-wahana" class="navbar-item">Kelola Pengunjung</a>
-                        <a href="{% url 'adopsi:adopsi_admin' %}" class="navbar-item">Kelola Adopsi</a>
-                        <a href="{% url 'adopsi:daftar_adopter' %}" class="navbar-item">Kelola Adopter</a>
-        
-                    {% elif request.session.user.role == 'pelatih_hewan' %}
-                        <a href="/manajemen-atraksi" class="navbar-item">Jadwal Pertunjukan</a> 
-        
-                    {% elif request.session.user.role == 'pengunjung' %}
-                        {% if is_adopter %}
-                            <a href="{% url 'adopsi:adopsi_pengunjung' %}" id="adopsi-link" class="navbar-item">Hewan Adopsi</a>
-                        {% else %}
-                            <a href="{% url 'data_satwa_habitat:list_habitat' %}" class="navbar-item">Informasi Kebun Binatang</a>
-                            <a href="/pengunjung-detail/" class="navbar-item">Reservasi Tiket</a>
+            <div class="navbar-menu" id="mainMenu">
+                {% if request.session.user.role %}
+                    <a href="/dashboard" class="navbar-item">Dashboard</a>
+                        {% if request.session.user.role == 'dokter_hewan' %}
+                            <a href="{% url 'kesehatan:daftar_hewan' %}" class="navbar-item">Rekam Medis</a>
+            
+                        {% elif request.session.user.role == 'penjaga_hewan' %}
+                            <a href="{% url 'kesehatan:daftar_hewan' %}" class="navbar-item">Catatan Perawatan Hewan</a>
+            
+                        {% elif request.session.user.role == 'staf_admin' %}
+                            <div class="navbar-item has-dropdown" id="pengunjung-dropdown">
+                                <a class="navbar-link" onclick="toggleDropdown('pengunjung-dropdown')">
+                                    Kelola Pengunjung
+                                </a>
+                                <div class="navbar-dropdown">
+                                    <a class="navbar-item" href="/reservasi/staf/atraksi/">Reservasi Atraksi</a>
+                                    <a class="navbar-item" href="/reservasi/staf/wahana/">Reservasi Wahana</a>
+                                </div>
+                            </div>
+                            <a href="{% url 'adopsi:adopsi_admin' %}" class="navbar-item">Kelola Adopsi</a>
+                            <a href="{% url 'adopsi:daftar_adopter' %}" class="navbar-item">Kelola Adopter</a>
+                            <div class="navbar-item has-dropdown" id="fasilitas-dropdown">
+                                <a class="navbar-link" onclick="toggleDropdown('fasilitas-dropdown')">
+                                    Kelola Fasilitas
+                                </a>
+                                <div class="navbar-dropdown">
+                                    <a class="navbar-item" href="/manajemen-atraksi">Kelola Atraksi</a>
+                                    <a class="navbar-item" href="/manajemen-wahana">Kelola Wahana</a>
+                                </div>
+                            </div>
+
+                        {% elif request.session.user.role == 'pelatih_hewan' %}
+                            <a href="/manajemen-atraksi" class="navbar-item">Jadwal Pertunjukan</a> 
+            
+                        {% elif request.session.user.role == 'pengunjung' %}
+                            {% if is_adopter %}
+                                <a href="{% url 'adopsi:adopsi_pengunjung' %}" id="adopsi-link" class="navbar-item">Hewan Adopsi</a>
+                            {% else %}
+                                <a href="{% url 'data_satwa_habitat:list_habitat' %}" class="navbar-item">Informasi Kebun Binatang</a>
+                                <a href="/reservasi/pengunjung" class="navbar-item">Reservasi Tiket</a>
+                            {% endif %}
                         {% endif %}
-                    {% endif %}
-                <a href="{% url 'profile_settings' %}" class="navbar-item">Profil</a>
-                <div class="navbar-menu" id="profileMenu">
-                    <a href="{% url 'logout_view' %}" class="navbar-item cta">Logout</a>
-                </div>
-            {% else %}
-                <a href="/login/" class="navbar-item">Login</a>
-                <div class="navbar-menu" id="profileMenu">
-                    <a href="/register/" class="navbar-item cta">Register</a>
-                </div>
-            {% endif %}
-        </div>
-   </div>
-</nav>
+                    <a href="{% url 'profile_settings' %}" class="navbar-item">Profil</a>
+                    <div class="navbar-menu" id="profileMenu">
+                        <a href="{% url 'logout_view' %}" class="navbar-item cta">Logout</a>
+                    </div>
+                {% else %}
+                    <a href="/login/" class="navbar-item">Login</a>
+                    <div class="navbar-menu" id="profileMenu">
+                        <a href="/register/" class="navbar-item cta">Register</a>
+                    </div>
+                {% endif %}
+            </div>
+       </div>
+    </nav>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const menuToggle = document.getElementById('menuToggle');
-        const mainMenu = document.getElementById('mainMenu');
-        const profileMenu = document.getElementById('profileMenu');
-        
-        menuToggle.addEventListener('click', function() {
-            mainMenu.classList.toggle('active');
-            profileMenu.classList.toggle('active');
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.getElementById('menuToggle');
+            const mainMenu = document.getElementById('mainMenu');
+            const profileMenu = document.getElementById('profileMenu');
+            
+            menuToggle.addEventListener('click', function() {
+                mainMenu.classList.toggle('active');
+                profileMenu.classList.toggle('active');
+            });
+            
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    mainMenu.classList.remove('active');
+                    profileMenu.classList.remove('active');
+                }
+            });
         });
         
-        // Adjust menu visibility on window resize
-        window.addEventListener('resize', function() {
-            if (window.innerWidth > 768) {
-                mainMenu.classList.remove('active');
-                profileMenu.classList.remove('active');
+        function toggleDropdown(dropdownId) {
+            // Close all other dropdowns first
+            document.querySelectorAll('.has-dropdown').forEach(dropdown => {
+                if (dropdown.id !== dropdownId) {
+                    dropdown.querySelector('.navbar-dropdown').classList.remove('is-active');
+                    dropdown.classList.remove('is-active');
+                }
+            });
+            
+            // Toggle the clicked dropdown
+            const dropdown = document.getElementById(dropdownId);
+            dropdown.querySelector('.navbar-dropdown').classList.toggle('is-active');
+            dropdown.classList.toggle('is-active');
+        }
+        
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.has-dropdown')) {
+                document.querySelectorAll('.has-dropdown').forEach(dropdown => {
+                    dropdown.querySelector('.navbar-dropdown').classList.remove('is-active');
+                    dropdown.classList.remove('is-active');
+                });
             }
         });
-    });
-</script>
-
+    </script>
+</body>
+</html>

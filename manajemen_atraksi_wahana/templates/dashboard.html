@@ -98,19 +98,6 @@
 
 {% block content %}
 
-{% if data_umum.role == "Dokter Hewan" %}
-  {% include 'navbar/dokter.html' %}
-{% elif data_umum.role == "Pengunjung" %}
-  {% include 'navbar/pengunjung.html' %}
-{% elif data_umum.role == "Penjaga Hewan" %}
-  {% include 'navbar/penjaga.html' %}
-{% elif data_umum.role == "Staf Administrasi" %}
-  {% include 'navbar/staff_administrator.html' %}
-{% elif data_umum.role == "Staf Pelatih Pertunjukan" %}
-  {% include 'navbar/pelatih.html' %}
-{% else %}
-  {% include 'navbar/guest.html' %}
-{% endif %}
 <div class="welcome-message">
     <h3>Selamat datang di Sizopi!</h3>
 </div>

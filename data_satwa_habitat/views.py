@@ -221,8 +221,9 @@ def find_habitat_by_name(habitat_nama):
 
 def detail_habitat(request, habitat_nama):
     with connection.cursor() as cursor:
-        cursor.execute("SELECT * FROM habitat WHERE nama = %s", [habitat_nama])
+        cursor.execute("SELECT * FROM habitat WHERE LOWER(nama) = LOWER(%s)", [habitat_nama])
         data_habitat = cursor.fetchone()
+        print(habitat_nama)
 
         if data_habitat is None:
             return render(request, 'data_habitat/list_habitat.html', {
@@ -237,7 +238,7 @@ def detail_habitat(request, habitat_nama):
             'kapasitas': data_habitat[2],
         }
 
-        cursor.execute("SELECT name, species, asal_hewan, tanggal_lahir, status_kesehatan, nama_habitat, url_foto FROM hewan WHERE nama_habitat = %s", [habitat_nama])
+        cursor.execute("SELECT name, species, asal_hewan, tanggal_lahir, status_kesehatan, nama_habitat, url_foto FROM hewan WHERE nama_habitat = %s", [habitat_nama.strip()])
         hewan_rows = cursor.fetchall()
 
         hewan_list = []

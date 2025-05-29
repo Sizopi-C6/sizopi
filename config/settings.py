@@ -32,9 +32,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ada(8e&fq7=eyl+&=qr@k6h%awnve%c0i4p(8+*+^5@_&r$7q0'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["sizopi-jet.vercel.app", "localhost", "127.0.0.1"]
 
 # Application definition
 
@@ -63,6 +63,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'adopsi.middleware.DatabaseNoticeMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'

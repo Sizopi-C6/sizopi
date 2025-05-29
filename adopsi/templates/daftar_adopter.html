@@ -39,6 +39,7 @@
         
         .btn-delete:hover {
             background-color: #fecaca;
+            transform: translateY(-1px);
         }
         
         .btn-detail {
@@ -50,6 +51,7 @@
         .btn-detail:hover {
             background-color: #bbf7d0;
             text-decoration: none;
+            transform: translateY(-1px);
         }
 
         .btn-disabled {
@@ -111,6 +113,155 @@
                 opacity: 1;
             }
         }
+
+        /* Enhanced styling for top contributors */
+        .top-contributor-item {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .top-contributor-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 128, 0, 0.15);
+            border-left-color: #008000;
+        }
+
+        .top-contributor-rank {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #008000, #006400);
+            color: white;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+        }
+
+        .top-contributor-amount {
+            font-weight: 600;
+            color: #008000;
+        }
+
+        .top-contributor-amount.zero {
+            color: #9ca3af;
+            font-style: italic;
+        }
+
+        /* Statistics cards styling */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stats-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid #e0f2fe;
+            transition: all 0.3s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 128, 0, 0.1);
+            border-color: #008000;
+        }
+
+        .stats-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #008000;
+            display: block;
+        }
+
+        .stats-label {
+            font-size: 0.875rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        /* Responsive table improvements */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid #c8e1cc;
+            background: white;
+        }
+
+        .table-container table {
+            width: 100%;
+            min-width: 800px;
+        }
+
+        .table-container th,
+        .table-container td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 128, 0, 0.1);
+        }
+
+        .table-container th {
+            background-color: rgba(0, 128, 0, 0.08);
+            font-weight: 600;
+            color: #008000;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        /* Loading states */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .loading::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid #008000;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Improved responsive design */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .table-container {
+                margin: 0 -1rem;
+                border-radius: 0;
+            }
+            
+            .btn-action {
+                padding: 0.375rem 0.75rem;
+                font-size: 0.75rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 {% endblock meta %}
 
@@ -118,98 +269,163 @@
 {% include 'message_display.html' %}
 
 <body class="min-h-screen bg-[#e8f4ea]" style="font-family: 'Poppins', sans-serif;">
-    <div class="p-8">
+    <div class="p-4 md:p-8">
         <div class="w-full max-w-7xl mx-auto">
             <!-- Header Section -->
-            <div class="card p-8 mb-8">
-                <h1 class="text-3xl font-bold text-[#008000] text-center">Data Adopter</h1>
-                <p class="text-center text-gray-600 mt-2">Manajemen data adopter dan riwayat adopsi</p>
+            <div class="card p-6 md:p-8 mb-8">
+                <h1 class="text-2xl md:text-3xl font-bold text-[#008000] text-center mb-2">Data Adopter</h1>
+                <p class="text-center text-gray-600">Manajemen data adopter dan riwayat adopsi</p>
+                
+                <!-- Statistics Grid -->
+                <div class="stats-grid mt-6">
+                    <div class="stats-card">
+                        <span class="stats-number">{{ adopter_individu|length }}</span>
+                        <div class="stats-label">Adopter Individu</div>
+                    </div>
+                    <div class="stats-card">
+                        <span class="stats-number">{{ adopter_organisasi|length }}</span>
+                        <div class="stats-label">Adopter Organisasi</div>
+                    </div>
+                    <div class="stats-card">
+                        <span class="stats-number">{{ top_contributors|length }}</span>
+                        <div class="stats-label">Top Contributors</div>
+                    </div>
+                </div>
             </div>
 
             <!-- Top Contributors -->
             <div class="card p-6 mb-8">
-                <h2 class="text-2xl font-semibold text-[#008000] mb-4">
-                    Adopter dengan Total Kontribusi Tertinggi dalam Setahun Terakhir
-                </h2>
-                <div class="space-y-2">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl md:text-2xl font-semibold text-[#008000]">
+                        🏆 Top 5 Adopter Kontributor Tertinggi
+                    </h2>
+                    <button onclick="refreshRanking()" class="btn-action btn-detail text-sm" id="refreshBtn">
+                        🔄 Refresh Ranking
+                    </button>
+                </div>
+                <p class="text-sm text-gray-600 mb-4">Berdasarkan total kontribusi dalam setahun terakhir</p>
+                
+                <div class="space-y-3">
                     {% if top_contributors %}
                         {% for contributor in top_contributors %}
-                        <div class="flex justify-between items-center bg-white p-4 rounded-lg hover:shadow-md transition-all">
-                            <span class="font-medium text-[#008000]">
-                                {{ forloop.counter }}. {{ contributor.nama_adopter }}
-                            </span>
-                            <span class="text-[#008000] font-medium format-rupiah">
-                                Rp{{ contributor.total_kontribusi_setahun|floatformat:0 }}
-                            </span>
+                        <div class="top-contributor-item flex items-center justify-between bg-white p-4 rounded-lg">
+                            <div class="flex items-center space-x-4">
+                                <div class="top-contributor-rank">
+                                    {{ forloop.counter }}
+                                </div>
+                                <div>
+                                    <div class="font-medium text-[#008000] text-lg">
+                                        {{ contributor.nama_adopter }}
+                                    </div>
+                                    <div class="text-sm text-gray-500">
+                                        Kontributor {% if forloop.counter == 1 %}Terbaik{% elif forloop.counter == 2 %}Kedua{% elif forloop.counter == 3 %}Ketiga{% else %}ke-{{ forloop.counter }}{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="top-contributor-amount" data-value="{{ contributor.total_kontribusi_setahun|default:0 }}">
+                                    {% if contributor.total_kontribusi_setahun and contributor.total_kontribusi_setahun > 0 %}
+                                        Rp{{ contributor.total_kontribusi_setahun|floatformat:0 }}
+                                    {% elif contributor.total_kontribusi and contributor.total_kontribusi > 0 %}
+                                        Rp{{ contributor.total_kontribusi|floatformat:0 }}
+                                    {% else %}
+                                        <span class="zero">Belum ada kontribusi</span>
+                                    {% endif %}
+                                </div>
+                                {% if contributor.total_kontribusi_setahun and contributor.total_kontribusi_setahun > 0 %}
+                                    <div class="text-xs text-gray-400">dalam setahun terakhir</div>
+                                {% endif %}
+                            </div>
                         </div>
                         {% endfor %}
                     {% else %}
-                        <div class="text-center text-[#008000] p-6 bg-white rounded-lg">
-                            <p class="text-lg">Belum ada data kontribusi dalam setahun terakhir.</p>
+                        <div class="text-center text-[#008000] p-8 bg-white rounded-lg">
+                            <div class="text-4xl mb-4">📊</div>
+                            <p class="text-lg font-medium">Belum ada data kontribusi</p>
+                            <p class="text-sm text-gray-500 mt-2">Data akan muncul setelah ada adopter yang berkontribusi dalam setahun terakhir</p>
                         </div>
                     {% endif %}
                 </div>
+                
+                {% if ranking_message %}
+                <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p class="text-sm text-blue-700">ℹ️ {{ ranking_message }}</p>
+                </div>
+                {% endif %}
             </div>
 
             <!-- Adopters Individu Table -->
             <div class="card p-6 mb-8">
-                <h2 class="text-2xl font-semibold text-[#008000] mb-6">Daftar Adopter Individu</h2>
+                <h2 class="text-xl md:text-2xl font-semibold text-[#008000] mb-6">
+                    👤 Daftar Adopter Individu
+                    {% if adopter_individu %}
+                        <span class="text-sm font-normal text-gray-500">({{ adopter_individu|length }} orang)</span>
+                    {% endif %}
+                </h2>
                 
-                <div class="overflow-x-auto rounded-lg border border-[#c8e1cc]">
-                    <table class="w-full">
-                        <thead class="table-header">
-                            <tr>
-                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Nama Adopter</th>
-                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">NIK</th>
-                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Total Kontribusi</th>
-                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Kontak</th>
-                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Riwayat Adopsi</th>
-                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Aksi</th>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr class="table-header">
+                                <th>Nama Adopter</th>
+                                <th>NIK</th>
+                                <th>Total Kontribusi</th>
+                                <th>Kontak</th>
+                                <th>Riwayat Adopsi</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-[#008000]/20 bg-white">
+                        <tbody>
                             {% if adopter_individu %}
                                 {% for adopter in adopter_individu %}
                                 <tr class="hover-row">
-                                    <td class="px-4 py-3 text-[#008000] font-medium">
-                                        {{ adopter.nama_adopter }}
-                                    </td>
-                                    <td class="px-4 py-3 text-[#008000] text-sm" style="font-family: monospace;">
-                                        {{ adopter.nik }}
-                                    </td>
-                                    <td class="px-4 py-3 text-[#008000] font-semibold format-rupiah">
-                                        Rp{{ adopter.total_kontribusi|floatformat:0 }}
-                                    </td>
-                                    <td class="px-4 py-3 text-[#008000] text-sm">
-                                        <div class="font-medium">{{ adopter.no_telepon }}</div>
-                                        <div class="text-gray-500 text-xs">
-                                            {% if adopter.alamat|length > 25 %}
-                                                {{ adopter.alamat|slice:":25" }}...
-                                            {% else %}
-                                                {{ adopter.alamat }}
-                                            {% endif %}
+                                    <td>
+                                        <div class="font-medium text-[#008000]">
+                                            {{ adopter.nama_adopter }}
                                         </div>
                                     </td>
-                                    <td class="px-4 py-3 text-[#008000]">
+                                    <td>
+                                        <code class="text-sm bg-gray-100 px-2 py-1 rounded">
+                                            {{ adopter.nik }}
+                                        </code>
+                                    </td>
+                                    <td>
+                                        <div class="format-rupiah font-semibold text-[#008000]">
+                                            Rp{{ adopter.total_kontribusi|floatformat:0 }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-sm">
+                                            <div class="font-medium text-[#008000]">📞 {{ adopter.no_telepon }}</div>
+                                            <div class="text-gray-500 mt-1" title="{{ adopter.alamat }}">
+                                                📍 {% if adopter.alamat|length > 25 %}
+                                                    {{ adopter.alamat|slice:":25" }}...
+                                                {% else %}
+                                                    {{ adopter.alamat }}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
                                         <a href="{% url 'adopsi:riwayat_adopter' adopter_id=adopter.id_adopter %}" 
                                            class="btn-action btn-detail">
-                                            Lihat Detail
+                                            📋 Lihat Detail
                                         </a>
                                     </td>
-                                    <td class="px-4 py-3">
+                                    <td>
                                         {% if adopter.dapat_dihapus %}
                                             <form method="post" action="{% url 'adopsi:delete_adopter' %}" 
                                                   class="inline delete-form">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="adopter_id" value="{{ adopter.id_adopter }}">
                                                 <button type="submit" class="btn-action btn-delete">
-                                                    Hapus
+                                                    🗑️ Hapus
                                                 </button>
                                             </form>
                                         {% else %}
                                             <button class="btn-action btn-disabled" disabled 
                                                     title="Tidak dapat dihapus karena masih memiliki adopsi aktif">
-                                                Hapus
+                                                🔒 Tidak dapat dihapus
                                             </button>
                                         {% endif %}
                                     </td>
@@ -219,12 +435,9 @@
                                 <tr>
                                     <td colspan="6" class="empty-state">
                                         <div>
-                                            <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" 
-                                                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                                            </svg>
-                                            <p class="text-lg font-medium text-gray-500">Belum ada adopter individu</p>
-                                            <p class="text-sm text-gray-400">Data akan muncul setelah ada yang mendaftar</p>
+                                            <div class="text-6xl mb-4">👤</div>
+                                            <p class="text-lg font-medium text-gray-500 mb-2">Belum ada adopter individu</p>
+                                            <p class="text-sm text-gray-400">Data akan muncul setelah ada yang mendaftar sebagai adopter individu</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -236,63 +449,76 @@
 
             <!-- Adopters Organisasi Table -->
             <div class="card p-6 mb-8">
-                <h2 class="text-2xl font-semibold text-[#008000] mb-6">Daftar Adopter Organisasi</h2>
+                <h2 class="text-xl md:text-2xl font-semibold text-[#008000] mb-6">
+                    🏢 Daftar Adopter Organisasi
+                    {% if adopter_organisasi %}
+                        <span class="text-sm font-normal text-gray-500">({{ adopter_organisasi|length }} organisasi)</span>
+                    {% endif %}
+                </h2>
                 
-                <div class="overflow-x-auto rounded-lg border border-[#c8e1cc]">
-                    <table class="w-full">
-                        <thead class="table-header">
-                            <tr>
-                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Nama Organisasi</th>
-                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">NPP</th>
-                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Total Kontribusi</th>
-                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Kontak</th>
-                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Riwayat Adopsi</th>
-                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Aksi</th>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr class="table-header">
+                                <th>Nama Organisasi</th>
+                                <th>NPP</th>
+                                <th>Total Kontribusi</th>
+                                <th>Kontak</th>
+                                <th>Riwayat Adopsi</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-[#008000]/20 bg-white">
+                        <tbody>
                             {% if adopter_organisasi %}
                                 {% for adopter in adopter_organisasi %}
                                 <tr class="hover-row">
-                                    <td class="px-4 py-3 text-[#008000] font-medium">
-                                        {{ adopter.nama_adopter }}
-                                    </td>
-                                    <td class="px-4 py-3 text-[#008000] text-sm" style="font-family: monospace;">
-                                        {{ adopter.npp }}
-                                    </td>
-                                    <td class="px-4 py-3 text-[#008000] font-semibold format-rupiah">
-                                        Rp{{ adopter.total_kontribusi|floatformat:0 }}
-                                    </td>
-                                    <td class="px-4 py-3 text-[#008000] text-sm">
-                                        <div class="font-medium">{{ adopter.no_telepon }}</div>
-                                        <div class="text-gray-500 text-xs">
-                                            {% if adopter.alamat|length > 25 %}
-                                                {{ adopter.alamat|slice:":25" }}...
-                                            {% else %}
-                                                {{ adopter.alamat }}
-                                            {% endif %}
+                                    <td>
+                                        <div class="font-medium text-[#008000]">
+                                            {{ adopter.nama_adopter }}
                                         </div>
                                     </td>
-                                    <td class="px-4 py-3 text-[#008000]">
+                                    <td>
+                                        <code class="text-sm bg-gray-100 px-2 py-1 rounded">
+                                            {{ adopter.npp }}
+                                        </code>
+                                    </td>
+                                    <td>
+                                        <div class="format-rupiah font-semibold text-[#008000]">
+                                            Rp{{ adopter.total_kontribusi|floatformat:0 }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-sm">
+                                            <div class="font-medium text-[#008000]">📞 {{ adopter.no_telepon }}</div>
+                                            <div class="text-gray-500 mt-1" title="{{ adopter.alamat }}">
+                                                📍 {% if adopter.alamat|length > 25 %}
+                                                    {{ adopter.alamat|slice:":25" }}...
+                                                {% else %}
+                                                    {{ adopter.alamat }}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
                                         <a href="{% url 'adopsi:riwayat_adopter' adopter_id=adopter.id_adopter %}" 
                                            class="btn-action btn-detail">
-                                            Lihat Detail
+                                            📋 Lihat Detail
                                         </a>
                                     </td>
-                                    <td class="px-4 py-3">
+                                    <td>
                                         {% if adopter.dapat_dihapus %}
                                             <form method="post" action="{% url 'adopsi:delete_adopter' %}" 
                                                   class="inline delete-form">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="adopter_id" value="{{ adopter.id_adopter }}">
                                                 <button type="submit" class="btn-action btn-delete">
-                                                    Hapus
+                                                    🗑️ Hapus
                                                 </button>
                                             </form>
                                         {% else %}
                                             <button class="btn-action btn-disabled" disabled 
                                                     title="Tidak dapat dihapus karena masih memiliki adopsi aktif">
-                                                Hapus
+                                                🔒 Tidak dapat dihapus
                                             </button>
                                         {% endif %}
                                     </td>
@@ -302,12 +528,9 @@
                                 <tr>
                                     <td colspan="6" class="empty-state">
                                         <div>
-                                            <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" 
-                                                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                                            </svg>
-                                            <p class="text-lg font-medium text-gray-500">Belum ada adopter organisasi</p>
-                                            <p class="text-sm text-gray-400">Data akan muncul setelah ada yang mendaftar</p>
+                                            <div class="text-6xl mb-4">🏢</div>
+                                            <p class="text-lg font-medium text-gray-500 mb-2">Belum ada adopter organisasi</p>
+                                            <p class="text-sm text-gray-400">Data akan muncul setelah ada organisasi yang mendaftar sebagai adopter</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -317,87 +540,168 @@
                 </div>
             </div>
 
-            <!-- Keterangan -->
-            <div class="card p-6">
-                <h3 class="text-lg font-semibold text-[#008000] mb-4">📋 Keterangan</h3>
-                <div class="bg-white rounded-lg p-6 space-y-3">
-                    <div class="flex items-start text-sm text-gray-700">
-                        <span class="text-[#008000] mr-3 mt-1">•</span>
-                        <span>Halaman daftar adopter menampilkan semua adopter, baik yang masih (sedang) aktif mengadopsi satwa maupun tidak.</span>
-                    </div>
-                    <div class="flex items-start text-sm text-gray-700">
-                        <span class="text-[#008000] mr-3 mt-1">•</span>
-                        <span>Nilai total kontribusi pada tabel merupakan jumlahan dari nominal kontribusi semua adopsi berstatus pembayaran lunas dari seorang adopter. Sedangkan dalam pemeringkatan, nominal kontribusi yang dipertimbangkan hanya jumlahan nominal kontribusi pada adopsi berstatus pembayaran lunas yang tanggal mulai adopsinya berada dalam rentang satu tahun ke belakang dari tanggal sekarang.</span>
-                    </div>
-                    <div class="flex items-start text-sm text-gray-700">
-                        <span class="text-[#008000] mr-3 mt-1">•</span>
-                        <span>Data adopter yang bisa dihapus hanya adopter yang sedang tidak mengadopsi satwa manapun saat ini. Apabila staf admin berusaha menghapus data adopter yang sedang mengadopsi satwa tertentu, sistem akan memberi peringatan bahwa adopter masih aktif berpartisipasi dalam program adopsi.</span>
-                    </div>
-                    <div class="flex items-start text-sm">
-                        <span class="text-red-600 mr-3 mt-1">⚠️</span>
-                        <span class="text-red-600 font-medium">Perhatikan bahwa menghapus data adopter juga akan menghapus riwayat adopsi dari adopter tersebut, namun tidak menghapus akun pengunjung yang terkait dengan identitas adopter.</span>
-                    </div>
-                </div>
-            </div>
-
             <!-- Footer -->
             <footer class="mt-8 text-center text-sm text-[#008000]/60">
                 © 2025 SIZOPI. All rights reserved.
             </footer>
         </div>
     </div>
-</div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const deleteForms = document.querySelectorAll('.delete-form');
-    
-    deleteForms.forEach(function(form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const adoptersName = this.closest('tr').querySelector('td').textContent.trim();
-            
-            const confirmMessage = `⚠️ PERINGATAN!\n\nApakah Anda yakin ingin menghapus data adopter "${adoptersName}"?\n\n• Semua riwayat adopsi akan ikut terhapus\n• Data yang dihapus tidak dapat dikembalikan\n\nKlik OK untuk melanjutkan.`;
-            
-            if (confirm(confirmMessage)) {
-                const button = this.querySelector('.btn-delete');
-                button.textContent = 'Menghapus...';
-                button.disabled = true;
-                button.style.opacity = '0.7';
-                
-                this.submit();
-            }
-        });
-    });
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg flex items-center space-x-3">
+            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-[#008000]"></div>
+            <span class="text-[#008000] font-medium">Memperbarui ranking...</span>
+        </div>
+    </div>
 
-    const messages = document.querySelectorAll('.message');
-    if (messages.length > 0) {
-        setTimeout(function() {
-            messages.forEach(function(message) {
-                message.style.opacity = '0';
-                message.style.transform = 'translateX(100%)';
-                message.style.transition = 'all 0.3s ease';
-                
-                setTimeout(function() {
-                    message.remove();
-                }, 300);
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Delete confirmation handlers
+            const deleteForms = document.querySelectorAll('.delete-form');
+            
+            deleteForms.forEach(function(form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const adoptersName = this.closest('tr').querySelector('td .font-medium').textContent.trim();
+                    
+                    const confirmMessage = `KONFIRMASI PENGHAPUSAN\n\nApakah Anda yakin ingin menghapus data adopter "${adoptersName}"?\n\n• Semua riwayat adopsi akan ikut terhapus\n• Data yang dihapus tidak dapat dikembalikan\n• Akun pengguna tidak akan terhapus\n\nKlik OK untuk melanjutkan.`;
+                    
+                    if (confirm(confirmMessage)) {
+                        const button = this.querySelector('.btn-delete');
+                        button.innerHTML = '⏳ Menghapus...';
+                        button.disabled = true;
+                        button.style.opacity = '0.6';
+                        
+                        this.submit();
+                    }
+                });
             });
-        }, 6000);
-    }
 
-    const rupiahElements = document.querySelectorAll('.format-rupiah');
-    rupiahElements.forEach(function(element) {
-        const text = element.textContent;
-        if (text.includes('Rp')) {
-            const number = text.replace('Rp', '').replace(/\./g, '').replace(/,/g, '');
-            if (!isNaN(number) && number !== '') {
-                const formatted = new Intl.NumberFormat('id-ID').format(parseInt(number));
-                element.textContent = 'Rp' + formatted;
-            }
+            // Format rupiah elements
+            formatRupiahElements();
+
+            // Auto-hide messages
+            setTimeout(function() {
+                const messages = document.querySelectorAll('.message');
+                messages.forEach(function(message) {
+                    message.style.opacity = '0';
+                    message.style.transform = 'translateX(100%)';
+                    message.style.transition = 'all 0.3s ease';
+                    
+                    setTimeout(function() {
+                        message.remove();
+                    }, 300);
+                });
+            }, 6000);
+        });
+
+        function formatRupiahElements() {
+            // Format standard rupiah elements
+            const rupiahElements = document.querySelectorAll('.format-rupiah');
+            rupiahElements.forEach(function(element) {
+                const text = element.textContent;
+                if (text.includes('Rp')) {
+                    const number = text.replace('Rp', '').replace(/\./g, '').replace(/,/g, '').trim();
+                    if (!isNaN(number) && number !== '' && number !== '0') {
+                        const formatted = new Intl.NumberFormat('id-ID').format(parseInt(number));
+                        element.textContent = 'Rp' + formatted;
+                    } else if (number === '0') {
+                        element.textContent = 'Rp0';
+                        element.style.color = '#9ca3af';
+                    }
+                }
+            });
+
+            // Format top contributors specifically
+            const topContributorElements = document.querySelectorAll('.top-contributor-amount');
+            topContributorElements.forEach(function(element) {
+                const text = element.textContent.trim();
+                const dataValue = element.getAttribute('data-value');
+                
+                // Handle NaN, null, or zero values
+                if (text.includes('NaN') || text === 'Rp0' || text === 'RpNaN' || !dataValue || dataValue === '0' || dataValue === 'None') {
+                    element.innerHTML = '<span class="zero">Belum ada kontribusi</span>';
+                } else if (text.includes('Rp') && !element.querySelector('.zero')) {
+                    // Format valid rupiah values
+                    const number = text.replace('Rp', '').replace(/\./g, '').replace(/,/g, '').trim();
+                    if (!isNaN(number) && number !== '' && parseInt(number) > 0) {
+                        const formatted = new Intl.NumberFormat('id-ID').format(parseInt(number));
+                        element.textContent = 'Rp' + formatted;
+                    } else {
+                        element.innerHTML = '<span class="zero">Belum ada kontribusi</span>';
+                    }
+                }
+            });
         }
-    });
-});
-</script>
 
+        function refreshRanking() {
+            const refreshBtn = document.getElementById('refreshBtn');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            
+            refreshBtn.innerHTML = '⏳ Refreshing...';
+            refreshBtn.disabled = true;
+            loadingOverlay.classList.remove('hidden');
+            loadingOverlay.classList.add('flex');
+            
+            fetch('{% url "adopsi:get_current_ranking" %}', {
+                method: 'GET',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    showNotification('Ranking berhasil diperbarui!', 'success');
+                    
+                    // Reload page after short delay
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    showNotification('Gagal memperbarui ranking: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Terjadi kesalahan saat memperbarui ranking', 'error');
+            })
+            .finally(() => {
+                refreshBtn.innerHTML = '🔄 Refresh Ranking';
+                refreshBtn.disabled = false;
+                loadingOverlay.classList.add('hidden');
+                loadingOverlay.classList.remove('flex');
+            });
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `message ${type}`;
+            notification.textContent = message;
+            
+            let container = document.querySelector('.message-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'message-container';
+                document.body.appendChild(container);
+            }
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+
+        // Tooltip functionality for truncated addresses
+        document.querySelectorAll('[title]').forEach(function(element) {
+            element.addEventListener('mouseenter', function() {
+                this.style.cursor = 'help';
+            });
+        });
+    </script>
+</body>
 {% endblock content %}

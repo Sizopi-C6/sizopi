@@ -1224,15 +1224,32 @@ def daftar_adopter(request):
             top_contributors = []
             for row in cursor.fetchall():
                 contributor = dict(zip([column[0] for column in cursor.description], row))
-                if isinstance(contributor.get('total_kontribusi'), Decimal):
-                    contributor['total_kontribusi'] = float(contributor['total_kontribusi'])
-                elif isinstance(contributor.get('total_kontribusi'), int):
-                    contributor['total_kontribusi'] = float(contributor['total_kontribusi'])
                 
-                if 'total_kontribusi' in contributor:
-                    contributor['total_kontribusi_formatted'] = f"Rp {contributor['total_kontribusi']:,.0f}"
+                kontribusi_value = None
+                
+                if 'total_kontribusi_setahun' in contributor:
+                    kontribusi_value = contributor['total_kontribusi_setahun']
+                elif 'total_kontribusi' in contributor:
+                    kontribusi_value = contributor['total_kontribusi']
+                
+                if kontribusi_value is not None:
+                    if isinstance(kontribusi_value, Decimal):
+                        kontribusi_value = float(kontribusi_value)
+                    elif isinstance(kontribusi_value, int):
+                        kontribusi_value = float(kontribusi_value)
+                    else:
+                        kontribusi_value = 0.0
+                else:
+                    kontribusi_value = 0.0
+                
+                contributor['total_kontribusi_setahun'] = kontribusi_value
+                contributor['total_kontribusi'] = kontribusi_value
+                
+                contributor['total_kontribusi_formatted'] = f"Rp {kontribusi_value:,.0f}"
                 
                 top_contributors.append(contributor)
+            
+            logger.info(f"Top contributors data: {top_contributors}")
             
             cursor.execute("SELECT update_adopter_ranking()")
             ranking_result = cursor.fetchone()

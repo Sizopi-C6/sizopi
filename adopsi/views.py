@@ -455,6 +455,7 @@ def perpanjang_periode(request):
                     a.tgl_mulai_adopsi,
                     a.tgl_berhenti_adopsi,
                     a.kontribusi_finansial,
+                    a.status_pembayaran,
                     -- Data adopter
                     COALESCE(i.nama, o.nama_organisasi) as nama_adopter,
                     CASE 
@@ -506,6 +507,12 @@ def perpanjang_periode(request):
                 'user_email': user.get('email', ''),
                 'user_no_telepon': user.get('no_telepon', '')
             })
+            
+            if adoption_data.get('status_pembayaran') != 'Lunas':
+                messages.warning(request, 
+                    f'Perhatian: Status pembayaran adopsi untuk {adoption_data.get("nama_hewan")} '
+                    f'masih "{adoption_data.get("status_pembayaran")}". '
+                    f'Anda harus melunasi pembayaran terlebih dahulu sebelum dapat memperpanjang periode adopsi.')
         
         return render(request, 'perpanjang_periode.html', {
             'adoption_data': adoption_data,
@@ -553,12 +560,13 @@ def process_perpanjang_adopsi(request):
             return redirect('adopsi:adopsi_pengunjung')
         
         with transaction.atomic():
-            with connection.cursor() as cursor:                
+            with connection.cursor() as cursor:
                 cursor.execute("""
                     SELECT 
                         a.id_adopter, 
                         a.tgl_berhenti_adopsi,
                         a.kontribusi_finansial,
+                        a.status_pembayaran,
                         h.name as nama_hewan
                     FROM adopsi a
                     INNER JOIN adopter ad ON a.id_adopter = ad.id_adopter
@@ -575,7 +583,14 @@ def process_perpanjang_adopsi(request):
                     messages.error(request, 'Data adopsi tidak ditemukan atau sudah tidak aktif!')
                     return redirect('adopsi:adopsi_pengunjung')
                 
-                adopter_id, current_end_date, current_contribution, animal_name = row
+                adopter_id, current_end_date, current_contribution, status_pembayaran, animal_name = row
+                
+                if status_pembayaran != 'Lunas':
+                    messages.error(request, 
+                        f'Tidak dapat memperpanjang periode adopsi untuk {animal_name}. '
+                        f'Status pembayaran adopsi saat ini masih "{status_pembayaran}". '
+                        f'Silakan lunasi pembayaran terlebih dahulu sebelum mengajukan perpanjangan.')
+                    return redirect('adopsi:adopsi_pengunjung')
                 
                 if periode_months == 3:
                     new_end_date = current_end_date + timedelta(days=90)
@@ -587,7 +602,8 @@ def process_perpanjang_adopsi(request):
                 cursor.execute("""
                     UPDATE adopsi 
                     SET tgl_berhenti_adopsi = %s,
-                        kontribusi_finansial = kontribusi_finansial + %s
+                        kontribusi_finansial = kontribusi_finansial + %s,
+                        status_pembayaran = 'Tertunda'
                     WHERE id_adopter = %s 
                     AND id_hewan = %s
                     AND tgl_mulai_adopsi <= CURRENT_DATE 
@@ -600,6 +616,12 @@ def process_perpanjang_adopsi(request):
                     messages.error(request, 'Tidak ada data yang diupdate')
                     return redirect('adopsi:adopsi_pengunjung')
                 
+                messages.success(request, 
+                    f'Perpanjangan periode adopsi untuk {animal_name} berhasil diajukan! '
+                    f'Periode adopsi diperpanjang hingga {new_end_date.strftime("%d %B %Y")}. '
+                    f'Status pembayaran perpanjangan: Tertunda. '
+                    f'Silakan lakukan pembayaran untuk mengaktifkan perpanjangan.')
+                
                 return redirect('adopsi:adopsi_pengunjung')
                 
     except ValueError as ve:
@@ -609,7 +631,7 @@ def process_perpanjang_adopsi(request):
     except Exception as e:        
         logger.error(f"Error in process_perpanjang_adopsi: {str(e)}")
         messages.error(request, f'Terjadi kesalahan sistem: {str(e)}')
-        return redirect('adopsi:adopsi_pengunjung')        
+        return redirect('adopsi:adopsi_pengunjung')
 
 def berhenti_adopsi(request):
     username, user, error_msg = check_adopter_access(request)

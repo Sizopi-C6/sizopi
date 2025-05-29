@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load humanize %}
 
 {% block meta %}
 <title>Data Booking Pengunjung - SIZOPI</title>
@@ -153,9 +154,7 @@
 {% endblock %}
 
 {% block content %}
-{% include 'navbar/pengunjung.html' %}
 
-<!-- CSRF token as hidden input to be grabbed by JS -->
 <input type="hidden" id="csrfToken" value="{{ csrf_token }}">
 
 <div class="min-h-screen p-8 font-[Poppins]">

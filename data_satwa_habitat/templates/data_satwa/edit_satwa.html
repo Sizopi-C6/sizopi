@@ -61,39 +61,37 @@
 {% endblock meta %}
 
 {% block content %}
-{% include 'navbar/dokter.html' %}
 <div class="min-h-screen p-8 font-[Poppins] flex items-center justify-center">
   <div class="w-full max-w-4xl">
     <div class="card p-8 rounded-2xl shadow-lg border border-[#c8e1cc]">
       <h2 class="text-3xl font-bold text-[#008000] mb-6 text-center">Form Edit Satwa</h2>
 
+      {% if form.non_field_errors %}
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+          {% for error in form.non_field_errors %}
+        <p class="font-medium">{{ error }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+
       <form method="post" class="space-y-6">
         {% csrf_token %}
         
         <div class="grid grid-cols-1 gap-6">
-          <!-- Nama Individu (readonly) -->
           <div>
             <label class="block text-sm font-medium text-[#006400] mb-2">
-              {{ form.nama_individu.label }}
+              {{ form.name.label }}
             </label>
-            <div class="readonly-field">
-              {{ form.nama_individu.value }}
-            </div>
-            <input type="hidden" name="{{ form.nama_individu.name }}" value="{{ form.nama_individu.value }}">
+            {{ form.name }}
           </div>
 
-          <!-- Spesies (readonly) -->
           <div>
             <label class="block text-sm font-medium text-[#006400] mb-2">
-              {{ form.spesies.label }}
+              {{ form.species.label }}
             </label>
-            <div class="readonly-field">
-              {{ form.spesies.value }}
-            </div>
-            <input type="hidden" name="{{ form.spesies.name }}" value="{{ form.spesies.value }}">
+            {{ form.species }}
           </div>
 
-          <!-- Asal Hewan (editable) -->
           <div>
             <label class="block text-sm font-medium text-[#006400] mb-2">
               {{ form.asal_hewan.label }}
@@ -105,18 +103,13 @@
             {% endif %}
           </div>
 
-          <!-- Tanggal Lahir (readonly) -->
           <div>
             <label class="block text-sm font-medium text-[#006400] mb-2">
               {{ form.tanggal_lahir.label }}
             </label>
-            <div class="readonly-field">
-              {{ form.tanggal_lahir.value }}
-            </div>
-            <input type="hidden" name="{{ form.tanggal_lahir.name }}" value="{{ form.tanggal_lahir.value }}">
+            {{ form.tanggal_lahir }}
           </div>
 
-          <!-- Status Kesehatan (editable) -->
           <div>
             <label class="block text-sm font-medium text-[#006400] mb-2">
               {{ form.status_kesehatan.label }}
@@ -133,26 +126,24 @@
             {% endif %}
           </div>
 
-          <!-- Nama Habitat (readonly) -->
           <div>
             <label class="block text-sm font-medium text-[#006400] mb-2">
               {{ form.nama_habitat.label }}
             </label>
-            <div class="readonly-field">
-              {{ form.nama_habitat.value }}
-            </div>
-            <input type="hidden" name="{{ form.nama_habitat.name }}" value="{{ form.nama_habitat.value }}">
+            <select name="{{ form.nama_habitat.name }}" class="form-input" id="id_nama_habitat">
+              {% for value, label in form.nama_habitat.field.choices %}
+                <option value="{{ value }}" {% if form.nama_habitat.value == value %}selected{% endif %}>
+                  {{ label }}
+                </option>
+              {% endfor %}
+            </select>
           </div>
 
-          <!-- URL Foto (readonly) -->
           <div>
             <label class="block text-sm font-medium text-[#006400] mb-2">
               {{ form.url_foto.label }}
             </label>
-            <div class="readonly-field truncate">
-              {{ form.url_foto.value }}
-            </div>
-            <input type="hidden" name="{{ form.url_foto.name }}" value="{{ form.url_foto.value }}">
+            {{ form.url_foto }}
           </div>
         </div>
 

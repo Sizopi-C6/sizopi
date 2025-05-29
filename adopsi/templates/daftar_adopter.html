@@ -28,6 +28,8 @@
             border-radius: 8px;
             font-weight: 500;
             font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
         }
         
         .btn-delete {
@@ -42,143 +44,300 @@
         .btn-detail {
             color: #008000;
             background-color: #dcfce7;
+            text-decoration: none;
         }
         
         .btn-detail:hover {
             background-color: #bbf7d0;
+            text-decoration: none;
+        }
+
+        .btn-disabled {
+            color: #9ca3af;
+            background-color: #f3f4f6;
+            cursor: not-allowed;
+        }
+
+        .format-rupiah {
+            font-family: 'Courier New', monospace;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6b7280;
+        }
+
+        .message-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 9999;
+            max-width: 400px;
+        }
+
+        .message {
+            margin-bottom: 0.5rem;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .message.success {
+            border-left-color: #10b981;
+            color: #065f46;
+        }
+
+        .message.error {
+            border-left-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .message.warning {
+            border-left-color: #f59e0b;
+            color: #92400e;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
     </style>
 {% endblock meta %}
 
 {% block content %}
 {% include 'navbar/staff_administrator.html' %}
-<body class="min-h-screen bg-[#e8f4ea]" style="font-family: 'Poppins', sans-serif;">
+{% include 'message_display.html' %}
+
+<div class="min-h-screen bg-[#e8f4ea]" style="font-family: 'Poppins', sans-serif;">
     <div class="p-8">
-        <div class="w-full max-w-6xl mx-auto">
+        <div class="w-full max-w-7xl mx-auto">
             <!-- Header Section -->
             <div class="card p-8 mb-8">
                 <h1 class="text-3xl font-bold text-[#008000] text-center">Data Adopter</h1>
+                <p class="text-center text-gray-600 mt-2">Manajemen data adopter dan riwayat adopsi</p>
             </div>
 
             <!-- Top Contributors -->
             <div class="card p-6 mb-8">
-                <h2 class="text-2xl font-semibold text-[#008000] mb-4">Adopter dengan Total Kontribusi Tertinggi dalam Setahun Terakhir</h2>
+                <h2 class="text-2xl font-semibold text-[#008000] mb-4">
+                    Adopter dengan Total Kontribusi Tertinggi dalam Setahun Terakhir
+                </h2>
                 <div class="space-y-2">
-                    <div class="flex justify-between items-center bg-white p-4 rounded-lg hover:shadow-md transition-all">
-                        <span class="font-medium text-[#008000]">1. Bambang</span>
-                        <span class="text-[#008000] font-medium">Rp5.000.000</span>
-                    </div>
-                    <div class="flex justify-between items-center bg-white p-4 rounded-lg hover:shadow-md transition-all">
-                        <span class="font-medium text-[#008000]">2. Cindy</span>
-                        <span class="text-[#008000] font-medium">Rp3.500.000</span>
-                    </div>
-                    <div class="flex justify-between items-center bg-white p-4 rounded-lg hover:shadow-md transition-all">
-                        <span class="font-medium text-[#008000]">3. Dewi</span>
-                        <span class="text-[#008000] font-medium">Rp3.200.000</span>
-                    </div>
-                    <div class="flex justify-between items-center bg-white p-4 rounded-lg hover:shadow-md transition-all">
-                        <span class="font-medium text-[#008000]">4. Eko</span>
-                        <span class="text-[#008000] font-medium">Rp2.800.000</span>
-                    </div>
-                    <div class="flex justify-between items-center bg-white p-4 rounded-lg hover:shadow-md transition-all">
-                        <span class="font-medium text-[#008000]">5. Fajar</span>
-                        <span class="text-[#008000] font-medium">Rp2.500.000</span>
-                    </div>
+                    {% if top_contributors %}
+                        {% for contributor in top_contributors %}
+                        <div class="flex justify-between items-center bg-white p-4 rounded-lg hover:shadow-md transition-all">
+                            <span class="font-medium text-[#008000]">
+                                {{ forloop.counter }}. {{ contributor.nama_adopter }}
+                            </span>
+                            <span class="text-[#008000] font-medium format-rupiah">
+                                Rp{{ contributor.total_kontribusi_setahun|floatformat:0 }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-[#008000] p-6 bg-white rounded-lg">
+                            <p class="text-lg">Belum ada data kontribusi dalam setahun terakhir.</p>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
 
-            <!-- Adopters Table -->
-            <div class="card p-6">
-                <h2 class="text-2xl font-semibold text-[#008000] mb-6">Daftar Seluruh Adopter</h2>
+            <!-- Adopters Individu Table -->
+            <div class="card p-6 mb-8">
+                <h2 class="text-2xl font-semibold text-[#008000] mb-6">Daftar Adopter Individu</h2>
                 
                 <div class="overflow-x-auto rounded-lg border border-[#c8e1cc]">
                     <table class="w-full">
                         <thead class="table-header">
                             <tr>
                                 <th class="px-4 py-3 text-left text-[#008000] font-semibold">Nama Adopter</th>
+                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">NIK</th>
                                 <th class="px-4 py-3 text-left text-[#008000] font-semibold">Total Kontribusi</th>
+                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Kontak</th>
                                 <th class="px-4 py-3 text-left text-[#008000] font-semibold">Riwayat Adopsi</th>
                                 <th class="px-4 py-3 text-left text-[#008000] font-semibold">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-[#008000]/20 bg-white">
-
-                            <tr class="hover-row">
-                                <td class="px-4 py-3 text-[#008000]">Bambang</td>
-                                <td class="px-4 py-3 text-[#008000] font-medium">Rp5.000.000</td>
-                                <td class="px-4 py-3 text-[#008000]">
-                                    <a href="{% url 'adopsi:riwayat_adopter' adopter_id=1 %}" class="btn-action btn-detail">
-                                        Lihat Detail
-                                    </a>
-                                </td>
-                                <td class="px-4 py-3 space-x-2">
-                                    <button class="btn-action btn-delete">
-                                        Hapus
-                                    </button>
-                                </td>
-                            </tr>
-
-                            <tr class="hover-row">
-                                <td class="px-4 py-3 text-[#008000]">Cindy</td>
-                                <td class="px-4 py-3 text-[#008000] font-medium">Rp3.500.000</td>
-                                <td class="px-4 py-3 text-[#008000]">
-                                    <a href="{% url 'adopsi:riwayat_adopter' adopter_id=2 %}" class="btn-action btn-detail">
-                                        Lihat Detail
-                                    </a>
-                                </td>
-                                <td class="px-4 py-3 space-x-2">
-                                    <button class="btn-action btn-delete">
-                                        Hapus
-                                    </button>
-                                </td>
-                            </tr>
-
-                            <tr class="hover-row">
-                                <td class="px-4 py-3 text-[#008000]">Dewi</td>
-                                <td class="px-4 py-3 text-[#008000] font-medium">Rp3.200.000</td>
-                                <td class="px-4 py-3 text-[#008000]">
-                                    <a href="{% url 'adopsi:riwayat_adopter' adopter_id=3 %}" class="btn-action btn-detail">
-                                        Lihat Detail
-                                    </a>
-                                </td>
-                                <td class="px-4 py-3 space-x-2">
-                                    <button class="btn-action btn-delete">
-                                        Hapus
-                                    </button>
-                                </td>
-                            </tr>
-
-                            <tr class="hover-row">
-                                <td class="px-4 py-3 text-[#008000]">Eko</td>
-                                <td class="px-4 py-3 text-[#008000] font-medium">Rp2.800.000</td>
-                                <td class="px-4 py-3 text-[#008000]">
-                                    <a href="{% url 'adopsi:riwayat_adopter' adopter_id=4 %}" class="btn-action btn-detail">
-                                        Lihat Detail
-                                    </a>
-                                </td>
-                                <td class="px-4 py-3 space-x-2">
-                                    <button class="btn-action btn-delete">
-                                        Hapus
-                                    </button>
-                                </td>
-                            </tr>
-
-                            <tr class="hover-row">
-                                <td class="px-4 py-3 text-[#008000]">Fajar</td>
-                                <td class="px-4 py-3 text-[#008000] font-medium">Rp2.500.000</td>
-                                <td class="px-4 py-3 text-[#008000]">
-                                    <a href="{% url 'adopsi:riwayat_adopter' adopter_id=5 %}" class="btn-action btn-detail">
-                                        Lihat Detail
-                                    </a>
-                                </td>
-                                <td class="px-4 py-3 space-x-2">
-                                    <button class="btn-action btn-delete">
-                                        Hapus
-                                    </button>
-                                </td>
-                            </tr>
+                            {% if adopter_individu %}
+                                {% for adopter in adopter_individu %}
+                                <tr class="hover-row">
+                                    <td class="px-4 py-3 text-[#008000] font-medium">
+                                        {{ adopter.nama_adopter }}
+                                    </td>
+                                    <td class="px-4 py-3 text-[#008000] text-sm" style="font-family: monospace;">
+                                        {{ adopter.nik }}
+                                    </td>
+                                    <td class="px-4 py-3 text-[#008000] font-semibold format-rupiah">
+                                        Rp{{ adopter.total_kontribusi|floatformat:0 }}
+                                    </td>
+                                    <td class="px-4 py-3 text-[#008000] text-sm">
+                                        <div class="font-medium">{{ adopter.no_telepon }}</div>
+                                        <div class="text-gray-500 text-xs">
+                                            {% if adopter.alamat|length > 25 %}
+                                                {{ adopter.alamat|slice:":25" }}...
+                                            {% else %}
+                                                {{ adopter.alamat }}
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-[#008000]">
+                                        <a href="{% url 'adopsi:riwayat_adopter' adopter_id=adopter.id_adopter %}" 
+                                           class="btn-action btn-detail">
+                                            Lihat Detail
+                                        </a>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        {% if adopter.dapat_dihapus %}
+                                            <form method="post" action="{% url 'adopsi:delete_adopter' %}" 
+                                                  class="inline delete-form">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="adopter_id" value="{{ adopter.id_adopter }}">
+                                                <button type="submit" class="btn-action btn-delete">
+                                                    Hapus
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <button class="btn-action btn-disabled" disabled 
+                                                    title="Tidak dapat dihapus karena masih memiliki adopsi aktif">
+                                                Hapus
+                                            </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="6" class="empty-state">
+                                        <div>
+                                            <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" 
+                                                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                            </svg>
+                                            <p class="text-lg font-medium text-gray-500">Belum ada adopter individu</p>
+                                            <p class="text-sm text-gray-400">Data akan muncul setelah ada yang mendaftar</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endif %}
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- Adopters Organisasi Table -->
+            <div class="card p-6 mb-8">
+                <h2 class="text-2xl font-semibold text-[#008000] mb-6">Daftar Adopter Organisasi</h2>
+                
+                <div class="overflow-x-auto rounded-lg border border-[#c8e1cc]">
+                    <table class="w-full">
+                        <thead class="table-header">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Nama Organisasi</th>
+                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">NPP</th>
+                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Total Kontribusi</th>
+                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Kontak</th>
+                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Riwayat Adopsi</th>
+                                <th class="px-4 py-3 text-left text-[#008000] font-semibold">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#008000]/20 bg-white">
+                            {% if adopter_organisasi %}
+                                {% for adopter in adopter_organisasi %}
+                                <tr class="hover-row">
+                                    <td class="px-4 py-3 text-[#008000] font-medium">
+                                        {{ adopter.nama_adopter }}
+                                    </td>
+                                    <td class="px-4 py-3 text-[#008000] text-sm" style="font-family: monospace;">
+                                        {{ adopter.npp }}
+                                    </td>
+                                    <td class="px-4 py-3 text-[#008000] font-semibold format-rupiah">
+                                        Rp{{ adopter.total_kontribusi|floatformat:0 }}
+                                    </td>
+                                    <td class="px-4 py-3 text-[#008000] text-sm">
+                                        <div class="font-medium">{{ adopter.no_telepon }}</div>
+                                        <div class="text-gray-500 text-xs">
+                                            {% if adopter.alamat|length > 25 %}
+                                                {{ adopter.alamat|slice:":25" }}...
+                                            {% else %}
+                                                {{ adopter.alamat }}
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-[#008000]">
+                                        <a href="{% url 'adopsi:riwayat_adopter' adopter_id=adopter.id_adopter %}" 
+                                           class="btn-action btn-detail">
+                                            Lihat Detail
+                                        </a>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        {% if adopter.dapat_dihapus %}
+                                            <form method="post" action="{% url 'adopsi:delete_adopter' %}" 
+                                                  class="inline delete-form">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="adopter_id" value="{{ adopter.id_adopter }}">
+                                                <button type="submit" class="btn-action btn-delete">
+                                                    Hapus
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <button class="btn-action btn-disabled" disabled 
+                                                    title="Tidak dapat dihapus karena masih memiliki adopsi aktif">
+                                                Hapus
+                                            </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="6" class="empty-state">
+                                        <div>
+                                            <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" 
+                                                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                            </svg>
+                                            <p class="text-lg font-medium text-gray-500">Belum ada adopter organisasi</p>
+                                            <p class="text-sm text-gray-400">Data akan muncul setelah ada yang mendaftar</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Keterangan -->
+            <div class="card p-6">
+                <h3 class="text-lg font-semibold text-[#008000] mb-4">📋 Keterangan</h3>
+                <div class="bg-white rounded-lg p-6 space-y-3">
+                    <div class="flex items-start text-sm text-gray-700">
+                        <span class="text-[#008000] mr-3 mt-1">•</span>
+                        <span>Halaman daftar adopter menampilkan semua adopter, baik yang masih (sedang) aktif mengadopsi satwa maupun tidak.</span>
+                    </div>
+                    <div class="flex items-start text-sm text-gray-700">
+                        <span class="text-[#008000] mr-3 mt-1">•</span>
+                        <span>Nilai total kontribusi pada tabel merupakan jumlahan dari nominal kontribusi semua adopsi berstatus pembayaran lunas dari seorang adopter. Sedangkan dalam pemeringkatan, nominal kontribusi yang dipertimbangkan hanya jumlahan nominal kontribusi pada adopsi berstatus pembayaran lunas yang tanggal mulai adopsinya berada dalam rentang satu tahun ke belakang dari tanggal sekarang.</span>
+                    </div>
+                    <div class="flex items-start text-sm text-gray-700">
+                        <span class="text-[#008000] mr-3 mt-1">•</span>
+                        <span>Data adopter yang bisa dihapus hanya adopter yang sedang tidak mengadopsi satwa manapun saat ini. Apabila staf admin berusaha menghapus data adopter yang sedang mengadopsi satwa tertentu, sistem akan memberi peringatan bahwa adopter masih aktif berpartisipasi dalam program adopsi.</span>
+                    </div>
+                    <div class="flex items-start text-sm">
+                        <span class="text-red-600 mr-3 mt-1">⚠️</span>
+                        <span class="text-red-600 font-medium">Perhatikan bahwa menghapus data adopter juga akan menghapus riwayat adopsi dari adopter tersebut, namun tidak menghapus akun pengunjung yang terkait dengan identitas adopter.</span>
+                    </div>
                 </div>
             </div>
 
@@ -188,18 +347,58 @@
             </footer>
         </div>
     </div>
+</div>
 
-    <script>
-        // Fungsi untuk handle delete
-        document.querySelectorAll('.btn-delete').forEach(button => {
-            button.addEventListener('click', function() {
-                const confirmDelete = confirm('Apakah Anda yakin ingin menghapus data ini?');
-                if(confirmDelete) {
-                    const row = this.closest('tr');
-                    row.remove();
-                }
-            });
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteForms = document.querySelectorAll('.delete-form');
+    
+    deleteForms.forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const adoptersName = this.closest('tr').querySelector('td').textContent.trim();
+            
+            const confirmMessage = `⚠️ PERINGATAN!\n\nApakah Anda yakin ingin menghapus data adopter "${adoptersName}"?\n\n• Semua riwayat adopsi akan ikut terhapus\n• Data yang dihapus tidak dapat dikembalikan\n\nKlik OK untuk melanjutkan.`;
+            
+            if (confirm(confirmMessage)) {
+                const button = this.querySelector('.btn-delete');
+                button.textContent = 'Menghapus...';
+                button.disabled = true;
+                button.style.opacity = '0.7';
+                
+                this.submit();
+            }
         });
-    </script>
-</body>
+    });
+
+    const messages = document.querySelectorAll('.message');
+    if (messages.length > 0) {
+        setTimeout(function() {
+            messages.forEach(function(message) {
+                message.style.opacity = '0';
+                message.style.transform = 'translateX(100%)';
+                message.style.transition = 'all 0.3s ease';
+                
+                setTimeout(function() {
+                    message.remove();
+                }, 300);
+            });
+        }, 6000);
+    }
+
+    const rupiahElements = document.querySelectorAll('.format-rupiah');
+    rupiahElements.forEach(function(element) {
+        const text = element.textContent;
+        if (text.includes('Rp')) {
+            const number = text.replace('Rp', '').replace(/\./g, '').replace(/,/g, '');
+            if (!isNaN(number) && number !== '') {
+                const formatted = new Intl.NumberFormat('id-ID').format(parseInt(number));
+                element.textContent = 'Rp' + formatted;
+            }
+        }
+    });
+});
+</script>
+
 {% endblock content %}

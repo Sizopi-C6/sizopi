@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load humanize %}
 
 {% block meta %}
   <title>Detail Reservasi - SIZOPI</title>
@@ -121,10 +122,6 @@
 {% endblock meta %}
 
 {% block content %}
-
-{% include 'navbar/pengunjung.html' %}
-
-<!-- Tambahkan input csrf token tersembunyi supaya bisa diambil JS -->
 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
 <div class="min-h-screen p-8 font-[Poppins]">

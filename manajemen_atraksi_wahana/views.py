@@ -1,5 +1,5 @@
 from collections import defaultdict
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from django.utils import timezone
 from django.http import HttpResponse
 from django.db import connection
@@ -14,7 +14,6 @@ def dashboard_view(request):
     username = user.get('username')
 
     with connection.cursor() as cursor:
-        # data user
         cursor.execute("""
             SELECT username, email, nama_depan, nama_tengah, nama_belakang, no_telepon
             FROM pengguna
@@ -26,7 +25,6 @@ def dashboard_view(request):
             messages.error(request, 'Data pengguna tidak ditemukan.')
             return redirect('login')
 
-        # role user
         cursor.execute("""
             SELECT CASE
                 WHEN EXISTS (SELECT 1 FROM pengunjung WHERE username_p = %s) THEN 'pengunjung'
@@ -38,7 +36,6 @@ def dashboard_view(request):
             END AS role
         """, [username] * 5)
         role = cursor.fetchone()[0]
-
         formatted_role = role.replace('_', ' ').title()
 
         role_data = {}
@@ -52,35 +49,172 @@ def dashboard_view(request):
             if pengunjung_row:
                 role_data['alamat'] = pengunjung_row[0]
                 role_data['tgl_lahir'] = pengunjung_row[1].strftime('%Y-%m-%d')
-        elif role == 'staf_admin':
+
             cursor.execute("""
-                SELECT id_staf FROM staf_admin
-                WHERE username_sa = %s
+                SELECT nama_atraksi, jumlah_tiket
+                FROM reservasi
+                WHERE username_p = %s AND status = 'Terjadwal'
             """, [username])
+            tiket_rows = cursor.fetchall()
+            if tiket_rows:
+                role_data['info_tiket_dibeli'] = [
+                    f"{row[0]} - {row[1]} tiket" for row in tiket_rows
+                ]
+            else:
+                role_data['info_tiket_dibeli'] = ["Tidak ada"]
+
+            today = date.today()
+            cursor.execute("""
+                SELECT tanggal_kunjungan, nama_atraksi, jumlah_tiket
+                FROM reservasi
+                WHERE username_p = %s AND tanggal_kunjungan < %s
+            """, [username, today])
+            riwayat_rows = cursor.fetchall()
+            if riwayat_rows:
+                role_data['riwayat_kunjungan'] = [
+                    f"{r[0].strftime('%Y-%m-%d')} - {r[1]} - {r[2]} tiket" for r in riwayat_rows
+                ]
+            else:
+                role_data['riwayat_kunjungan'] = ["Tidak ada"]
+
+        elif role == 'staf_admin':
+            cursor.execute("SELECT id_staf FROM staf_admin WHERE username_sa = %s", [username])
             id_staf = cursor.fetchone()
             role_data['id_staf'] = id_staf[0] if id_staf else '-'
-        elif role == 'dokter_hewan':
+
+            today = date.today()
+
             cursor.execute("""
-                SELECT no_str FROM dokter_hewan
-                WHERE username_dh = %s
-            """, [username])
+                SELECT COUNT(DISTINCT username_p)
+                FROM reservasi
+                WHERE tanggal_kunjungan = %s AND status = 'Terjadwal'
+            """, [today])
+            pengunjung_hari_ini = cursor.fetchone()[0]
+            role_data['jumlah_pengunjung_hari_ini'] = pengunjung_hari_ini or "Tidak ada pengunjung"
+
+            cursor.execute("""
+                SELECT nama_atraksi, SUM(jumlah_tiket)
+                FROM reservasi
+                WHERE tanggal_kunjungan = %s AND status = 'Terjadwal'
+                GROUP BY nama_atraksi
+            """, [today])
+            tiket_data = cursor.fetchall()
+
+            if tiket_data:
+                role_data['ringkasan_penjualan_tiket'] = {
+                    row[0]: row[1] for row in tiket_data
+                }
+            else:
+                role_data['ringkasan_penjualan_tiket'] = None
+
+
+            minggu_terakhir = [today - timedelta(days=i) for i in range(7)]
+            laporan_mingguan = {}
+
+            for tanggal in minggu_terakhir[::-1]:
+                cursor.execute("""
+                    SELECT COALESCE(SUM(kontribusi_finansial), 0)
+                    FROM adopsi
+                    WHERE status_pembayaran = 'Lunas'
+                    AND tgl_mulai_adopsi <= %s AND tgl_berhenti_adopsi >= %s
+                """, [tanggal, tanggal])
+                total = cursor.fetchone()[0]
+                laporan_mingguan[tanggal.strftime('%A')] = total
+
+            role_data['laporan_pendapatan_mingguan'] = laporan_mingguan
+
+        elif role == 'dokter_hewan':
+            cursor.execute("SELECT no_str FROM dokter_hewan WHERE username_dh = %s", [username])
             no_str = cursor.fetchone()
             role_data['no_STR'] = no_str[0] if no_str else '-'
-        elif role == 'penjaga_hewan':
+
+            # Ambil daftar spesialisasi dari tabel spesialisasi
             cursor.execute("""
-                SELECT id_staf FROM penjaga_hewan
+                SELECT nama_spesialisasi
+                FROM spesialisasi
+                WHERE username_sh = %s
+            """, [username])
+            spesialisasi_rows = cursor.fetchall()
+            role_data['nama_spesialisasi'] = [row[0] for row in spesialisasi_rows] if spesialisasi_rows else []
+
+            # Hitung jumlah hewan unik yang pernah ditangani di catatan medis
+            cursor.execute("""
+                SELECT COUNT(DISTINCT id_hewan)
+                FROM catatan_medis
+                WHERE username_dh = %s
+            """, [username])
+            jumlah = cursor.fetchone()
+            role_data['jumlah_hewan_ditangani'] = jumlah[0] if jumlah else 0
+
+        elif role == 'penjaga_hewan':
+            # Ambil ID staf
+            cursor.execute("SELECT id_staf FROM penjaga_hewan WHERE username_jh = %s", [username])
+            id_staf = cursor.fetchone()
+            role_data['id_staf'] = id_staf[0] if id_staf else '-'
+
+            # Hitung jumlah unik hewan yang diberi pakan oleh penjaga ini
+            cursor.execute("""
+                SELECT COUNT(DISTINCT id_hewan)
+                FROM memberi
                 WHERE username_jh = %s
             """, [username])
-            no_str = cursor.fetchone()
-            role_data['id_staf'] = id_staf[0] if id_staf else '-'
+            jumlah = cursor.fetchone()
+            role_data['jumlah_hewan_diberi_pakan'] = jumlah[0] if jumlah else 0
+
         elif role == 'pelatih_hewan':
+            # ID staf
+            cursor.execute("SELECT id_staf FROM pelatih_hewan WHERE username_lh = %s", [username])
+            id_staf = cursor.fetchone()
+            role_data['id_staf'] = id_staf[0] if id_staf else '-'
+
+            today = date.today()
+
+            # Jadwal pertunjukan hari ini
             cursor.execute("""
-                SELECT id_staf FROM pelatih_hewan
+                SELECT nama_atraksi
+                FROM jadwal_penugasan
+                WHERE username_lh = %s AND tgl_penugasan = %s
+            """, [username, today])
+            jadwal_rows = cursor.fetchall()
+            role_data['jadwal_pertunjukan_hari_ini'] = [row[0] for row in jadwal_rows] if jadwal_rows else ["Tidak ada jadwal"]
+
+            # Daftar hewan yang dilatih (nama dan spesies hewan)
+            cursor.execute("""
+                SELECT DISTINCT h.name, h.species
+                FROM berpartisipasi b
+                JOIN hewan h ON b.id_hewan = h.id
+                WHERE b.nama_fasilitas IN (
+                    SELECT DISTINCT nama_atraksi
+                    FROM jadwal_penugasan
+                    WHERE username_lh = %s
+                )
+            """, [username])
+            hewan_rows = cursor.fetchall()
+
+            role_data['daftar_hewan_dilatih'] = (
+                [f"{row[0]} ({row[1]})" for row in hewan_rows]
+                if hewan_rows else ["Tidak ada hewan"]
+            )
+
+            cursor.execute("""
+                SELECT MAX(tgl_penugasan)
+                FROM jadwal_penugasan
                 WHERE username_lh = %s
             """, [username])
-            no_str = cursor.fetchone()
-            role_data['id_staf'] = id_staf[0] if id_staf else '-'
-            
+            last_training_date = cursor.fetchone()[0]
+
+            if last_training_date:
+                last_training_date = last_training_date.date()  
+
+            if not last_training_date:
+                role_data['status_latihan_terakhir'] = "Tidak ada penugasan"
+            elif last_training_date == today:
+                role_data['status_latihan_terakhir'] = "Berlangsung"
+            elif last_training_date < today:
+                role_data['status_latihan_terakhir'] = "Selesai"
+            else:
+                role_data['status_latihan_terakhir'] = "Dijadwalkan"
+
     data_umum = {
         'username': row[0],
         'email': row[1],

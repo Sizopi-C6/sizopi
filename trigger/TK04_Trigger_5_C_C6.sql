@@ -1,3 +1,4 @@
+
 -- Sinkronisasi total kontribusi adopter dengan data adopsi
 CREATE OR REPLACE FUNCTION update_total_kontribusi_adopter()
 RETURNS TRIGGER AS $$
@@ -54,7 +55,7 @@ CREATE TRIGGER trigger_kontribusi_adopter
     EXECUTE FUNCTION update_total_kontribusi_adopter();
 
 
--- Sinkronisasi adopter dengan total kontribusi tertinggu selama setahun terakhir
+-- Pemeringkatan adopter dengan total kontribusi tertinggi selama setahun terakhir
 DO $$
 DECLARE
     duplicate_record RECORD;

@@ -142,13 +142,11 @@
                         <a href="{% url 'kesehatan:daftar_hewan' %}" class="navbar-item">Catatan Perawatan Hewan</a>
         
                     {% elif request.session.user.role == 'staf_admin' %}
-                        <!-- TODO: GANTI URL -->
                         <a href="/manajemen-wahana" class="navbar-item">Kelola Pengunjung</a>
                         <a href="{% url 'adopsi:adopsi_admin' %}" class="navbar-item">Kelola Adopsi</a>
                         <a href="{% url 'adopsi:daftar_adopter' %}" class="navbar-item">Kelola Adopter</a>
         
                     {% elif request.session.user.role == 'pelatih_hewan' %}
-                        <!-- TODO: GANTI URL -->
                         <a href="/manajemen-atraksi" class="navbar-item">Jadwal Pertunjukan</a> 
         
                     {% elif request.session.user.role == 'pengunjung' %}

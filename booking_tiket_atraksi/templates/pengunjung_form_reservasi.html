@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load humanize %}
 
 {% block meta %}
   <title>Form Reservasi Tiket - SIZOPI</title>
@@ -61,61 +62,115 @@
 {% endblock meta %}
 
 {% block content %}
-{% include 'navbar/pengunjung.html' %}
 <div class="min-h-screen p-8 font-[Poppins] flex items-center justify-center">
   <div class="w-full max-w-2xl">
     <div class="card p-8 rounded-2xl shadow-lg">
-      <h2 class="text-3xl font-bold text-[#008000] mb-6 text-center">Form Reservasi Tiket</h2>
+      {% if jenis_reservasi == 'Atraksi' %}
+        <h2 class="text-3xl font-bold text-[#008000] mb-6 text-center">Form Reservasi Atraksi</h2>
 
-      <form method="POST" action="{% url 'pengunjung_reservasi_tiket' %}" id="reservasiForm" class="space-y-6">
-        {% csrf_token %}
-        
-        <div class="grid grid-cols-1 gap-6">
-          <!-- Nama Atraksi -->
-          <div>
-            <label for="atraksi" class="block text-sm font-medium text-[#006400] mb-2">Nama Atraksi</label>
-            <select id="atraksi" name="atraksi" required class="form-input">
-              <option value="">-- Pilih Atraksi --</option>
-              {% for atraksi in atraksi_list %}
-                <option value="{{ atraksi.nama_atraksi }}">{{ atraksi.nama_atraksi }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          
-          <!-- Lokasi -->
-          <div>
-            <label for="lokasi" class="block text-sm font-medium text-[#006400] mb-2">Lokasi</label>
-            <input type="text" id="lokasi" name="lokasi" readonly class="form-input readonly-input">
-          </div>
-          
-          <!-- Jam -->
-          <div>
-            <label for="jam" class="block text-sm font-medium text-[#006400] mb-2">Jam</label>
-            <input type="text" id="jam" name="jam" readonly class="form-input readonly-input">
-          </div>
+        <form method="POST" action="{% url 'pengunjung_form_reservasi' reservasi_id %}" id="reservasiForm" class="space-y-6">
+          {% csrf_token %}
+          <div class="grid grid-cols-1 gap-6">
+            <!-- Nama Atraksi -->
+            <div>
+              <label for="atraksi" class="block text-sm font-medium text-[#006400] mb-2">Nama Atraksi</label>
+              <select id="atraksi" name="atraksi" required class="form-input">
+                <option value="">-- Pilih Atraksi --</option>
+                {% for atraksi in atraksi_list %}
+                  <option value="{{ atraksi.nama_atraksi }}">{{ atraksi.nama_atraksi }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            
+            <!-- Lokasi -->
+            <div>
+              <label for="lokasi" class="block text-sm font-medium text-[#006400] mb-2">Lokasi</label>
+              <input type="text" id="lokasi" name="lokasi" readonly class="form-input readonly-input">
+            </div>
+            
+            <!-- Jam -->
+            <div>
+              <label for="jam" class="block text-sm font-medium text-[#006400] mb-2">Jam</label>
+              <input type="text" id="jam" name="jam" readonly class="form-input readonly-input">
+            </div>
 
-          <!-- Tanggal -->
-          <div>
-            <label for="tanggal" class="block text-sm font-medium text-[#006400] mb-2">Tanggal</label>
-            <input type="text" id="tanggal" name="tanggal" required class="form-input timepicker" placeholder="Pilih tanggal">
-          </div>
+            <!-- Tanggal -->
+            <div>
+              <label for="tanggal" class="block text-sm font-medium text-[#006400] mb-2">Tanggal</label>
+              <input type="text" id="tanggal" name="tanggal" required class="form-input timepicker" placeholder="Pilih tanggal">
+            </div>
 
-          <!-- Jumlah Tiket -->
-          <div>
-            <label for="jumlah-tiket" class="block text-sm font-medium text-[#006400] mb-2">Jumlah Tiket</label>
-            <input type="number" id="jumlah-tiket" name="jumlah-tiket" min="1" required placeholder="Masukkan jumlah tiket" class="form-input">
-          </div>
+            <!-- Jumlah Tiket -->
+            <div>
+              <label for="jumlah-tiket" class="block text-sm font-medium text-[#006400] mb-2">Jumlah Tiket</label>
+              <input type="number" id="jumlah-tiket" name="jumlah-tiket" min="1" required placeholder="Masukkan jumlah tiket" class="form-input">
+            </div>
 
-          <div class="flex justify-center gap-4 mt-8">
-            <button type="submit" class="btn-primary px-6 py-3 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] transition duration-200 shadow-md">
-              Simpan
-            </button>
-            <button type="button" class="btn-primary px-6 py-3 bg-white text-[#dc2626] border border-[#dc2626] font-medium rounded-lg hover:bg-[#fef2f2] transition duration-200 shadow-md">
-              Batal
-            </button>
+            <div class="flex justify-center gap-4 mt-8">
+              <button type="submit" class="btn-primary px-6 py-3 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] transition duration-200 shadow-md">
+                Simpan
+              </button>
+              <button type="button" onclick="window.location.href='{% url 'pengunjung_data_reservasi' %}'" class="btn-primary px-6 py-3 bg-white text-[#dc2626] border border-[#dc2626] font-medium rounded-lg hover:bg-[#fef2f2] transition duration-200 shadow-md">
+                Batal
+              </button>
+            </div>
           </div>
-        </div>
-      </form>
+        </form>
+
+      {% elif jenis_reservasi == 'Wahana' %}
+        <h2 class="text-3xl font-bold text-[#008000] mb-6 text-center">Form Reservasi Wahana</h2>
+
+        <form method="POST" action="{% url 'pengunjung_form_reservasi' reservasi_id %}" id="reservasiForm" class="space-y-6">
+          {% csrf_token %}
+          <div class="grid grid-cols-1 gap-6">
+            <!-- Nama Wahana -->
+            <div>
+              <label for="wahana" class="block text-sm font-medium text-[#006400] mb-2">Nama Wahana</label>
+              <select id="wahana" name="wahana" required class="form-input">
+                <option value="">-- Pilih Wahana --</option>
+                {% for wahana in wahana_list %}
+                  <option value="{{ wahana.nama_wahana }}">{{ wahana.nama_wahana }}</option>
+                {% endfor %}
+              </select>
+              </select>
+            </div>
+            
+            <!-- Peraturan -->
+            <div>
+              <label for="peraturan" class="block text-sm font-medium text-[#006400] mb-2">Peraturan</label>
+              <textarea id="peraturan" name="peraturan" readonly class="form-input readonly-input" rows="1"></textarea>
+            </div>
+
+            <!-- Jam -->
+            <div>
+              <label for="jam" class="block text-sm font-medium text-[#006400] mb-2">Jam</label>
+              <input type="text" id="jam" name="jam" readonly class="form-input readonly-input">
+            </div>
+            
+            <!-- Tanggal -->
+            <div>
+              <label for="tanggal" class="block text-sm font-medium text-[#006400] mb-2">Tanggal</label>
+              <input type="text" id="tanggal" name="tanggal" required class="form-input timepicker" placeholder="Pilih tanggal">
+            </div>
+
+            <!-- Jumlah Tiket -->
+            <div>
+              <label for="jumlah-tiket" class="block text-sm font-medium text-[#006400] mb-2">Jumlah Tiket</label>
+              <input type="number" id="jumlah-tiket" name="jumlah-tiket" min="1" required placeholder="Masukkan jumlah tiket" class="form-input">
+            </div>
+
+            <div class="flex justify-center gap-4 mt-8">
+              <button type="submit" class="btn-primary px-6 py-3 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] transition duration-200 shadow-md">
+                Simpan
+              </button>
+              <button type="button" onclick="window.location.href='{% url 'pengunjung_data_reservasi' %}'" class="btn-primary px-6 py-3 bg-white text-[#dc2626] border border-[#dc2626] font-medium rounded-lg hover:bg-[#fef2f2] transition duration-200 shadow-md">
+                Batal
+              </button>
+            </div>
+          </div>
+        </form>
+      {% endif %}
+
     </div>
   </div>
 </div>
@@ -130,12 +185,43 @@
 
 <script>
   $(document).ready(function() {
-    // Initialize Datepicker
+    // Inisialisasi flatpickr
     flatpickr(".timepicker", {
-      dateFormat: "d/m/Y",
+      dateFormat: "Y-m-d",
       minDate: "today",
     });
 
+
+    // Data wahana
+    const wahanaData = {
+      {% for wahana in wahana_list %}
+        "{{ wahana.nama_wahana }}": {
+          peraturan: {{ wahana.peraturan|safe }},
+          jam: "{{ wahana.jam }}"
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    };
+
+    $('#wahana').on('change', function () {
+      const selected = $(this).val();
+      if (wahanaData[selected]) {
+        let peraturanArr = wahanaData[selected].peraturan;
+
+        // buat string bernomor dengan newline
+        let peraturanStr = peraturanArr.map((item, index) => `${index + 1}. ${item}`).join('\n');
+
+        $('#peraturan').val(peraturanStr);
+        $('#peraturan').attr('rows', Math.max(peraturanArr.length, 1));
+        $('#jam').val(wahanaData[selected].jam);
+      } else {
+        $('#peraturan').val('');
+        $('#peraturan').attr('rows', 1);
+        $('#jam').val('');
+      }
+    });
+
+
+    // Event untuk atraksi
     const atraksiData = {
       {% for atraksi in atraksi_list %}
         "{{ atraksi.nama_atraksi }}": {
@@ -156,5 +242,7 @@
       }
     });
   });
+
+
 </script>
 {% endblock %}

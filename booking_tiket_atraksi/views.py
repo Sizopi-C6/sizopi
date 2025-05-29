@@ -110,22 +110,17 @@ def pengunjung_form_reservasi(request, reservasi_id):
             }
         else:
             cursor.execute("""
-                SELECT
-                    w.nama_wahana,
-                    w.peraturan,
-                    f.jadwal,
-                    f.kapasitas_max
+                SELECT w.nama_wahana, w.peraturan, f.jadwal, f.kapasitas_max
                 FROM wahana w
                 JOIN fasilitas f ON w.nama_wahana = f.nama
                 WHERE w.nama_wahana = %s
             """, [reservasi_id])
             wahana = cursor.fetchone()
-
             if wahana:
                 jenis_reservasi = 'Wahana'
                 data_fasilitas = {
                     'nama': wahana[0],
-                    'peraturan': wahana[1], 
+                    'peraturan': wahana[1],
                     'jadwal': wahana[2],
                     'kapasitas_max': wahana[3],
                 }
@@ -269,14 +264,10 @@ def pengunjung_data_booking(request):
     return render(request, 'pengunjung_data_booking.html', {'data_booking': data_booking})
 
 def pengunjung_edit_reservasi(request, username, nama_atraksi, tanggal_kunjungan):
-    print(f"[DEBUG] Menerima request edit reservasi untuk username={username}, nama_atraksi={nama_atraksi}, tanggal_kunjungan={tanggal_kunjungan}")
 
-    # Parsing tanggal_kunjungan dari string URL ke objek date
     try:
         tanggal_kunjungan_obj = datetime.strptime(tanggal_kunjungan, '%Y-%m-%d').date()
-        print(f"[DEBUG] Parsed tanggal_kunjungan_obj: {tanggal_kunjungan_obj}")
     except ValueError:
-        print("[ERROR] Format tanggal_kunjungan tidak valid, redirect ke pengunjung_data_booking")
         return redirect('pengunjung_data_booking')
 
     with connection.cursor() as cursor:
@@ -286,28 +277,22 @@ def pengunjung_edit_reservasi(request, username, nama_atraksi, tanggal_kunjungan
             WHERE username_p = %s AND nama_atraksi = %s AND tanggal_kunjungan = %s
         """, [username, nama_atraksi, tanggal_kunjungan_obj])
         row = cursor.fetchone()
-        print(f"[DEBUG] Hasil query reservasi: {row}")
 
         if not row:
-            print("[ERROR] Reservasi tidak ditemukan, redirect ke pengunjung_data_booking")
             return redirect('pengunjung_data_booking')
 
         cursor.execute("SELECT COUNT(*) FROM atraksi WHERE nama_atraksi = %s", [nama_atraksi])
         is_atraksi = cursor.fetchone()[0] > 0
-        print(f"[DEBUG] is_atraksi: {is_atraksi}")
 
         if is_atraksi:
             jenis_reservasi = 'Atraksi'
-            # Ambil lokasi atraksi
             cursor.execute("SELECT lokasi FROM atraksi WHERE nama_atraksi = %s", [nama_atraksi])
             lokasi_row = cursor.fetchone()
             lokasi = lokasi_row[0] if lokasi_row else None
             peraturan = []
-            print(f"[DEBUG] lokasi atraksi: {lokasi}")
         else:
             jenis_reservasi = 'Wahana'
             lokasi = None
-            # Ambil peraturan wahana (misal disimpan dalam string multiline)
             cursor.execute("SELECT peraturan FROM wahana WHERE nama_wahana = %s", [nama_atraksi])
             wahana_row = cursor.fetchone()
             if wahana_row:
@@ -315,29 +300,23 @@ def pengunjung_edit_reservasi(request, username, nama_atraksi, tanggal_kunjungan
                 peraturan = [p.strip() for p in peraturan_str.split('\n') if p.strip()]
             else:
                 peraturan = []
-            print(f"[DEBUG] peraturan wahana: {peraturan}")
 
         # Ambil jadwal fasilitas
         cursor.execute("SELECT jadwal FROM fasilitas WHERE nama = %s", [nama_atraksi])
         fasilitas_row = cursor.fetchone()
         jam = fasilitas_row[0] if fasilitas_row else None
-        print(f"[DEBUG] jadwal fasilitas: {jam}")
 
     # Jika POST, proses update data reservasi
     if request.method == 'POST':
-        print("[DEBUG] Metode POST diterima, akan update data reservasi")
         tanggal_baru_str = request.POST.get('tanggal')
         jumlah_tiket_baru = request.POST.get('jumlah_tiket')
-        print(f"[DEBUG] Data POST diterima: tanggal={tanggal_baru_str}, jumlah_tiket={jumlah_tiket_baru}")
 
         try:
             tanggal_baru = datetime.strptime(tanggal_baru_str, '%d/%m/%Y').date()
             jumlah_tiket_baru = int(jumlah_tiket_baru)
             if jumlah_tiket_baru < 1:
                 raise ValueError('Jumlah tiket minimal 1')
-            print(f"[DEBUG] Parsed data POST: tanggal_baru={tanggal_baru}, jumlah_tiket_baru={jumlah_tiket_baru}")
         except Exception as e:
-            print(f"[ERROR] Data POST invalid: {e}")
             return redirect('pengunjung_edit_reservasi', username=username, nama_atraksi=nama_atraksi, tanggal_kunjungan=tanggal_kunjungan)
 
         with connection.cursor() as cursor:
@@ -346,7 +325,6 @@ def pengunjung_edit_reservasi(request, username, nama_atraksi, tanggal_kunjungan
                 SET tanggal_kunjungan = %s, jumlah_tiket = %s
                 WHERE username_p = %s AND nama_atraksi = %s AND tanggal_kunjungan = %s
             """, [tanggal_baru, jumlah_tiket_baru, username, nama_atraksi, tanggal_kunjungan_obj])
-            print("[DEBUG] Update reservasi berhasil")
 
         return redirect('pengunjung_data_booking')
 
@@ -361,8 +339,6 @@ def pengunjung_edit_reservasi(request, username, nama_atraksi, tanggal_kunjungan
         'lokasi': lokasi,
         'jenis_reservasi': jenis_reservasi,
     }
-
-    print(f"[DEBUG] Render halaman edit reservasi dengan data: {reservasi}")
 
     return render(request, 'pengunjung_edit_reservasi.html', {'reservasi': reservasi})
 
@@ -437,12 +413,10 @@ def staf_data_wahana(request):
     return render(request, 'staf_data_wahana.html', {'data_reservasi': data_reservasi})
 
 def staf_edit_reservasi(request, username, nama_atraksi, tanggal_kunjungan):
-    print(f"[DEBUG] Menerima request edit reservasi untuk username={username}, nama_atraksi={nama_atraksi}, tanggal_kunjungan={tanggal_kunjungan}")
 
     try:
         tanggal_kunjungan_obj = datetime.strptime(tanggal_kunjungan, '%Y-%m-%d').date()
     except ValueError:
-        print("[ERROR] Format tanggal_kunjungan tidak valid, redirect ke staf_data_atraksi")
         return redirect('staf_data_atraksi')
 
     with connection.cursor() as cursor:
@@ -454,7 +428,6 @@ def staf_edit_reservasi(request, username, nama_atraksi, tanggal_kunjungan):
         row = cursor.fetchone()
 
         if not row:
-            print("[ERROR] Reservasi tidak ditemukan, redirect ke staf_data_atraksi")
             return redirect('staf_data_atraksi')
 
         cursor.execute("SELECT COUNT(*) FROM atraksi WHERE nama_atraksi = %s", [nama_atraksi])
@@ -492,8 +465,6 @@ def staf_edit_reservasi(request, username, nama_atraksi, tanggal_kunjungan):
             if jumlah_tiket_baru < 1:
                 raise ValueError('Jumlah tiket minimal 1')
         except Exception as e:
-            print(f"[ERROR] Data POST invalid: {e}")
-            # Kembali ke halaman edit reservasi staf
             return redirect('staf_edit_reservasi', username=username, nama_atraksi=nama_atraksi, tanggal_kunjungan=tanggal_kunjungan)
 
         with connection.cursor() as cursor:
@@ -525,13 +496,11 @@ def staf_edit_reservasi(request, username, nama_atraksi, tanggal_kunjungan):
 
 def batalkan_reservasi(request):
     try:
-        print(request.body)
         data = json.loads(request.body)
         username = data['username']
         nama_atraksi = data['nama_atraksi']
         tanggal_kunjungan = data['tanggal_kunjungan']  
         
-        print("Data:", username, nama_atraksi, tanggal_kunjungan)
 
         with connection.cursor() as cursor:
             cursor.execute("""

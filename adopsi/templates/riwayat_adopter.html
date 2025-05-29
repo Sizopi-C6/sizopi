@@ -302,17 +302,6 @@
             </footer>
         </div>
     </div>
-
-    <!-- Messages -->
-    {% if messages %}
-        <div class="message-container">
-            {% for message in messages %}
-                <div class="message {{ message.tags }}">
-                    <p class="font-medium">{{ message }}</p>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
 </div>
 
 <script>
@@ -337,21 +326,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-
-    const messages = document.querySelectorAll('.message');
-    if (messages.length > 0) {
-        setTimeout(function() {
-            messages.forEach(function(message) {
-                message.style.opacity = '0';
-                message.style.transform = 'translateX(100%)';
-                message.style.transition = 'all 0.3s ease';
-                
-                setTimeout(function() {
-                    message.remove();
-                }, 300);
-            });
-        }, 6000);
-    }
 
     const rupiahElements = document.querySelectorAll('.format-rupiah');
     rupiahElements.forEach(function(element) {

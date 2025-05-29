@@ -83,6 +83,29 @@
         .btn-secondary:hover {
             background-color: #e0e0e0;
         }
+        
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+        
+        /* Validation Notice Styles */
+        .period-notice {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 {% endblock meta %}
 
@@ -107,7 +130,7 @@
                 <p class="text-sm text-[#008000]/70">Perpanjang periode adopsi untuk {{ adoption_data.nama_hewan }}</p>
             </div>
 
-            <form method="POST" action="{% url 'adopsi:perpanjang_periode' %}" class="form-body">
+            <form method="POST" action="{% url 'adopsi:perpanjang_periode' %}" class="form-body" id="perpanjangForm">
                 {% csrf_token %}
                 <input type="hidden" name="animal_id" value="{{ adoption_data.id }}">
                 
@@ -211,23 +234,30 @@
                         <input 
                             type="number" 
                             name="nominal" 
+                            id="nominalInput"
                             required 
-                            min="50000"
+                            min="1"
                             step="1000"
-                            placeholder="Masukkan nominal kontribusi (minimal Rp 50.000)"
+                            placeholder="Masukkan nominal kontribusi"
                             class="input-field"
                         >
-                        <p class="text-xs text-[#008000]/60 mt-1">Kontribusi minimal Rp 50.000</p>
+                        <p class="text-xs text-[#008000]/60 mt-1">Kontribusi harus lebih besar dari Rp 0</p>
+                        <div id="nominalError" class="error-message">
+                            Kontribusi harus lebih besar dari Rp 0!
+                        </div>
                     </div>
 
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-[#008000] mb-2">Perpanjang Periode Selama *</label>
-                        <select name="periode" required class="input-field">
+                        <select name="periode" id="periodeSelect" required class="input-field">
                             <option value="">Pilih periode perpanjangan</option>
                             <option value="3">3 Bulan</option>
                             <option value="6">6 Bulan</option>
                             <option value="12">12 Bulan</option>
                         </select>
+                        <div id="periodeError" class="error-message">
+                            Periode perpanjangan harus dipilih!
+                        </div>
                     </div>
 
                     <!-- Important Notice -->
@@ -261,38 +291,95 @@
 </div>
 
 <script>
-    document.querySelector('input[name="nominal"]').addEventListener('input', function(e) {
-        let value = e.target.value.replace(/\D/g, '');
-        e.target.value = value;
-    });
-
-    document.querySelector('select[name="periode"]').addEventListener('change', function(e) {
-        const nominalInput = document.querySelector('input[name="nominal"]');
-        const selectedPeriod = e.target.value;
+    function validateForm() {
+        const nominalInput = document.getElementById('nominalInput');
+        const periodeSelect = document.getElementById('periodeSelect');
+        const nominalError = document.getElementById('nominalError');
+        const periodeError = document.getElementById('periodeError');
         
-        if (selectedPeriod && nominalInput.value) {
-            const currentEndDate = new Date('{{ adoption_data.tgl_berhenti_adopsi|date:"Y-m-d" }}');
-            let newEndDate = new Date(currentEndDate);
+        let isValid = true;
+        
+        const nominalValue = parseInt(nominalInput.value) || 0;
+        if (nominalValue <= 0) {
+            nominalError.style.display = 'block';
+            nominalInput.style.borderColor = '#dc3545';
+            isValid = false;
+        } else {
+            nominalError.style.display = 'none';
+            nominalInput.style.borderColor = '#c8e1cc';
+        }
+        
+        if (!periodeSelect.value) {
+            periodeError.style.display = 'block';
+            periodeSelect.style.borderColor = '#dc3545';
+            isValid = false;
+        } else {
+            periodeError.style.display = 'none';
+            periodeSelect.style.borderColor = '#c8e1cc';
+        }
+        
+        return isValid;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const nominalInput = document.getElementById('nominalInput');
+        const periodeSelect = document.getElementById('periodeSelect');
+        const form = document.getElementById('perpanjangForm');
+        
+        nominalInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            e.target.value = value;
             
-            if (selectedPeriod === '3') {
-                newEndDate.setMonth(newEndDate.getMonth() + 3);
-            } else if (selectedPeriod === '6') {
-                newEndDate.setMonth(newEndDate.getMonth() + 6);
-            } else if (selectedPeriod === '12') {
-                newEndDate.setFullYear(newEndDate.getFullYear() + 1);
+            if (parseInt(value) > 0) {
+                document.getElementById('nominalError').style.display = 'none';
+                e.target.style.borderColor = '#c8e1cc';
+            }
+        });
+        
+        periodeSelect.addEventListener('change', function(e) {
+            if (e.target.value) {
+                document.getElementById('periodeError').style.display = 'none';
+                e.target.style.borderColor = '#c8e1cc';
             }
             
-            const existingNotice = document.querySelector('.period-notice');
-            if (existingNotice) {
-                existingNotice.remove();
+            updatePeriodNotice();
+        });
+        
+        form.addEventListener('submit', function(e) {
+            if (!validateForm()) {
+                e.preventDefault();
+                return false;
             }
+        });
+        
+        function updatePeriodNotice() {
+            const selectedPeriod = periodeSelect.value;
+            const nominalValue = parseInt(nominalInput.value) || 0;
             
-            const notice = document.createElement('div');
-            notice.className = 'period-notice bg-green-50 border border-green-200 rounded-lg p-3 mt-2 text-sm text-green-700';
-            notice.innerHTML = `
-                <strong>Periode adopsi baru akan berakhir pada:</strong> ${newEndDate.toLocaleDateString('id-ID', {year: 'numeric', month: 'long', day: 'numeric'})}
-            `;
-            e.target.parentNode.appendChild(notice);
+            if (selectedPeriod && nominalValue > 0) {
+                const currentEndDate = new Date('{{ adoption_data.tgl_berhenti_adopsi|date:"Y-m-d" }}');
+                let newEndDate = new Date(currentEndDate);
+                
+                if (selectedPeriod === '3') {
+                    newEndDate.setMonth(newEndDate.getMonth() + 3);
+                } else if (selectedPeriod === '6') {
+                    newEndDate.setMonth(newEndDate.getMonth() + 6);
+                } else if (selectedPeriod === '12') {
+                    newEndDate.setFullYear(newEndDate.getFullYear() + 1);
+                }
+                
+                const existingNotice = document.querySelector('.period-notice');
+                if (existingNotice) {
+                    existingNotice.remove();
+                }
+                
+                const notice = document.createElement('div');
+                notice.className = 'period-notice bg-green-50 border border-green-200 rounded-lg p-3 mt-2 text-sm text-green-700';
+                notice.innerHTML = `
+                    <strong>Periode adopsi baru akan berakhir pada:</strong> ${newEndDate.toLocaleDateString('id-ID', {year: 'numeric', month: 'long', day: 'numeric'})}
+                `;
+                periodeSelect.parentNode.appendChild(notice);
+            }
         }
     });
 </script>

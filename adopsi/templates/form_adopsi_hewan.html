@@ -186,31 +186,6 @@
 {% block content %}
 {% include 'navbar/staff_administrator.html' %}
 
-<!-- Messages Display -->
-{% if messages %}
-    <div class="fixed top-4 right-4 z-50 space-y-2">
-        {% for message in messages %}
-            <div class="px-6 py-4 rounded-lg shadow-lg max-w-md 
-                {% if message.tags == 'success' %}
-                    bg-green-100 border border-green-400 text-green-700
-                {% elif message.tags == 'error' %}
-                    bg-red-100 border border-red-400 text-red-700
-                {% elif message.tags == 'warning' %}
-                    bg-yellow-100 border border-yellow-400 text-yellow-700
-                {% else %}
-                    bg-blue-100 border border-blue-400 text-blue-700
-                {% endif %}
-                alert alert-dismissible fade show" 
-                role="alert">
-                <div class="flex items-center justify-between">
-                    <span class="font-medium">{{ message }}</span>
-                    <button type="button" class="ml-4 text-sm font-semibold" onclick="this.parentElement.parentElement.remove()">×</button>
-                </div>
-            </div>
-        {% endfor %}
-    </div>
-{% endif %}
-
 <div class="bg-[#e8f4ea] min-h-screen flex flex-col items-center font-[Poppins] p-8">
     <div class="w-full max-w-4xl">
         <!-- Header Section -->
@@ -378,12 +353,12 @@
                                 id="nominal" 
                                 name="nominal" 
                                 required 
-                                min="100000"
-                                step="1000"
-                                placeholder="Masukkan nominal kontribusi (minimal Rp 100.000)"
+                                min="1"
+                                step="1"
+                                placeholder="Masukkan nominal kontribusi"
                                 class="w-full p-3 bg-white rounded-lg border border-[#c8e1cc] focus:outline-none focus:ring-2 focus:ring-[#008000]"
                             >
-                            <p class="text-xs text-[#008000]/60 mt-1">Kontribusi minimal Rp 100.000</p>
+                            <p class="text-xs text-[#008000]/60 mt-1">Kontribusi harus lebih besar dari Rp 0</p>
                         </div>
                         
                         <div>
@@ -681,8 +656,8 @@
             const periodeSelect = document.getElementById('periode');
             
             const nominalValue = parseInt(nominalInput.value) || 0;
-            if (nominalValue < 100000) {
-                showError('Kontribusi minimal adalah Rp 100.000!', 'step2');
+            if (nominalValue <= 0) {
+                showError('Kontribusi harus lebih besar dari Rp 0!', 'step2');
                 nominalInput.focus();
                 return false;
             }
@@ -868,15 +843,6 @@
                     if (existingNotice) {
                         existingNotice.remove();
                     }
-                    
-                    if (selectedPeriod && nominalValue >= 100000) {
-                        const notice = document.createElement('div');
-                        notice.className = 'period-notice bg-green-50 border border-green-200 rounded-lg p-3 mt-2 text-sm text-green-700';
-                        notice.innerHTML = `
-                            <strong>Kontribusi:</strong> Rp ${nominalValue.toLocaleString('id-ID')} untuk periode ${selectedPeriod} bulan
-                        `;
-                        e.target.parentNode.appendChild(notice);
-                    }
                 });
             }
 
@@ -910,17 +876,6 @@
                 });
             });
         });
-
-        setTimeout(function() {
-            const messages = document.querySelectorAll('.alert');
-            messages.forEach(function(message) {
-                message.style.transition = 'opacity 0.5s';
-                message.style.opacity = '0';
-                setTimeout(function() {
-                    message.remove();
-                }, 500);
-            });
-        }, 5000);
     </script>
 </div>
 {% endblock %}

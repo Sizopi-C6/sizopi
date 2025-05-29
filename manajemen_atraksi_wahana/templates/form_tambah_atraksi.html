@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load humanize %}
 
 {% block meta %}
   <title>Form Tambah Atraksi - SIZOPI</title>
@@ -122,7 +123,6 @@
 {% endblock meta %}
 
 {% block content %}
-{% include 'navbar/staff_administrator.html' %}
 <div class="min-h-screen p-8 font-[Poppins] flex items-center justify-center">
   <div class="w-full max-w-2xl">
     <div class="card p-8 rounded-2xl shadow-lg">
@@ -134,10 +134,9 @@
         <div class="grid grid-cols-1 gap-6">
           <!-- Nama Atraksi -->
           <div>
-            <label for="namaAtraksi" class="block text-sm font-medium text-[#006400] mb-2">Nama Atraksi</label>
-            <input type="text" id="namaAtraksi" name="namaAtraksi" required
-                   placeholder="Masukkan nama atraksi"
-                   class="form-input">
+            <label for="nama_atraksi" class="block text-sm font-medium text-[#006400] mb-2">Nama Atraksi</label>
+            <input type="text" id="nama_atraksi" name="nama_atraksi" required placeholder="Nama atraksi" class="form-input" />
+
           </div>
           
           <!-- Lokasi -->
@@ -148,27 +147,27 @@
                    class="form-input">
           </div>
           
+          <!-- Kapasitas Maksimum -->
           <div>
-            <label for="kapasitas" class="block text-sm font-medium text-[#006400] mb-2">
+            <label for="kapasitas_max" class="block text-sm font-medium text-[#006400] mb-2">
               Kapasitas Maksimum
             </label>
             <div class="flex items-center gap-2">
-              <input type="number" id="kapasitas" name="kapasitas" min="1" required
-                    placeholder="Masukkan kapasitas maksimum"
-                    class="form-input w-full">
+              <input type="number" id="kapasitas_max" name="kapasitas_max" min="1" required placeholder="Kapasitas maksimum" class="form-input w-full" />
+
               <span class="text-sm text-[#006400]">orang</span>
             </div>
           </div>
-
+            
           <!-- Pelatih Pertunjukan -->
           <div>
             <label for="pelatih" class="block text-sm font-medium text-[#006400] mb-2">Pelatih Pertunjukan</label>
-            <select id="pelatih" name="pelatih" required class="form-input">
-                <option value="">-- Pilih Pelatih --</option>
-                {% for pelatih in pelatih_list %}
-                    <option value="{{ pelatih }}">{{ pelatih }}</option>
-                {% endfor %}
+            <select id="pelatih" name="pelatih" class="js-example-basic-multiple w-full" multiple="multiple" required>
+              {% for pelatih in pelatih_list %}
+                <option value="{{ pelatih }}">{{ pelatih }}</option>
+              {% endfor %}
             </select>
+            
           </div>
 
           <!-- Jadwal -->
@@ -188,6 +187,7 @@
               {% endfor %}
             </select>
           </div>
+
 
           <div class="flex justify-center gap-4 mt-8">
           <button type="submit" 
@@ -216,14 +216,18 @@
 
 <script>
   $(document).ready(function() {
-    // Initialize Select2
     $('#hewan').select2({
       placeholder: "Pilih hewan",
       allowClear: true,
       width: '100%'
     });
     
-    // Initialize Timepicker
+    $('#pelatih').select2({
+        placeholder: "Pilih pelatih",
+        allowClear: true,
+        width: '100%'
+    });
+
     flatpickr(".timepicker", {
       enableTime: true,
       noCalendar: true,

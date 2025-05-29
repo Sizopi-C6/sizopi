@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block meta %}
+<title>List Data Reservasi - SIZOPI</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+  
+  body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #e8f4ea;
+  }
+  
+  .card {
+    background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid #c8e1cc;
+  }
+  
+  .table-header {
+    background-color: #008000;
+    color: white;
+  }
+  
+  .table-row:nth-child(even) {
+    background-color: #e0f0e3;
+  }
+  
+  .table-row:nth-child(odd) {
+    background-color: #d2e7d6;
+  }
+  
+  .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1rem;
+    border-radius: 12px;
+  }
+
+  .table-responsive {
+    min-width: 800px;
+    width: 100%;
+  }
+
+  .btn-primary {
+    background-color: #008000;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+
+  .btn-primary:hover {
+    background-color: #006400;
+    transform: translateY(-1px);
+  }
+
+  .btn-disabled {
+    background-color: #9ca3af;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: not-allowed;
+  }
+
+  .kapasitas-habis {
+    color: #dc2626;
+    font-weight: 600;
+  }
+
+  .kapasitas-tersedia {
+    color: #065f46;
+    font-weight: 500;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen p-8 font-[Poppins]">
+  <div class="max-w-7xl mx-auto">
+    <div class="card p-8 rounded-2xl shadow-lg mb-8">
+      <h2 class="text-3xl font-bold text-[#008000] mb-6">LIST DATA RESERVASI</h2>
+
+      <div class="table-container">
+        <div class="table-wrapper">
+          <table class="table-responsive min-w-full divide-y divide-gray-200">
+            <thead>
+              <tr class="table-header">
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Jenis Reservasi</th>
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Nama Atraksi</th>
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Tanggal Reservasi</th>
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Kapasitas Tersedia</th>
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              {% for reservasi in data_reservasi %}
+                <tr class="table-row hover:bg-[#c8e1cc] transition-colors">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {{ reservasi.jenis_reservasi }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ reservasi.nama_atraksi }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ reservasi.tanggal_kunjungan }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {% if reservasi.kapasitas_tersisa == 0 %}
+                      <span class="kapasitas-habis">0</span>
+                    {% else %}
+                      <span class="kapasitas-tersedia">
+                        {{ reservasi.kapasitas_tersisa }} dari {{ reservasi.kapasitas_maksimal }}
+                      </span>
+                    {% endif %}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    {% if reservasi.kapasitas_tersisa > 0 %}
+                      {% if reservasi.id %}
+                        <a href="{% url 'pengunjung_form_reservasi' reservasi.id %}" class="btn-primary">Pesan Tiket</a>
+                      {% else %}
+                        <span class="btn-disabled">Pesan Tiket</span>
+                      {% endif %}
+                    {% else %}
+                      <span class="btn-disabled">Pesan Tiket</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="5" class="px-6 py-10 text-center text-sm text-gray-500">
+                    Tidak ada data reservasi tersedia.
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

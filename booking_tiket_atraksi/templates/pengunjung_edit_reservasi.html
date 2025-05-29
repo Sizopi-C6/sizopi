@@ -1,39 +1,30 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load humanize %}
 
 {% block meta %}
   <title>Edit Reservasi - SIZOPI</title>
-
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Flatpickr Timepicker -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-
     body {
       font-family: 'Poppins', sans-serif;
       background-color: #e8f4ea;
     }
-
     .btn-primary {
       transition: all 0.3s ease;
     }
-
     .btn-primary:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0, 128, 0, 0.25);
     }
-
     .card {
       background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
       border-radius: 12px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
       border: 1px solid #c8e1cc;
     }
-
     .form-input {
       width: 100%;
       padding: 0.75rem;
@@ -42,70 +33,98 @@
       background-color: white;
       transition: all 0.3s ease;
     }
-
     .form-input:focus {
       outline: none;
       box-shadow: 0 0 0 3px rgba(0, 128, 0, 0.2);
       border-color: #008000;
     }
-
     .readonly-input {
       background-color: #f0f7f1;
       color: #4a6b52;
+    }
+    .peraturan-list {
+      max-height: 120px;
+      overflow-y: auto;
+      padding: 8px;
+      border: 1px solid #b8d8be;
+      border-radius: 8px;
+      background-color: white;
     }
   </style>
 {% endblock meta %}
 
 {% block content %}
-{% include 'navbar/pengunjung.html' %}
 <div class="min-h-screen p-8 font-[Poppins] flex items-center justify-center">
   <div class="w-full max-w-2xl">
     <div class="card p-8 rounded-2xl shadow-lg">
-      <h2 class="text-3xl font-bold text-[#008000] mb-6 text-center">Edit Reservasi Tiket</h2>
+      <h2 class="text-3xl font-bold text-[#008000] mb-6 text-center">
+        Edit Reservasi {{ reservasi.jenis_reservasi }}
+      </h2>
 
       <form method="POST" id="editReservasiForm" class="space-y-6">
         {% csrf_token %}
 
         <div class="grid grid-cols-1 gap-6">
-          <!-- Nama Atraksi -->
+          <!-- Nama Atraksi / Wahana (readonly) -->
           <div>
-            <label for="atraksi" class="block text-sm font-medium text-[#006400] mb-2">Nama Atraksi</label>
-            <select id="atraksi" name="atraksi" required class="form-input">
-              <option value="">-- Pilih Atraksi --</option>
-              {% for atraksi in atraksi_list %}
-                <option value="{{ atraksi.nama_atraksi }}" {% if reservasi.nama_atraksi == atraksi.nama_atraksi %}selected{% endif %}>{{ atraksi.nama_atraksi }}</option>
-              {% endfor %}
-            </select>
+            <label class="block text-sm font-medium text-[#006400] mb-2">
+              Nama {{ jenis_reservasi }}
+            </label>
+            <input type="text" readonly class="form-input readonly-input" value="{{ reservasi.nama_booking }}">
           </div>
 
-          <!-- Lokasi -->
+          <!-- Lokasi hanya untuk atraksi -->
+          {% if reservasi.jenis_reservasi == 'Atraksi' %}
           <div>
-            <label for="lokasi" class="block text-sm font-medium text-[#006400] mb-2">Lokasi</label>
-            <input type="text" id="lokasi" name="lokasi" readonly class="form-input readonly-input" value="{{ reservasi.lokasi }}">
+            <label class="block text-sm font-medium text-[#006400] mb-2">Lokasi</label>
+            <input type="text" readonly class="form-input readonly-input" value="{{ reservasi.lokasi }}">
           </div>
+          {% endif %}
+
+          <!-- Peraturan hanya untuk wahana -->
+          {% if jenis_reservasi == 'Wahana' %}
+          <div>
+            <label class="block text-sm font-medium text-[#006400] mb-2">Peraturan</label>
+            <div class="peraturan-list">
+              {% if reservasi.peraturan %}
+                <ul class="list-disc pl-5">
+                  {% for p in reservasi.peraturan %}
+                    <li class="mb-1">{{ p }}</li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <p class="text-gray-500">Tidak ada peraturan khusus</p>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
 
           <!-- Jam -->
           <div>
-            <label for="jam" class="block text-sm font-medium text-[#006400] mb-2">Jam</label>
-            <input type="text" id="jam" name="jam" readonly class="form-input readonly-input" value="{{ reservasi.jam }}">
+            <label class="block text-sm font-medium text-[#006400] mb-2">Jam</label>
+            <input type="text" readonly class="form-input readonly-input" value="{{ reservasi.jam }}">
           </div>
 
-          <!-- Tanggal Kunjungan -->
+          <!-- Tanggal yang bisa diubah -->
           <div>
             <label for="tanggal" class="block text-sm font-medium text-[#006400] mb-2">Tanggal</label>
-            <input type="text" id="tanggal" name="tanggal" required class="form-input timepicker" value="{{ reservasi.tanggal_kunjungan }}" placeholder="Pilih tanggal">
+            <input type="text" id="tanggal" name="tanggal" required 
+              class="form-input timepicker" value="{{ reservasi.tanggal_kunjungan|date:'d/m/Y' }}" 
+              placeholder="Pilih tanggal">
           </div>
 
-          <!-- Jumlah Tiket -->
+          <!-- Jumlah Tiket yang bisa diubah -->
           <div>
             <label for="jumlah-tiket" class="block text-sm font-medium text-[#006400] mb-2">Jumlah Tiket</label>
-            <input type="number" id="jumlah-tiket" name="jumlah_tiket" min="1" required class="form-input" value="{{ reservasi.jumlah_tiket }}" placeholder="Masukkan jumlah tiket">
+            <input type="number" id="jumlah-tiket" name="jumlah_tiket" min="1" required 
+              class="form-input" value="{{ reservasi.jumlah_tiket }}" 
+              placeholder="Masukkan jumlah tiket">
           </div>
 
           <!-- Status -->
           <div>
-            <label for="status" class="block text-sm font-medium text-[#006400] mb-2">Status</label>
-            <input type="text" id="status" name="status" required class="form-input" value="{{ reservasi.status }}" placeholder="Masukkan status">
+            <label class="block text-sm font-medium text-[#006400] mb-2">Status</label>
+            <input type="text" readonly class="form-input readonly-input" value="{{ reservasi.status }}">
           </div>
 
           <!-- Tombol Aksi -->
@@ -113,7 +132,7 @@
             <button type="submit" class="btn-primary px-6 py-3 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] transition duration-200 shadow-md">
               Simpan
             </button>
-            <button type="button" onclick="window.location.href='{% url 'pengunjung_detail_reservasi' %}'" class="btn-primary px-6 py-3 bg-white text-[#dc2626] border border-[#dc2626] font-medium rounded-lg hover:bg-[#fef2f2] transition duration-200 shadow-md">
+            <button type="button" onclick="window.location.href='{% url 'staf_data_atraksi' %}'" class="btn-primary px-6 py-3 bg-white text-[#dc2626] border border-[#dc2626] font-medium rounded-lg hover:bg-[#fef2f2] transition duration-200 shadow-md">
               Batal
             </button>
           </div>
@@ -140,30 +159,49 @@
       minDate: "today"
     });
 
-    // Data atraksi untuk mengisi lokasi dan jam secara otomatis
-    const atraksiData = {
-      {% for atraksi in atraksi_list %}
-        "{{ atraksi.nama_atraksi }}": {
-          lokasi: "{{ atraksi.lokasi }}",
-          jam: "{{ atraksi.jam }}"
-        },
-      {% endfor %}
+    // Data untuk mengisi field otomatis
+    const data = {
+      {% if reservasi.jenis_reservasi == 'Atraksi' %}
+        atraksi: {
+          {% for atraksi in atraksi_list %}
+            "{{ atraksi.nama_atraksi }}": {
+              lokasi: "{{ atraksi.lokasi }}",
+              jam: "{{ atraksi.jam }}"
+            },
+          {% endfor %}
+        }
+      {% else %}
+        wahana: {
+          {% for wahana in wahana_list %}
+            "{{ wahana.nama_wahana }}": {
+              jam: "{{ wahana.jam }}",
+              peraturan: {{ wahana.peraturan|safe }}
+            },
+          {% endfor %}
+        }
+      {% endif %}
     };
 
-    // Saat dropdown berubah, isi lokasi dan jam otomatis
-    $('#atraksi').on('change', function() {
+    // Event handler untuk dropdown
+    $('#atraksi, #wahana').on('change', function() {
       const selected = $(this).val();
-      if (atraksiData[selected]) {
-        $('#lokasi').val(atraksiData[selected].lokasi);
-        $('#jam').val(atraksiData[selected].jam);
+      const jenis = $(this).attr('id');
+      
+      if (data[jenis] && data[jenis][selected]) {
+        const selectedData = data[jenis][selected];
+        $('#jam').val(selectedData.jam);
+        
+        if (jenis === 'atraksi') {
+          $('#lokasi').val(selectedData.lokasi);
+        }
       } else {
-        $('#lokasi').val('');
         $('#jam').val('');
+        $('#lokasi').val('');
       }
     });
 
     // Trigger saat halaman diload
-    $('#atraksi').trigger('change');
+    $('#atraksi, #wahana').trigger('change');
   });
 </script>
 {% endblock %}

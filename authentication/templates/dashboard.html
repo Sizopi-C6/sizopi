@@ -85,12 +85,12 @@
     .section h4 {
       margin-top: 0;
       font-weight: bold;
-      margin-bottom: 5px; /* Jarak antara judul dan konten */
+      margin-bottom: 5px; 
     }
 
     .section p, .section ul {
       margin-top: 0;
-      margin-bottom: 5px; /* Jarak setelah konten */
+      margin-bottom: 5px; 
     }
 
   </style>
@@ -170,16 +170,20 @@
 
   <div class="section">
     <h4>DAFTAR SPESIALISASI:</h4>
-    <ul>
-      {% for spesialisasi in role_data.nama_spesialisasi %}
-        <li>{{ spesialisasi }}</li>
-      {% endfor %}
-    </ul>
+    {% if role_data.nama_spesialisasi %}
+      <ul>
+        {% for spesialisasi in role_data.nama_spesialisasi %}
+          <li>{{ spesialisasi }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>Tidak ada spesialisasi</p>
+    {% endif %}
   </div>
 
   <div class="section">
     <h4>JUMLAH HEWAN YANG DITANGANI:</h4>
-    <p>{{ role_data.jumlah_hewan_ditangani }}</p>
+    <p>{{ role_data.jumlah_hewan_ditangani }} hewan</p>
   </div>
   {% endif %}
 
@@ -192,12 +196,12 @@
 
   <div class="section">
     <h4>JUMLAH HEWAN YANG DIBERI PAKAN:</h4>
-    <p>{{ role_data.jumlah_hewan_diberi_pakan }}</p>
+    <p>{{ role_data.jumlah_hewan_diberi_pakan }} hewan</p>
   </div>
   {% endif %}
 
   <!-- Section untuk Staf Administrasi -->
-  {% if data_umum.role == "Staf Administrasi" %}
+  {% if data_umum.role == "Staf Admin" %}
   <div class="section">
     <h4>ID STAF:</h4>
     <p>{{ role_data.id_staf }}</p>
@@ -205,13 +209,17 @@
 
   <div class="section">
     <h4>RINGKASAN PENJUALAN TIKET HARI INI:</h4>
-    <ul>
-      {% for key, value in role_data.ringkasan_penjualan_tiket.items %}
-        <li>{{ key|capfirst }}: {{ value }}</li>
-      {% endfor %}
-    </ul>
-  </div>  
-
+    {% if role_data.ringkasan_penjualan_tiket %}
+      <ul>
+        {% for key, value in role_data.ringkasan_penjualan_tiket.items %}
+          <li>{{ key|capfirst }}: {{ value }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>Tidak ada penjualan</p>
+    {% endif %}
+  </div>
+ 
   <div class="section">
     <h4>JUMLAH PENGUNJUNG HARI INI:</h4>
     <p>{{ role_data.jumlah_pengunjung_hari_ini }}</p>
@@ -224,13 +232,11 @@
         <li>{{ hari|capfirst }}: Rp {{ pendapatan|intcomma }}</li>
       {% endfor %}
     </ul>
-  </div>
-  
+  </div>  
   {% endif %}
 
-
-  <!-- Section untuk Staf Pelatih Pertunjukan -->
-  {% if data_umum.role == "Staf Pelatih Pertunjukan" %}
+  <!-- Section untuk Pelatih Hewan -->
+  {% if data_umum.role == "Pelatih Hewan" %}
   <div class="section">
     <h4>ID STAF:</h4>
     <p>{{ role_data.id_staf }}</p>
@@ -249,7 +255,7 @@
     <h4>DAFTAR HEWAN YANG DILATIH:</h4>
     <ul>
       {% for hewan in role_data.daftar_hewan_dilatih %}
-        <li>{{ hewan }}</li>
+        <li>• {{ hewan }}</li>
       {% endfor %}
     </ul>
   </div>

@@ -10,10 +10,40 @@
             background: linear-gradient(145deg, #d2e7d6, #e0f0e3);
             border: 1px solid #c8e1cc;
         }
+        
+        .medical-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+            background: white;
+        }
+        
+        .medical-table th,
+        .medical-table td {
+            border: 2px solid #000000;
+            padding: 12px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 14px;
+        }
+        
+        .medical-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .medical-table td {
+            background-color: white;
+            color: #000;
+        }
     </style>
 {% endblock meta %}
 
 {% block content %}
+{% include 'navbar/pengunjung_sebagai_adopter.html' %}
+{% include 'message_display.html' %}
+
 <div class="bg-[#e8f4ea] min-h-screen flex flex-col items-center font-[Poppins] p-8">
     <div class="w-full max-w-6xl">
         <!-- Breadcrumb -->
@@ -23,70 +53,87 @@
             <span class="text-[#008000]/80">Laporan Kondisi Hewan</span>
         </div>
 
-        <!-- Header -->
-        <div class="card-gradient rounded-2xl shadow-lg p-8 mb-8 text-center">
-            <h1 class="text-4xl font-bold text-[#008000] mb-3">LAPORAN KONDISI SATWA</h1>
-        </div>
-
-        <!-- Informasi Hewan -->
-        <div class="card-gradient rounded-2xl shadow-lg p-6 mb-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="md:col-span-1">
-                    <img src="{% static 'images/jerapah.jpeg' %}" alt="Hewan" class="w-full h-64 object-cover rounded-lg">
-                </div>
-                <div class="md:col-span-2 space-y-3">
-                    <div>
-                        <label class="text-sm text-[#008000]/80">Nama:</label>
-                        <p class="font-semibold text-[#008000]">Jerapah</p>
-                    </div>
-                    <div>
-                        <label class="text-sm text-[#008000]/80">Jenis:</label>
-                        <p class="text-[#008000]">Mamalia</p>
-                    </div>
-                    <div>
-                        <label class="text-sm text-[#008000]/80">Habitat:</label>
-                        <p class="text-[#008000]">Savana Afrika</p>
-                    </div>
-                </div>
+        <!-- Main Content Card -->
+        <div class="card-gradient rounded-2xl shadow-lg p-8 mb-8">
+            <!-- Title -->
+            <h1 class="text-4xl font-bold text-[#008000] mb-8 text-center">LAPORAN KONDISI SATWA</h1>
+            
+            <!-- Animal Photo - Centered -->
+            <div class="flex justify-center mb-8">
+                <img src="{{ animal.url_foto }}" alt="{{ animal.nama_hewan }}" class="w-80 h-80 object-cover rounded-lg border-2 border-[#008000]">
             </div>
-        </div>
-
-        <!-- Rekam Medis -->
-        <div class="card-gradient rounded-2xl shadow-lg p-6 mb-8">
-            <h2 class="text-2xl font-bold text-[#008000] mb-6">Rekam Medis Satwa</h2>
+            
+            <!-- Animal Information - Centered, Simple Format -->
+            <div class="text-center space-y-3 mb-12 text-lg text-[#008000]">
+                <p><strong>Nama:</strong> {{ animal.nama_hewan|default:"[nama hewan](kalau ada)" }}</p>
+                <p><strong>Jenis:</strong> {{ animal.species|default:"[jenis hewan]" }}</p>
+                <p><strong>Habitat:</strong> {{ animal.habitat_name|default:animal.nama_habitat|default:"[habitat hewan]" }}</p>
+            </div>
+            
+            <!-- Medical Records Section -->
+            <h2 class="text-2xl font-bold text-[#008000] mb-6 text-center">Rekam Medis Satwa</h2>
             
             <div class="overflow-x-auto">
-                <div class="min-w-[800px]">
-                    <div class="grid grid-cols-6 gap-4 bg-[#008000]/10 p-4 rounded-t-lg">
-                        <div class="font-medium text-[#008000]">Tanggal Pemeriksaan</div>
-                        <div class="font-medium text-[#008000]">Nama Dokter</div>
-                        <div class="font-medium text-[#008000]">Status Kesehatan</div>
-                        <div class="font-medium text-[#008000]">Diagnosa</div>
-                        <div class="font-medium text-[#008000]">Pengobatan</div>
-                        <div class="font-medium text-[#008000]">Catatan Tindak Lanjut</div>
-                    </div>
-
-                    <div class="divide-y divide-[#008000]/20">
-                        <div class="grid grid-cols-6 gap-4 p-4 hover:bg-[#008000]/5">
-                            <div>2025-04-01</div>
-                            <div>Dr. Siti Aminah</div>
-                            <div class="text-red-600">Sakit</div>
-                            <div>Infeksi saluran pernapasan</div>
-                            <div>Antibiotik selama 7 hari</div>
-                            <div class="text-sm">Evaluasi kondisi, perbaikan ventilasi kandang</div>
-                        </div>
-                        
-                        <div class="grid grid-cols-6 gap-4 p-4 hover:bg-[#008000]/5">
-                            <div>2025-04-15</div>
-                            <div>Dr. Budi Santoso</div>
-                            <div class="text-green-600">Sehat</div>
-                            <div>-</div>
-                            <div>-</div>
-                            <div class="text-sm">Kondisi stabil, monitoring rutin</div>
-                        </div>
-                    </div>
-                </div>
+                <table class="medical-table">
+                    <thead>
+                        <tr>
+                            <th>Tanggal<br>Pemeriksaan</th>
+                            <th>Nama Dokter</th>
+                            <th>Status<br>Kesehatan</th>
+                            <th>Diagnosa</th>
+                            <th>Pengobatan</th>
+                            <th>Catatan<br>Tindak<br>Lanjut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if medical_records %}
+                            {% for record in medical_records %}
+                            <tr>
+                                <td>{{ record.tanggal_pemeriksaan|date:"Y-m-d" }}</td>
+                                <td>{{ record.nama_dokter }}</td>
+                                <td>{{ record.status_kesehatan }}</td>
+                                <td>{{ record.diagnosis|default:"-" }}</td>
+                                <td>{{ record.pengobatan|default:"-" }}</td>
+                                <td>{{ record.catatan_tindak_lanjut|default:"-" }}</td>
+                            </tr>
+                            {% endfor %}
+                            <!-- Dots row to indicate more data could be available -->
+                            <tr>
+                                <td>:</td>
+                                <td>:</td>
+                                <td>:</td>
+                                <td>:</td>
+                                <td>:</td>
+                                <td>:</td>
+                            </tr>
+                        {% else %}
+                            <!-- Show example row when no data, like in the image -->
+                            <tr>
+                                <td>2025-04-01</td>
+                                <td>Dr. Siti<br>Aminah</td>
+                                <td>Sakit</td>
+                                <td>Infeksi<br>saluran<br>pernapasan</td>
+                                <td>Antibiotik<br>selama 7 hari</td>
+                                <td>Evaluasi<br>kondisi<br>perbaikan<br>ventilasi<br>kandang.</td>
+                            </tr>
+                            <tr>
+                                <td>:</td>
+                                <td>:</td>
+                                <td>:</td>
+                                <td>:</td>
+                                <td>:</td>
+                                <td>:</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
             </div>
+            
+            <!-- Keterangan -->
+            <p class="text-sm text-[#008000] mt-6">
+                <strong>Keterangan:</strong> cukup tampilkan rekam medis satwa dengan tanggal pemeriksaan setelah tanggal mulai adopsi
+                {% if tgl_mulai_adopsi %} ({{ tgl_mulai_adopsi|date:"d M Y" }}){% endif %}
+            </p>
         </div>
 
         <!-- Action Buttons -->
@@ -94,6 +141,11 @@
             <a href="{% url 'adopsi:adopsi_pengunjung' %}" class="px-6 py-2 bg-gray-100 text-[#008000] rounded-lg hover:bg-gray-200 transition-colors">
                 Kembali
             </a>
+            {% if animal.id %}
+            <a href="{% url 'adopsi:sertifikat_adopsi' %}?animal_id={{ animal.id }}" class="px-6 py-2 bg-[#008000] text-white rounded-lg hover:bg-[#006400] transition-colors">
+                Lihat Sertifikat
+            </a>
+            {% endif %}
         </div>
 
         <!-- Footer -->

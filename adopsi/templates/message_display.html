@@ -1,0 +1,111 @@
+{% if messages %}
+<div id="message-container" style="
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    max-width: 400px;
+    width: 100%;
+">
+    {% for message in messages %}
+    <div class="message-item" 
+            data-timeout="{% if 'trigger-notice' in message.extra_tags %}8000{% else %}5000{% endif %}"
+            style="
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        opacity: 0;
+        transform: translateX(100%);
+        transition: all 0.3s ease;
+        {% if message.tags == 'success' or 'success' in message.tags %}
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        {% elif message.tags == 'error' or 'error' in message.tags %}
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        {% elif message.tags == 'warning' or 'warning' in message.tags %}
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+            color: #856404;
+        {% elif message.tags == 'info' or 'info' in message.tags %}
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        {% endif %}
+        {% if 'trigger-notice' in message.extra_tags %}
+            background: linear-gradient(135deg, #80cbc4 0%, #4db6ac 100%);
+            border-color: #4db6ac;
+            color: #1e4037;
+            font-weight: 500;
+        {% endif %}
+    ">
+        <span style="font-size: 18px; flex-shrink: 0;">
+            {% if message.tags == 'success' or 'success' in message.tags %}✅
+            {% elif message.tags == 'error' or 'error' in message.tags %}❌
+            {% elif message.tags == 'warning' or 'warning' in message.tags %}⚠️
+            {% elif message.tags == 'info' or 'info' in message.tags %}ℹ️
+            {% else %}📢
+            {% endif %}
+        </span>
+        
+        <div style="flex: 1;">
+            {{ message.message|safe }}
+        </div>
+        
+        <button onclick="closeMessage(this.parentElement)" 
+                style="background: none; border: none; font-size: 20px; cursor: pointer; 
+                       opacity: 0.7; flex-shrink: 0; color: inherit; font-weight: bold;">
+            ×
+        </button>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const messages = document.querySelectorAll('.message-item');
+    
+    messages.forEach((message, index) => {
+        setTimeout(() => {
+            message.style.opacity = '1';
+            message.style.transform = 'translateX(0)';
+        }, index * 100);
+        
+        const timeout = parseInt(message.getAttribute('data-timeout'));
+        setTimeout(() => {
+            closeMessage(message);
+        }, timeout + (index * 100));
+    });
+});
+
+function closeMessage(element) {
+    element.style.opacity = '0';
+    element.style.transform = 'translateX(100%)';
+    
+    setTimeout(() => {
+        element.remove();
+        
+        const container = document.getElementById('message-container');
+        if (container && container.children.length === 0) {
+            container.remove();
+        }
+    }, 300);
+}
+
+if (typeof(Storage) !== "undefined") {
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'django_messages_broadcast') {
+            location.reload();
+        }
+    });
+}
+</script>
+
+{% endif %}

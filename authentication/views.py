@@ -445,99 +445,282 @@ def logout_view(request):
     return redirect('login')
 
 def profile_settings(request):
-    user_role = request.GET.get('role', 'visitor')
+    if 'user' not in request.session:
+        messages.error(request, 'Silakan login terlebih dahulu!')
+        return redirect('login')
     
-    user = {
-        'username': 'johndoe',
-        'first_name': 'John',
-        'last_name': 'Doe',
-        'email': 'john.doe@example.com'
-    }
+    user_data = request.session['user']
+    username = user_data['username']
+    role = user_data['role']
     
-    profile = {
-        'role': user_role,
-        'middle_name': 'William',
-        'phone_number': '08123456789',
-        'address': 'Jl. Contoh No. 123, Kota Jakarta',
-        'birth_date': datetime.strptime('2000-01-01', '%Y-%m-%d').date(),
-        'certification_number': 'CERT-DH-2023-001',
-        'specializations': ['Mamalia Besar', 'Reptil', 'Lainnya'],
-        'other_specialization': 'Hewan Eksotis',
-        'staff_id': 'STAFF-ZOO-2023-001'
-    }
-    
-    if request.method == 'POST':
-        if 'save_profile' in request.POST:
-            first_name = request.POST.get('first_name', '')
-            middle_name = request.POST.get('middle_name', '')
-            last_name = request.POST.get('last_name', '')
-            email = request.POST.get('email', '')
-            phone = request.POST.get('phone', '')
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT username, email, nama_depan, nama_tengah, nama_belakang, no_telepon, password
+                FROM pengguna 
+                WHERE username = %s
+            """, [username])
             
-            if not phone:
-                messages.error(request, 'Nomor telepon harus diisi!')
-                return render(request, 'profile_settings.html', {'user': user, 'profile': profile})
+            row = cursor.fetchone()
+            if not row:
+                messages.error(request, 'Data pengguna tidak ditemukan!')
+                return redirect('login')
             
-            if not first_name or not last_name:
-                messages.error(request, 'Nama depan dan belakang harus diisi!')
-                return render(request, 'profile_settings.html', {'user': user, 'profile': profile})
+            user = dict(zip([column[0] for column in cursor.description], row))
             
-            if user_role == 'visitor':
-                address = request.POST.get('address', '')
-                birth_date = request.POST.get('birth_date', '')
+            profile = {
+                'role': role,
+                'middle_name': user['nama_tengah'] or '',
+                'phone_number': user['no_telepon'],
+            }
+            
+            if role == 'pengunjung':
+                cursor.execute("""
+                    SELECT alamat, tgl_lahir
+                    FROM pengunjung 
+                    WHERE username_p = %s
+                """, [username])
                 
-                if not address:
-                    messages.error(request, 'Alamat harus diisi!')
-                    return render(request, 'profile_settings.html', {'user': user, 'profile': profile})
+                pengunjung_row = cursor.fetchone()
+                if pengunjung_row:
+                    pengunjung_data = dict(zip([column[0] for column in cursor.description], pengunjung_row))
+                    profile['address'] = pengunjung_data['alamat']
+                    profile['birth_date'] = pengunjung_data['tgl_lahir']
                 
-                profile['address'] = address
-                if birth_date:
-                    profile['birth_date'] = datetime.strptime(birth_date, '%Y-%m-%d').date()
-            
-            elif user_role == 'vet':
-                specializations = request.POST.getlist('specializations', [])
-                other_specialization = request.POST.get('other_specialization', '')
+            elif role == 'dokter_hewan':
+                cursor.execute("""
+                    SELECT no_str
+                    FROM dokter_hewan 
+                    WHERE username_dh = %s
+                """, [username])
+                
+                dokter_row = cursor.fetchone()
+                if dokter_row:
+                    dokter_data = dict(zip([column[0] for column in cursor.description], dokter_row))
+                    profile['certification_number'] = dokter_data['no_str']
+                
+                cursor.execute("""
+                    SELECT nama_spesialisasi
+                    FROM spesialisasi 
+                    WHERE username_sh = %s
+                """, [username])
+                
+                specialization_rows = cursor.fetchall()
+                specializations = []
+                other_specialization = ''
+                
+                for spec_row in specialization_rows:
+                    spec_name = spec_row[0]
+                    if spec_name in ['Bedah Hewan', 'Dermatologi Hewan', 'Onkologi Hewan', 'Kardiologi Hewan', 
+                                   'Neurologi Hewan', 'Radiologi Hewan', 'Oftalmologi Hewan', 'Patologi Hewan', 
+                                   'Rehabilitasi Hewan', 'Gigi dan Mulut Hewan']:
+                        specializations.append(spec_name)
+                    else:
+                        specializations.append('Lainnya')
+                        other_specialization = spec_name
                 
                 profile['specializations'] = specializations
                 profile['other_specialization'] = other_specialization
+                
+            elif role in ['penjaga_hewan', 'pelatih_hewan', 'staf_admin']:
+                table_mapping = {
+                    'penjaga_hewan': ('penjaga_hewan', 'username_jh'),
+                    'pelatih_hewan': ('pelatih_hewan', 'username_lh'),
+                    'staf_admin': ('staf_admin', 'username_sa')
+                }
+                
+                table_name, username_field = table_mapping[role]
+                cursor.execute(f"""
+                    SELECT id_staf
+                    FROM {table_name}
+                    WHERE {username_field} = %s
+                """, [username])
+                
+                staff_row = cursor.fetchone()
+                if staff_row:
+                    profile['staff_id'] = staff_row[0]
             
-            profile['middle_name'] = middle_name
-            profile['phone_number'] = phone
-            
-            user['first_name'] = first_name
-            user['last_name'] = last_name
-            user['email'] = email
-            
-            messages.success(request, 'Profil berhasil diperbarui!')
-            return redirect('profile_settings')
+    except Exception as e:
+        logger.error(f"Profile settings get error: {str(e)}")
+        messages.error(request, 'Terjadi kesalahan saat mengambil data profil.')
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        if 'save_profile' in request.POST:
+            try:
+                first_name = request.POST.get('first_name', '').strip()
+                middle_name = request.POST.get('middle_name', '').strip()
+                last_name = request.POST.get('last_name', '').strip()
+                email = request.POST.get('email', '').strip()
+                phone = request.POST.get('phone', '').strip()
+                
+                if not first_name or not last_name or not email or not phone:
+                    messages.error(request, 'Nama depan, nama belakang, email, dan nomor telepon harus diisi!')
+                    return render(request, 'profile_settings.html', {'user': user, 'profile': profile})
+                
+                if not validate_email(email):
+                    messages.error(request, 'Format email tidak valid!')
+                    return render(request, 'profile_settings.html', {'user': user, 'profile': profile})
+                
+                if not validate_name(first_name):
+                    messages.error(request, 'Nama depan hanya boleh mengandung huruf dan spasi!')
+                    return render(request, 'profile_settings.html', {'user': user, 'profile': profile})
+                
+                if not validate_name(last_name):
+                    messages.error(request, 'Nama belakang hanya boleh mengandung huruf dan spasi!')
+                    return render(request, 'profile_settings.html', {'user': user, 'profile': profile})
+                
+                if middle_name and not validate_name(middle_name):
+                    messages.error(request, 'Nama tengah hanya boleh mengandung huruf dan spasi!')
+                    return render(request, 'profile_settings.html', {'user': user, 'profile': profile})
+                
+                with connection.cursor() as cursor:
+                    with transaction.atomic():
+                        cursor.execute("""
+                            UPDATE pengguna 
+                            SET email = %s, nama_depan = %s, nama_tengah = %s, nama_belakang = %s, no_telepon = %s
+                            WHERE username = %s
+                        """, [email, first_name, middle_name, last_name, phone, username])
+                        
+                        if role == 'pengunjung':
+                            address = request.POST.get('address', '').strip()
+                            birth_date = request.POST.get('birth_date', '')
+                            
+                            if not address:
+                                messages.error(request, 'Alamat harus diisi!')
+                                return render(request, 'profile_settings.html', {'user': user, 'profile': profile})
+                            
+                            if len(address) < 10:
+                                messages.error(request, 'Alamat minimal 10 karakter!')
+                                return render(request, 'profile_settings.html', {'user': user, 'profile': profile})
+                            
+                            if birth_date:
+                                is_valid_date, date_error = validate_birth_date(birth_date)
+                                if not is_valid_date:
+                                    messages.error(request, date_error)
+                                    return render(request, 'profile_settings.html', {'user': user, 'profile': profile})
+                                
+                                cursor.execute("""
+                                    UPDATE pengunjung 
+                                    SET alamat = %s, tgl_lahir = %s
+                                    WHERE username_p = %s
+                                """, [address, birth_date, username])
+                            else:
+                                cursor.execute("""
+                                    UPDATE pengunjung 
+                                    SET alamat = %s
+                                    WHERE username_p = %s
+                                """, [address, username])
+                        
+                        elif role == 'dokter_hewan':
+                            specializations = request.POST.getlist('specializations', [])
+                            other_specialization = request.POST.get('other_specialization', '').strip()
+                            
+                            if not specializations:
+                                messages.error(request, 'Minimal satu spesialisasi harus dipilih!')
+                                return render(request, 'profile_settings.html', {'user': user, 'profile': profile})
+                            
+                            if 'Lainnya' in specializations and not other_specialization:
+                                messages.error(request, 'Silakan jelaskan spesialisasi lainnya!')
+                                return render(request, 'profile_settings.html', {'user': user, 'profile': profile})
+                            
+                            if other_specialization and len(other_specialization) < 3:
+                                messages.error(request, 'Spesialisasi lainnya minimal 3 karakter!')
+                                return render(request, 'profile_settings.html', {'user': user, 'profile': profile})
+                            
+                            cursor.execute("""
+                                DELETE FROM spesialisasi WHERE username_sh = %s
+                            """, [username])
+                            
+                            for specialization in specializations:
+                                if specialization == 'Lainnya' and other_specialization:
+                                    cursor.execute("""
+                                        INSERT INTO spesialisasi (username_sh, nama_spesialisasi)
+                                        VALUES (%s, %s)
+                                    """, [username, other_specialization])
+                                elif specialization != 'Lainnya':
+                                    cursor.execute("""
+                                        INSERT INTO spesialisasi (username_sh, nama_spesialisasi)
+                                        VALUES (%s, %s)
+                                    """, [username, specialization])
+                        
+                        user_data['email'] = email
+                        user_data['nama_depan'] = first_name
+                        user_data['nama_tengah'] = middle_name
+                        user_data['nama_belakang'] = last_name
+                        user_data['no_telepon'] = phone
+                        request.session['user'] = user_data
+                        request.session.save()
+                        
+                        messages.success(request, 'Profil berhasil diperbarui!')
+                        return redirect('profile_settings')
+                        
+            except Exception as e:
+                logger.error(f"Profile update error: {str(e)}")
+                messages.error(request, f'Terjadi kesalahan saat memperbarui profil: {str(e)}')
     
     return render(request, 'profile_settings.html', {
         'user': user,
         'profile': profile
     })
 
-def password_change_view(request):
-    user_role = request.GET.get('role', 'visitor')
+def password_change(request):
+    if 'user' not in request.session:
+        messages.error(request, 'Silakan login terlebih dahulu!')
+        return redirect('login')
+    
+    user_data = request.session['user']
+    username = user_data['username']
+    role = user_data['role']
     
     profile = {
-        'role': user_role,
+        'role': role,
     }
     
     if request.method == 'POST':
-        form = PasswordChangeForm(request.user, request.POST)
-        if form.is_valid():
-            user = form.save()
-            update_session_auth_hash(request, user)
-            messages.success(request, 'Password berhasil diubah!')
-            return redirect('profile_settings')
-        else:
-            for error in form.errors.values():
-                messages.error(request, error)
-    else:
-        form = PasswordChangeForm(request.user)
+        old_password = request.POST.get('old_password', '')
+        new_password1 = request.POST.get('new_password1', '')
+        new_password2 = request.POST.get('new_password2', '')
+        
+        if not old_password or not new_password1 or not new_password2:
+            messages.error(request, 'Semua field password harus diisi!')
+            return render(request, 'ubah_password.html', {'profile': profile})
+        
+        if new_password1 != new_password2:
+            messages.error(request, 'Password baru dan konfirmasi password tidak cocok!')
+            return render(request, 'ubah_password.html', {'profile': profile})
+        
+        if not validate_password(new_password1):
+            messages.error(request, 'Password baru minimal 6 karakter!')
+            return render(request, 'ubah_password.html', {'profile': profile})
+        
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT password FROM pengguna WHERE username = %s
+                """, [username])
+                
+                row = cursor.fetchone()
+                if not row or row[0] != old_password:
+                    messages.error(request, 'Password lama tidak benar!')
+                    return render(request, 'ubah_password.html', {'profile': profile})
+                
+                cursor.execute("""
+                    UPDATE pengguna SET password = %s WHERE username = %s
+                """, [new_password1, username])
+                
+                user_data['password'] = new_password1
+                request.session['user'] = user_data
+                request.session.save()
+                
+                messages.success(request, 'Password berhasil diubah!')
+                return redirect('profile_settings')
+                
+        except Exception as e:
+            logger.error(f"Password change error: {str(e)}")
+            messages.error(request, 'Terjadi kesalahan saat mengubah password!')
     
     return render(request, 'ubah_password.html', {
-        'form': form,
         'profile': profile
     })
 

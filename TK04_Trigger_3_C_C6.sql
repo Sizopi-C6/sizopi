@@ -86,7 +86,7 @@ BEGIN
     END LOOP;
     
     IF schedule_count > 0 THEN
-        RAISE NOTICE 'SUKSES: Jadwal pemeriksaan rutin hewan "%" telah ditambahkan sesuai frekuensi.', animal_name;
+        RAISE INFO 'SUKSES: Jadwal pemeriksaan rutin hewan "%" telah ditambahkan sesuai frekuensi.', animal_name;
     END IF;
     
     RETURN NEW;

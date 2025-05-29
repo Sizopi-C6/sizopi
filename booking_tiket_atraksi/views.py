@@ -1,246 +1,555 @@
-from django.shortcuts import render, redirect
-
-data_booking = [
-    {
-        'id': 'a79425c5-94f3-4590-bdac-bfed73b14608',
-        'jenis_reservasi': 'Atraksi',
-        'nama_atraksi': 'Wahana Safari',
-        'lokasi': 'Zona A',
-        'jam': '10:00',
-        'tanggal_kunjungan': '30/04/2025',
-        'jumlah_tiket': 4,
-        'status': 'Terjadwal',
-    },
-    {
-        'id': '1de99b83-49a8-44a6-b6e0-b0e9f5813914',
-        'jenis_reservasi': 'Wahana',
-        'nama_wahana': 'Taman Air Mini',
-        'peraturan': [
-            "Dilarang Berenang",
-            "Dilarang membawa makanan"
-        ],
-        'jam': '13:00',
-        'tanggal_kunjungan': '02/05/2025',
-        'jumlah_tiket': 2,
-        'status': 'Terjadwal',
-    }
-]
-
-data_reservasi = [
-        {
-            'id': 'a79425c5-94f3-4590-bdac-bfed73b14608',
-            'jenis_reservasi': 'Atraksi',
-            'nama_atraksi': 'Pertunjukan Paus Orca',
-            'tanggal_kunjungan': '12-5-2025',
-            'kapasitas_tersisa': 10,
-            'kapasitas_maksimal': 75
-        },
-        {
-            'id': '1de99b83-49a8-44a6-b6e0-b0e9f5813914',
-            'jenis_reservasi': 'Wahana',
-            'nama_atraksi': 'Taman Bunga',
-            'tanggal_kunjungan': '11-5-2025',
-            'kapasitas_tersisa': 5,
-            'kapasitas_maksimal': 50
-        },
-    ]
-
-def pengunjung_data_booking(request):
-    context = {
-        'data_booking': data_booking
-    }
-    return render(request, 'pengunjung_data_booking.html', context)
+from django.contrib import messages
+from django.db import connection
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, render, redirect
+from django.urls import reverse
+from django.utils.timezone import make_aware
+from datetime import datetime
 
 def pengunjung_data_reservasi(request):
-    context = {
-        'data_reservasi': data_reservasi
-    }
-    return render(request, 'pengunjung_data_reservasi.html', {'data_reservasi': data_reservasi})
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT 
+                f.nama AS nama_atraksi,
+                CASE
+                    WHEN f.nama IN (SELECT nama_atraksi FROM atraksi) THEN 'Atraksi'
+                    ELSE 'Wahana'
+                END AS jenis_reservasi,
+                TO_CHAR(f.jadwal, 'DD-MM-YYYY') AS tanggal_kunjungan,  -- hanya tanggal
+                f.kapasitas_max,
+                -- hitung kapasitas tersisa = kapasitas max - total jumlah tiket yang 'Terjadwal'
+                f.kapasitas_max - COALESCE(SUM(CASE WHEN r.status = 'Terjadwal' THEN r.jumlah_tiket ELSE 0 END), 0) AS kapasitas_tersisa,
+                f.kapasitas_max AS kapasitas_maksimal,
+                f.nama AS id  -- pakai nama sebagai id
+            FROM fasilitas f
+            LEFT JOIN reservasi r
+                ON f.nama = r.nama_atraksi
+                AND f.jadwal::date = r.tanggal_kunjungan
+            GROUP BY f.nama, f.jadwal, f.kapasitas_max
+            ORDER BY f.jadwal ASC
+        """)
+        columns = [col[0] for col in cursor.description]
+        data_reservasi = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
-def pengunjung_edit_reservasi(request, reservasi_id):
-    booking = next((item for item in data_booking if item['id'] == str(reservasi_id)), None)
-    
-    if not booking:
-        return redirect('pengunjung_data_booking')
-    
-    atraksi_list = [
-        {'nama_atraksi': 'Wahana Safari', 'lokasi': 'Zona A', 'jam': '10:00'},
-        {'nama_atraksi': 'Zona Burung', 'lokasi': 'Zona E', 'jam': '07:45'}
-    ]
-    
-    wahana_list = [
-        {'nama_wahana': 'Taman Air Mini', 'jam': '13:00', 'peraturan': ["Dilarang Berenang", "Dilarang membawa makanan"]},
-        {'nama_wahana': 'Area Petualangan', 'jam': '09:00', 'peraturan': ["Dilarang memanjat pagar"]}
-    ]
-    
-    context = {
-        'reservasi': booking,
-        'atraksi_list': atraksi_list,
-        'wahana_list': wahana_list
-    }
-    return render(request, 'pengunjung_edit_reservasi.html', context)
+    return render(request, 'pengunjung_data_reservasi.html', {
+        'data_reservasi': data_reservasi
+    })
 
 def pengunjung_form_reservasi(request, reservasi_id):
-    booking = next((item for item in data_booking if item['id'] == str(reservasi_id)), None)
+    user = request.session.get('user')
+    if not user:
+        return redirect('login_page')
+    
+    if isinstance(user, dict):
+        user = user.get('username')
 
-    if not booking:
-        return redirect('pengunjung_data_booking')
+    jenis_reservasi = None
+    atraksi_list = []
+    wahana_list = []
+    data_fasilitas = None
 
     if request.method == 'POST':
         tanggal = request.POST.get('tanggal')
-        jam = request.POST.get('jam')
-        jumlah_tiket = request.POST.get('jumlah-tiket')
+        jumlah_tiket = int(request.POST.get('jumlah-tiket', 0))
+        atraksi_pilih = request.POST.get('atraksi')
+        wahana_pilih = request.POST.get('wahana')
 
-        if booking['jenis_reservasi'].lower() == 'atraksi':
-            nama_atraksi = request.POST.get('atraksi')
-            lokasi = request.POST.get('lokasi')
-            booking.update({
-                'tanggal': tanggal,
-                'jam': jam,
-                'jumlah_tiket': jumlah_tiket,
-                'nama_atraksi': nama_atraksi,
-                'lokasi': lokasi,
-            })
+        # Coba parse JSON jika ada
+        for var_name in ['atraksi_pilih', 'wahana_pilih']:
+            val = locals()[var_name]
+            try:
+                parsed = json.loads(val)
+                if isinstance(parsed, dict):
+                    locals()[var_name] = parsed.get('nama') or val
+            except Exception:
+                pass
 
-        elif booking['jenis_reservasi'].lower() == 'wahana':
-            nama_wahana = request.POST.get('wahana')
-            peraturan = request.POST.get('peraturan')
-            booking.update({
-                'tanggal': tanggal,
-                'jam': jam,
-                'jumlah_tiket': jumlah_tiket,
-                'nama_wahana': nama_wahana,
-                'peraturan': peraturan,
-            })
+        if atraksi_pilih and isinstance(atraksi_pilih, str):
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO reservasi (username_p, nama_atraksi, tanggal_kunjungan, jumlah_tiket, status)
+                    VALUES (%s, %s, %s, %s, %s)
+                """, [user, atraksi_pilih, tanggal, jumlah_tiket, 'Terjadwal'])
+            return redirect('pengunjung_detail_reservasi', username=user, nama_atraksi=atraksi_pilih, tanggal_kunjungan=tanggal)
 
-        return redirect('pengunjung_detail_reservasi', reservasi_id=reservasi_id)
+        elif wahana_pilih and isinstance(wahana_pilih, str):
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO reservasi (username_p, nama_atraksi, tanggal_kunjungan, jumlah_tiket, status)
+                    VALUES (%s, %s, %s, %s, %s)
+                """, [user, wahana_pilih, tanggal, jumlah_tiket, 'Terjadwal'])
+            return redirect('pengunjung_detail_reservasi', username=user, nama_atraksi=wahana_pilih, tanggal_kunjungan=tanggal)
 
-    jenis_reservasi = booking['jenis_reservasi'].lower()
 
-    if jenis_reservasi == 'atraksi':
+        else:
+            messages.error(request, "Pilih atraksi atau wahana terlebih dahulu.")
+            return redirect('pengunjung_form_reservasi', reservasi_id=reservasi_id)
+
+        return redirect('pengunjung_detail_reservasi', reservasi_id=new_reservasi_id)
+
+    # Jika GET, lanjutkan dengan ambil data seperti biasa
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT
+                a.nama_atraksi,
+                a.lokasi,
+                f.jadwal,
+                f.kapasitas_max
+            FROM atraksi a
+            JOIN fasilitas f ON a.nama_atraksi = f.nama
+            WHERE a.nama_atraksi = %s
+        """, [reservasi_id])
+        atraksi = cursor.fetchone()
+
+        if atraksi:
+            jenis_reservasi = 'Atraksi'
+            data_fasilitas = {
+                'nama': atraksi[0],
+                'lokasi': atraksi[1],
+                'jadwal': atraksi[2],
+                'kapasitas_max': atraksi[3],
+            }
+        else:
+            cursor.execute("""
+                SELECT
+                    w.nama_wahana,
+                    w.peraturan,
+                    f.jadwal,
+                    f.kapasitas_max
+                FROM wahana w
+                JOIN fasilitas f ON w.nama_wahana = f.nama
+                WHERE w.nama_wahana = %s
+            """, [reservasi_id])
+            wahana = cursor.fetchone()
+
+            if wahana:
+                jenis_reservasi = 'Wahana'
+                data_fasilitas = {
+                    'nama': wahana[0],
+                    'peraturan': wahana[1], 
+                    'jadwal': wahana[2],
+                    'kapasitas_max': wahana[3],
+                }
+
+        # Ambil list atraksi dan wahana untuk dropdown (sama seperti sebelumnya)
+        cursor.execute("""
+            SELECT a.nama_atraksi, a.lokasi, f.jadwal
+            FROM atraksi a
+            JOIN fasilitas f ON a.nama_atraksi = f.nama
+        """)
         atraksi_list = [
-            {'nama_atraksi': 'Wahana Safari', 'lokasi': 'Zona A', 'jam': '10:00'},
-            {'nama_atraksi': 'Zona Burung', 'lokasi': 'Zona E', 'jam': '07:45'},
-            {'nama_atraksi': 'Pertunjukan Paus Orca', 'lokasi': 'Zona D', 'jam': '11:30'},
+            {
+                'nama_atraksi': row[0],
+                'lokasi': row[1],
+                'jam': row[2].strftime('%H:%M') if row[2] else ''
+            } for row in cursor.fetchall()
         ]
-        context = {
-            'jenis_reservasi': 'Atraksi',
-            'atraksi_list': atraksi_list,
-            'reservasi_id': reservasi_id
-        }
 
-    elif jenis_reservasi == 'wahana':
-        wahana_list = [
-            {'nama_wahana': 'Roller Coaster', 'peraturan': ['Tinggi minimal 140cm', 'Dilarang membawa makanan'], 'jam': '13:00'},
-            {'nama_wahana': 'Kolam Arus', 'peraturan': ['Usia minimal 10 tahun'], 'jam': '11:00'},
-            {'nama_wahana': 'Rumah Hantu', 'peraturan': ['Tidak untuk penderita jantung'], 'jam': '16:00'},
-        ]
-        context = {
-            'jenis_reservasi': 'Wahana',
-            'wahana_list': wahana_list,
-            'reservasi_id': reservasi_id
-        }
+        cursor.execute("""
+            SELECT w.nama_wahana, w.peraturan, f.jadwal
+            FROM wahana w
+            JOIN fasilitas f ON w.nama_wahana = f.nama
+        """)
+        import json
+        wahana_list = []
+        for row in cursor.fetchall():
+            try:
+                peraturan_parsed = json.loads(row[1])
+            except Exception:
+                peraturan_parsed = [row[1]]
 
-    else:
-        return redirect('pengunjung_data_booking')
+            wahana_list.append({
+                'nama_wahana': row[0],
+                'peraturan': peraturan_parsed,
+                'jam': row[2].strftime('%H:%M') if row[2] else '',
+            })
+
+    context = {
+        'jenis_reservasi': jenis_reservasi,
+        'reservasi_id': reservasi_id,
+        'atraksi_list': atraksi_list,
+        'wahana_list': wahana_list,
+        'data_fasilitas': data_fasilitas,
+    }
 
     return render(request, 'pengunjung_form_reservasi.html', context)
 
-def pengunjung_detail_reservasi(request, reservasi_id):
-    reservasi_id_str = str(reservasi_id)  
-    data = next((item for item in data_booking if item['id'] == reservasi_id_str), None)
-    
-    if not data:
-        return render(request, '404.html', status=404)
-    return render(request, 'pengunjung_detail_reservasi.html', {'data': data})
+def pengunjung_detail_reservasi(request, username, nama_atraksi, tanggal_kunjungan):
+    try:
+        tanggal_obj = datetime.strptime(tanggal_kunjungan, '%Y-%m-%d').date()
+    except ValueError:
+        return HttpResponse("Format tanggal salah, harus YYYY-MM-DD")
+
+    with connection.cursor() as cursor:
+        cursor.execute('''
+            SELECT r.username_p, r.nama_atraksi, r.tanggal_kunjungan, r.jumlah_tiket, r.status,
+                   a.lokasi, f.jadwal, NULL as peraturan, 'Atraksi' as jenis
+            FROM reservasi r
+            JOIN atraksi a ON r.nama_atraksi = a.nama_atraksi
+            JOIN fasilitas f ON r.nama_atraksi = f.nama
+            WHERE r.username_p = %s AND r.nama_atraksi = %s AND r.tanggal_kunjungan = %s
+        ''', [username, nama_atraksi, tanggal_obj])
+
+        row = cursor.fetchone()
+
+        if not row:
+            cursor.execute('''
+                SELECT r.username_p, r.nama_atraksi, r.tanggal_kunjungan, r.jumlah_tiket, r.status,
+                       NULL as lokasi, f.jadwal, w.peraturan, 'Wahana' as jenis
+                FROM reservasi r
+                JOIN wahana w ON r.nama_atraksi = w.nama_wahana
+                JOIN fasilitas f ON r.nama_atraksi = f.nama
+                WHERE r.username_p = %s AND r.nama_atraksi = %s AND r.tanggal_kunjungan = %s
+            ''', [username, nama_atraksi, tanggal_obj])
+            row = cursor.fetchone()
+
+    if not row:
+        return HttpResponse("Reservasi tidak ditemukan")
+
+    # Parse peraturan jika dari wahana
+    import json
+    try:
+        peraturan = json.loads(row[7]) if row[7] else []
+    except Exception:
+        peraturan = [row[7]] if row[7] else []
+
+    context = {
+        'data': {
+            'username_p': row[0],
+            'nama_atraksi' : row[1],
+            'tanggal': row[2],
+            'jumlah_tiket': row[3],
+            'status': row[4],
+            'lokasi': row[5] or '-',  # Lokasi bisa null di wahana
+            'jam': row[6].strftime('%H:%M') if row[6] else '-',
+            'jenis_reservasi': row[8],
+            'peraturan': peraturan
+        }
+    }
+
+    return render(request, 'pengunjung_detail_reservasi.html', context)
+
+def pengunjung_data_booking(request):
+    user = request.session.get('user')
+    if not user:
+        return redirect('login_page')
+
+    if isinstance(user, dict):
+        username = user.get('username')
+    else:
+        username = user  
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT 
+                username_p,
+                nama_atraksi,
+                tanggal_kunjungan,
+                jumlah_tiket,
+                status,
+                CASE 
+                    WHEN nama_atraksi IN (SELECT nama_atraksi FROM atraksi) THEN 'Atraksi'
+                    ELSE 'Wahana'
+                END as jenis_reservasi
+            FROM reservasi
+            WHERE username_p = %s
+            ORDER BY tanggal_kunjungan ASC
+        """, [username])
+        rows = cursor.fetchall()
+
+    data_booking = []
+    for row in rows:
+        data_booking.append({
+            'username': row[0],
+            'nama_atraksi': row[1],
+            'tanggal_kunjungan': row[2],
+            'jumlah_tiket': row[3],
+            'status': row[4],
+            'jenis_reservasi': row[5],
+        })
+    return render(request, 'pengunjung_data_booking.html', {'data_booking': data_booking})
+
+def pengunjung_edit_reservasi(request, username, nama_atraksi, tanggal_kunjungan):
+    print(f"[DEBUG] Menerima request edit reservasi untuk username={username}, nama_atraksi={nama_atraksi}, tanggal_kunjungan={tanggal_kunjungan}")
+
+    # Parsing tanggal_kunjungan dari string URL ke objek date
+    try:
+        tanggal_kunjungan_obj = datetime.strptime(tanggal_kunjungan, '%Y-%m-%d').date()
+        print(f"[DEBUG] Parsed tanggal_kunjungan_obj: {tanggal_kunjungan_obj}")
+    except ValueError:
+        print("[ERROR] Format tanggal_kunjungan tidak valid, redirect ke pengunjung_data_booking")
+        return redirect('pengunjung_data_booking')
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT username_p, nama_atraksi, tanggal_kunjungan, jumlah_tiket, status
+            FROM reservasi
+            WHERE username_p = %s AND nama_atraksi = %s AND tanggal_kunjungan = %s
+        """, [username, nama_atraksi, tanggal_kunjungan_obj])
+        row = cursor.fetchone()
+        print(f"[DEBUG] Hasil query reservasi: {row}")
+
+        if not row:
+            print("[ERROR] Reservasi tidak ditemukan, redirect ke pengunjung_data_booking")
+            return redirect('pengunjung_data_booking')
+
+        cursor.execute("SELECT COUNT(*) FROM atraksi WHERE nama_atraksi = %s", [nama_atraksi])
+        is_atraksi = cursor.fetchone()[0] > 0
+        print(f"[DEBUG] is_atraksi: {is_atraksi}")
+
+        if is_atraksi:
+            jenis_reservasi = 'Atraksi'
+            # Ambil lokasi atraksi
+            cursor.execute("SELECT lokasi FROM atraksi WHERE nama_atraksi = %s", [nama_atraksi])
+            lokasi_row = cursor.fetchone()
+            lokasi = lokasi_row[0] if lokasi_row else None
+            peraturan = []
+            print(f"[DEBUG] lokasi atraksi: {lokasi}")
+        else:
+            jenis_reservasi = 'Wahana'
+            lokasi = None
+            # Ambil peraturan wahana (misal disimpan dalam string multiline)
+            cursor.execute("SELECT peraturan FROM wahana WHERE nama_wahana = %s", [nama_atraksi])
+            wahana_row = cursor.fetchone()
+            if wahana_row:
+                peraturan_str = wahana_row[0]
+                peraturan = [p.strip() for p in peraturan_str.split('\n') if p.strip()]
+            else:
+                peraturan = []
+            print(f"[DEBUG] peraturan wahana: {peraturan}")
+
+        # Ambil jadwal fasilitas
+        cursor.execute("SELECT jadwal FROM fasilitas WHERE nama = %s", [nama_atraksi])
+        fasilitas_row = cursor.fetchone()
+        jam = fasilitas_row[0] if fasilitas_row else None
+        print(f"[DEBUG] jadwal fasilitas: {jam}")
+
+    # Jika POST, proses update data reservasi
+    if request.method == 'POST':
+        print("[DEBUG] Metode POST diterima, akan update data reservasi")
+        tanggal_baru_str = request.POST.get('tanggal')
+        jumlah_tiket_baru = request.POST.get('jumlah_tiket')
+        print(f"[DEBUG] Data POST diterima: tanggal={tanggal_baru_str}, jumlah_tiket={jumlah_tiket_baru}")
+
+        try:
+            tanggal_baru = datetime.strptime(tanggal_baru_str, '%d/%m/%Y').date()
+            jumlah_tiket_baru = int(jumlah_tiket_baru)
+            if jumlah_tiket_baru < 1:
+                raise ValueError('Jumlah tiket minimal 1')
+            print(f"[DEBUG] Parsed data POST: tanggal_baru={tanggal_baru}, jumlah_tiket_baru={jumlah_tiket_baru}")
+        except Exception as e:
+            print(f"[ERROR] Data POST invalid: {e}")
+            return redirect('pengunjung_edit_reservasi', username=username, nama_atraksi=nama_atraksi, tanggal_kunjungan=tanggal_kunjungan)
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                UPDATE reservasi
+                SET tanggal_kunjungan = %s, jumlah_tiket = %s
+                WHERE username_p = %s AND nama_atraksi = %s AND tanggal_kunjungan = %s
+            """, [tanggal_baru, jumlah_tiket_baru, username, nama_atraksi, tanggal_kunjungan_obj])
+            print("[DEBUG] Update reservasi berhasil")
+
+        return redirect('pengunjung_data_booking')
+
+    reservasi = {
+        'username': row[0],
+        'nama_booking': row[1],
+        'tanggal_kunjungan': row[2],
+        'jumlah_tiket': row[3],
+        'status': row[4],
+        'peraturan': peraturan,
+        'jam': jam,
+        'lokasi': lokasi,
+        'jenis_reservasi': jenis_reservasi,
+    }
+
+    print(f"[DEBUG] Render halaman edit reservasi dengan data: {reservasi}")
+
+    return render(request, 'pengunjung_edit_reservasi.html', {'reservasi': reservasi})
 
 def staf_data_atraksi(request):
-    data_reservasi = [
-        {   
-            'id': 'a79425c5-94f3-4590-bdac-bfed73b14608',
-            'username': 'Arif',
-            'nama_atraksi': 'Pertunjukan lumba-lumba',
-            'tanggal_kunjungan': '12-5-2025',
-            'jumlah_tiket': 10,
-            'status': 'Terjadwal'
-        },
-        {
-            'id': '1de99b83-49a8-44a6-b6e0-b0e9f5813914',
-            'username': 'Winnie',
-            'nama_atraksi': 'Feeding time harimau',
-            'tanggal_kunjungan': '11-5-2025',
-            'jumlah_tiket': 3,
-            'status': 'Dibatalkan'
-        },
-    ]
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT 
+                r.username_p, 
+                r.nama_atraksi, 
+                r.tanggal_kunjungan, 
+                r.jumlah_tiket, 
+                r.status
+            FROM reservasi r
+            JOIN atraksi a ON r.nama_atraksi = a.nama_atraksi
+        """)
+        rows = cursor.fetchall()
+
+    data_reservasi = []
+    for row in rows:
+        data_reservasi.append({
+            'username': row[0],
+            'nama_atraksi': row[1],
+            'tanggal_kunjungan': row[2],
+            'tanggal_kunjungan_url': row[2].strftime('%Y-%m-%d') if hasattr(row[2], 'strftime') else row[2],
+            'jumlah_tiket': row[3],
+            'status': row[4],
+        })
+
     return render(request, 'staf_data_atraksi.html', {'data_reservasi': data_reservasi})
 
 def staf_data_wahana(request):
-    data_reservasi = [
-        {
-            'id': '1de99b83-49a8-44a6-b6e0-b0e9f5813914',
-            'username': 'Budi',
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT 
+                r.username_p,
+                r.nama_atraksi,
+                r.tanggal_kunjungan,
+                r.jumlah_tiket,
+                r.status,
+                w.peraturan,
+                f.jadwal
+            FROM reservasi r
+            JOIN wahana w ON r.nama_atraksi = w.nama_wahana
+            JOIN fasilitas f ON w.nama_wahana = f.nama
+        """)
+        rows = cursor.fetchall()
+
+    data_reservasi = []
+    for row in rows:
+        username_p, nama_atraksi, tanggal_kunjungan, jumlah_tiket, status, peraturan_raw, jadwal = row
+
+        # Asumsikan peraturan disimpan sebagai teks multiline
+        if peraturan_raw:
+            peraturan = [p.strip() for p in peraturan_raw.strip().split('\n') if p.strip()]
+        else:
+            peraturan = []
+
+        jam = jadwal.strftime('%H:%M') if jadwal else ''
+
+        data_reservasi.append({
+            'username': username_p,
             'jenis_reservasi': 'Wahana',
-            'nama_wahana': 'Taman Air Mini',
-            'peraturan': [
-                "Dilarang Berenang",
-                "Dilarang membawa makanan"
-            ],
-            'jam': '13:00',
-            'tanggal_kunjungan': '02/05/2025',
-            'jumlah_tiket': 2,
-            'status': 'Terjadwal',
-        },
-        {
-            'id': '7fa33b0e-49bc-45a3-b1d7-91e71e04c801',
-            'username': 'Dina',
-            'jenis_reservasi': 'Wahana',
-            'nama_wahana': 'Roller Coaster Jungle',
-            'peraturan': [
-                "Usia minimum 12 tahun",
-                "Tidak disarankan untuk ibu hamil"
-            ],
-            'jam': '15:00',
-            'tanggal_kunjungan': '05/05/2025',
-            'jumlah_tiket': 4,
-            'status': 'Selesai',
-        }
-    ]
+            'nama_atraksi': nama_atraksi,
+            'tanggal_kunjungan': tanggal_kunjungan,
+            'tanggal_kunjungan_url': tanggal_kunjungan.strftime('%Y-%m-%d') if hasattr(tanggal_kunjungan, 'strftime') else tanggal_kunjungan,
+            'peraturan': peraturan,
+            'jam': jam,
+            'jumlah_tiket': jumlah_tiket,
+            'status': status,
+        })
+
     return render(request, 'staf_data_wahana.html', {'data_reservasi': data_reservasi})
 
-def staf_edit_reservasi(request, reservasi_id):
-    reservasi_id_str = str(reservasi_id)
-    reservasi = next((r for r in data_reservasi if r['id'] == reservasi_id_str), None)
-    
-    if not reservasi:
-        return redirect('staf_data_atraksi')
-    
-    atraksi_list = [
-        {'nama_atraksi': 'Pertunjukan lumba-lumba', 'lokasi': 'Zona C', 'jam': '10:30'},
-    ]
-    wahana_list = [
-        {'nama_wahana': 'Wahana Air', 'jam': '09:00', 'peraturan': ["Tidak boleh bawa makanan", "Gunakan pelampung"]},
-    ]
+def staf_edit_reservasi(request, username, nama_atraksi, tanggal_kunjungan):
+    print(f"[DEBUG] Menerima request edit reservasi untuk username={username}, nama_atraksi={nama_atraksi}, tanggal_kunjungan={tanggal_kunjungan}")
 
-    if request.method == 'POST':
-        if reservasi['jenis_reservasi'].lower() == 'atraksi':
-            reservasi['nama_atraksi'] = request.POST.get('atraksi')
-            atraksi = next((a for a in atraksi_list if a['nama_atraksi'] == reservasi['nama_atraksi']), {})
-            reservasi['lokasi'] = atraksi.get('lokasi', '')
-            reservasi['jam'] = atraksi.get('jam', '')
+    try:
+        tanggal_kunjungan_obj = datetime.strptime(tanggal_kunjungan, '%Y-%m-%d').date()
+    except ValueError:
+        print("[ERROR] Format tanggal_kunjungan tidak valid, redirect ke staf_data_atraksi")
+        return redirect('staf_data_atraksi')
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT username_p, nama_atraksi, tanggal_kunjungan, jumlah_tiket, status
+            FROM reservasi
+            WHERE username_p = %s AND nama_atraksi = %s AND tanggal_kunjungan = %s
+        """, [username, nama_atraksi, tanggal_kunjungan_obj])
+        row = cursor.fetchone()
+
+        if not row:
+            print("[ERROR] Reservasi tidak ditemukan, redirect ke staf_data_atraksi")
+            return redirect('staf_data_atraksi')
+
+        cursor.execute("SELECT COUNT(*) FROM atraksi WHERE nama_atraksi = %s", [nama_atraksi])
+        is_atraksi = cursor.fetchone()[0] > 0
+
+        if is_atraksi:
+            jenis_reservasi = 'Atraksi'
+            cursor.execute("SELECT lokasi FROM atraksi WHERE nama_atraksi = %s", [nama_atraksi])
+            lokasi_row = cursor.fetchone()
+            lokasi = lokasi_row[0] if lokasi_row else None
+            peraturan = []
         else:
-            reservasi['nama_wahana'] = request.POST.get('wahana')
-            wahana = next((w for w in wahana_list if w['nama_wahana'] == reservasi['nama_wahana']), {})
-            reservasi['jam'] = wahana.get('jam', '')
-            reservasi['peraturan'] = wahana.get('peraturan', [])
+            jenis_reservasi = 'Wahana'
+            lokasi = None
+            cursor.execute("SELECT peraturan FROM wahana WHERE nama_wahana = %s", [nama_atraksi])
+            wahana_row = cursor.fetchone()
+            if wahana_row:
+                peraturan_str = wahana_row[0]
+                peraturan = [p.strip() for p in peraturan_str.split('\n') if p.strip()]
+            else:
+                peraturan = []
 
-        reservasi['tanggal_kunjungan'] = request.POST.get('tanggal')
-        reservasi['jumlah_tiket'] = int(request.POST.get('jumlah_tiket'))
+        cursor.execute("SELECT jadwal FROM fasilitas WHERE nama = %s", [nama_atraksi])
+        fasilitas_row = cursor.fetchone()
+        jam = fasilitas_row[0] if fasilitas_row else None
 
-        return redirect('staf_data_atraksi')
+    # Jika POST, proses update data reservasi
+    if request.method == 'POST':
+        tanggal_baru_str = request.POST.get('tanggal')
+        jumlah_tiket_baru = request.POST.get('jumlah_tiket')
 
-    return render(request, 'staf_edit_reservasi.html', {
-        'reservasi': reservasi,
-        'atraksi_list': atraksi_list,
-        'wahana_list': wahana_list,
-    })
+        try:
+            tanggal_baru = datetime.strptime(tanggal_baru_str, '%d/%m/%Y').date()
+            jumlah_tiket_baru = int(jumlah_tiket_baru)
+            if jumlah_tiket_baru < 1:
+                raise ValueError('Jumlah tiket minimal 1')
+        except Exception as e:
+            print(f"[ERROR] Data POST invalid: {e}")
+            # Kembali ke halaman edit reservasi staf
+            return redirect('staf_edit_reservasi', username=username, nama_atraksi=nama_atraksi, tanggal_kunjungan=tanggal_kunjungan)
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                UPDATE reservasi
+                SET tanggal_kunjungan = %s, jumlah_tiket = %s
+                WHERE username_p = %s AND nama_atraksi = %s AND tanggal_kunjungan = %s
+            """, [tanggal_baru, jumlah_tiket_baru, username, nama_atraksi, tanggal_kunjungan_obj])
+
+        if is_atraksi:
+            return redirect('staf_data_atraksi')
+        else:
+            return redirect('staf_data_wahana')
+        
+
+    reservasi = {
+        'username': row[0],
+        'nama_booking': row[1],
+        'tanggal_kunjungan': row[2],
+        'jumlah_tiket': row[3],
+        'status': row[4],
+        'peraturan': peraturan,
+        'jam': jam,
+        'lokasi': lokasi,
+        'jenis_reservasi': jenis_reservasi,
+    }
+
+    return render(request, 'staf_edit_reservasi.html', {'reservasi': reservasi})
+
+def batalkan_reservasi(request, username, nama_atraksi, tanggal_kunjungan):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    try:
+        tanggal_obj = datetime.strptime(tanggal_kunjungan, '%Y-%m-%d').date()
+    except ValueError:
+        return JsonResponse({'error': 'Format tanggal salah, harus YYYY-MM-DD'}, status=400)
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT status FROM reservasi
+            WHERE username_p=%s AND nama_atraksi=%s AND tanggal_kunjungan=%s
+        """, [username, nama_atraksi, tanggal_obj])
+        row = cursor.fetchone()
+        if not row:
+            return JsonResponse({'error': 'Reservasi tidak ditemukan'}, status=404)
+
+        current_status = row[0]
+        if current_status == 'Dibatalkan':
+            return JsonResponse({'error': 'Reservasi sudah dibatalkan'}, status=400)
+
+        cursor.execute("""
+            UPDATE reservasi
+            SET status = 'Dibatalkan'
+            WHERE username_p=%s AND nama_atraksi=%s AND tanggal_kunjungan=%s
+        """, [username, nama_atraksi, tanggal_obj])
+
+    return JsonResponse({'message': 'Reservasi berhasil dibatalkan'}, status=200)

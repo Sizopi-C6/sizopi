@@ -53,7 +53,8 @@
 {% endblock meta %}
 
 {% block content %}
-{% include 'navbar/pengunjung.html' %}
+{% include 'navbar/staff_administrator.html' %}
+
 <div class="min-h-screen p-8 font-[Poppins] flex items-center justify-center">
   <div class="w-full max-w-2xl">
     <div class="card p-8 rounded-2xl shadow-lg">
@@ -65,72 +66,56 @@
         {% csrf_token %}
 
         <div class="grid grid-cols-1 gap-6">
-          {% if reservasi.jenis_reservasi == 'Atraksi' %}
-            <!-- Form untuk Atraksi -->
-            <div>
-              <label for="atraksi" class="block text-sm font-medium text-[#006400] mb-2">Nama Atraksi</label>
-              <select id="atraksi" name="atraksi" required class="form-input">
-                <option value="">-- Pilih Atraksi --</option>
-                {% for atraksi in atraksi_list %}
-                  <option value="{{ atraksi.nama_atraksi }}" 
-                    {% if reservasi.nama_atraksi == atraksi.nama_atraksi %}selected{% endif %}>
-                    {{ atraksi.nama_atraksi }}
-                  </option>
-                {% endfor %}
-              </select>
-            </div>
-
-            <div>
-              <label for="lokasi" class="block text-sm font-medium text-[#006400] mb-2">Lokasi</label>
-              <input type="text" id="lokasi" name="lokasi" readonly 
-                class="form-input readonly-input" value="{{ reservasi.lokasi }}">
-            </div>
-
-          {% else %}
-            <!-- Form untuk Wahana -->
-            <div>
-              <label for="wahana" class="block text-sm font-medium text-[#006400] mb-2">Nama Wahana</label>
-              <select id="wahana" name="wahana" required class="form-input">
-                <option value="">-- Pilih Wahana --</option>
-                {% for wahana in wahana_list %}
-                  <option value="{{ wahana.nama_wahana }}" 
-                    {% if reservasi.nama_wahana == wahana.nama_wahana %}selected{% endif %}>
-                    {{ wahana.nama_wahana }}
-                  </option>
-                {% endfor %}
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-[#006400] mb-2">Peraturan</label>
-              <div class="peraturan-list">
-                {% if reservasi.peraturan %}
-                  <ul class="list-disc pl-5">
-                    {% for peraturan in reservasi.peraturan %}
-                      <li class="mb-1">{{ peraturan }}</li>
-                    {% endfor %}
-                  </ul>
-                {% else %}
-                  <p class="text-gray-500">Tidak ada peraturan khusus</p>
-                {% endif %}
-              </div>
-            </div>
-          {% endif %}
-
-          <!-- Field yang sama untuk kedua jenis -->
+          <!-- Nama Booking -->
           <div>
-            <label for="jam" class="block text-sm font-medium text-[#006400] mb-2">Jam</label>
-            <input type="text" id="jam" name="jam" readonly 
-              class="form-input readonly-input" value="{{ reservasi.jam }}">
+            <label class="block text-sm font-medium text-[#006400] mb-2">
+              Nama {{ reservasi.jenis_reservasi }}
+            </label>
+            <input type="text" readonly class="form-input readonly-input" value="{{ reservasi.nama_booking }}">
           </div>
 
+          <!-- Lokasi hanya untuk atraksi -->
+          {% if reservasi.jenis_reservasi == 'Atraksi' %}
+          <div>
+            <label class="block text-sm font-medium text-[#006400] mb-2">Lokasi</label>
+            <input type="text" readonly class="form-input readonly-input" value="{{ reservasi.lokasi }}">
+          </div>
+          {% endif %}
+
+          <!-- Peraturan hanya untuk wahana -->
+          {% if reservasi.jenis_reservasi == 'Wahana' %}
+          <div>
+            <label class="block text-sm font-medium text-[#006400] mb-2">Peraturan</label>
+            <div class="peraturan-list">
+              {% if reservasi.peraturan %}
+                <ul class="list-disc pl-5">
+                  {% for p in reservasi.peraturan %}
+                    <li class="mb-1">{{ p }}</li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <p class="text-gray-500">Tidak ada peraturan khusus</p>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Jam -->
+          <div>
+            <label class="block text-sm font-medium text-[#006400] mb-2">Jam</label>
+            <input type="text" readonly class="form-input readonly-input" value="{{ reservasi.jam|time:'H:i' }}">
+          </div>
+
+          <!-- Tanggal -->
           <div>
             <label for="tanggal" class="block text-sm font-medium text-[#006400] mb-2">Tanggal</label>
             <input type="text" id="tanggal" name="tanggal" required 
-              class="form-input timepicker" value="{{ reservasi.tanggal_kunjungan }}" 
+              class="form-input timepicker" 
+              value="{{ reservasi.tanggal_kunjungan|date:'d/m/Y' }}" 
               placeholder="Pilih tanggal">
           </div>
 
+          <!-- Jumlah Tiket -->
           <div>
             <label for="jumlah-tiket" class="block text-sm font-medium text-[#006400] mb-2">Jumlah Tiket</label>
             <input type="number" id="jumlah-tiket" name="jumlah_tiket" min="1" required 
@@ -138,7 +123,13 @@
               placeholder="Masukkan jumlah tiket">
           </div>
 
-          <!-- Tombol Aksi -->
+          <!-- Status -->
+          <div>
+            <label class="block text-sm font-medium text-[#006400] mb-2">Status</label>
+            <input type="text" readonly class="form-input readonly-input" value="{{ reservasi.status }}">
+          </div>
+
+          <!-- Tombol -->
           <div class="flex justify-center gap-4 mt-8">
             <button type="submit" class="btn-primary px-6 py-3 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] transition duration-200 shadow-md">
               Simpan
@@ -158,61 +149,15 @@
   © 2025 SIZOPI. All rights reserved.
 </footer>
 
-<!-- JavaScript Libraries -->
+<!-- JS -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
 <script>
   $(document).ready(function() {
-    // Inisialisasi Flatpickr
     flatpickr(".timepicker", {
       dateFormat: "d/m/Y",
       minDate: "today"
     });
-
-    // Data untuk mengisi field otomatis
-    const data = {
-      {% if reservasi.jenis_reservasi == 'Atraksi' %}
-        atraksi: {
-          {% for atraksi in atraksi_list %}
-            "{{ atraksi.nama_atraksi }}": {
-              lokasi: "{{ atraksi.lokasi }}",
-              jam: "{{ atraksi.jam }}"
-            },
-          {% endfor %}
-        }
-      {% else %}
-        wahana: {
-          {% for wahana in wahana_list %}
-            "{{ wahana.nama_wahana }}": {
-              jam: "{{ wahana.jam }}",
-              peraturan: {{ wahana.peraturan|safe }}
-            },
-          {% endfor %}
-        }
-      {% endif %}
-    };
-
-    // Event handler untuk dropdown
-    $('#atraksi, #wahana').on('change', function() {
-      const selected = $(this).val();
-      const jenis = $(this).attr('id');
-      
-      if (data[jenis] && data[jenis][selected]) {
-        const selectedData = data[jenis][selected];
-        $('#jam').val(selectedData.jam);
-        
-        if (jenis === 'atraksi') {
-          $('#lokasi').val(selectedData.lokasi);
-        }
-      } else {
-        $('#jam').val('');
-        $('#lokasi').val('');
-      }
-    });
-
-    // Trigger saat halaman diload
-    $('#atraksi, #wahana').trigger('change');
   });
 </script>
 {% endblock %}

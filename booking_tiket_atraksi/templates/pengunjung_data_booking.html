@@ -63,6 +63,7 @@
     color: #008000;
     font-weight: 500;
     transition: all 0.3s;
+    cursor: pointer;
   }
 
   .btn-edit:hover {
@@ -74,6 +75,7 @@
     color: #dc2626;
     font-weight: 500;
     transition: all 0.3s;
+    cursor: pointer;
   }
 
   .btn-cancel:hover {
@@ -102,11 +104,60 @@
     background-color: #fee2e2;
     color: #991b1b;
   }
+
+  /* Modal style */
+  #batalkanModal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+    pointer-events: auto;
+  }
+  #batalkanModal > div {
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    width: 400px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    pointer-events: auto;
+  }
+  #confirmCancelBtn, #cancelModalBtn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  #confirmCancelBtn {
+    background: #008000;
+    color: white;
+    border: none;
+  }
+  #confirmCancelBtn:hover {
+    background: #006400;
+  }
+  #cancelModalBtn {
+    background: white;
+    color: #dc2626;
+    border: 1px solid #dc2626;
+  }
+  #cancelModalBtn:hover {
+    background: #fee2e2;
+  }
 </style>
 {% endblock %}
 
 {% block content %}
 {% include 'navbar/pengunjung.html' %}
+
+<!-- CSRF token as hidden input to be grabbed by JS -->
+<input type="hidden" id="csrfToken" value="{{ csrf_token }}">
+
 <div class="min-h-screen p-8 font-[Poppins]">
   <div class="max-w-7xl mx-auto">
     <div class="card p-8 rounded-2xl shadow-lg mb-8">
@@ -118,7 +169,7 @@
             <thead>
               <tr class="table-header">
                 <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Jenis Reservasi</th>
-                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Nama Atraksi/Wahana</th>
+                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Nama Atraksi</th>
                 <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Tanggal Reservasi</th>
                 <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Jumlah Tiket</th>
                 <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider">Status</th>
@@ -132,11 +183,7 @@
                     {{ booking.jenis_reservasi }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {% if booking.jenis_reservasi == 'Atraksi' %}
-                      {{ booking.nama_atraksi }}
-                    {% else %}
-                      {{ booking.nama_wahana }}
-                    {% endif %}
+                    {{ booking.nama_atraksi }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {{ booking.tanggal_kunjungan }}
@@ -151,7 +198,7 @@
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div class="action-buttons">
-                      <a href="{% url 'pengunjung_edit_reservasi' booking.id %}" class="btn-edit" id="edit-{{ booking.id }}">Edit</a>
+                      <a href="{% url 'pengunjung_edit_reservasi' username=booking.username nama_atraksi=booking.nama_atraksi tanggal_kunjungan=booking.tanggal_kunjungan|date:'Y-m-d' %}" class="btn-edit">Edit</a>
                       <span class="separator">|</span>
                       <a href="#" class="btn-cancel" id="cancel-{{ booking.id }}">Batalkan</a>
                     </div>
@@ -172,30 +219,85 @@
   </div>
 </div>
 
+<div id="batalkanModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">
+  <div>
+    <h2 id="modalTitle" style="font-weight:bold; margin-bottom:15px; color:#008000; font-size:1.5rem;">Batalkan Reservasi</h2>
+    <p id="modalText" style="margin-bottom:25px; color:#4b5563;">Apakah anda yakin ingin membatalkan reservasi ini?</p>
+    <div style="display:flex; justify-content:center; gap:16px; margin-top:20px;">
+      <button id="confirmCancelBtn">Ya</button>
+      <button id="cancelModalBtn">Tidak</button>
+    </div>
+  </div>
+</div>
+
 <script>
-  document.querySelectorAll('.btn-cancel').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      const nama = this.closest('tr').querySelector('td:nth-child(2)').textContent;
-      const bookingId = this.id.replace('cancel-', '');
-      
-      if(confirm(`Apakah Anda yakin ingin membatalkan reservasi ${nama}?`)) {
-        // Kirim request pembatalan
-        fetch(`/pengunjung/batalkan-reservasi/${bookingId}/`, {
-          method: 'POST',
-          headers: {
-            'X-CSRFToken': '{{ csrf_token }}',
-            'Content-Type': 'application/json',
-          },
-        })
-        .then(response => {
-          if(response.ok) {
-            window.location.reload();
-          } else {
-            alert('Gagal membatalkan reservasi');
+  document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('batalkanModal');
+    const modalText = document.getElementById('modalText');
+    const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+    const cancelModalBtn = document.getElementById('cancelModalBtn');
+    const csrfToken = document.getElementById('csrfToken').value;
+
+    let selectedBookingId = null;
+    let selectedRow = null;
+
+    document.querySelectorAll('.btn-cancel').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const row = btn.closest('tr');
+        const nama = row.querySelector('td:nth-child(2)').textContent.trim();
+        selectedBookingId = btn.id.replace('cancel-', '');
+        selectedRow = row;
+        modalText.textContent = `Apakah Anda yakin ingin membatalkan reservasi "${nama}"?`;
+        modal.style.display = 'flex';
+        // For accessibility: focus on modal confirm button
+        confirmCancelBtn.focus();
+      });
+    });
+
+    cancelModalBtn.addEventListener('click', () => {
+      modal.style.display = 'none';
+      selectedBookingId = null;
+      selectedRow = null;
+    });
+
+    confirmCancelBtn.addEventListener('click', () => {
+      if (!selectedBookingId) return;
+
+      fetch(`/pengunjung/batalkan-reservasi/${selectedBookingId}/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrfToken,
+          'Content-Type': 'application/json',
+        },
+      })
+      .then(response => {
+        if (response.ok) {
+          modal.style.display = 'none';
+
+          if(selectedRow){
+            const statusCell = selectedRow.querySelector('td:nth-child(5) span.status-badge');
+            if(statusCell){
+              statusCell.textContent = 'Dibatalkan';
+              statusCell.classList.remove('status-terjadwal');
+              statusCell.classList.add('status-dibatalkan');
+            }
+
+            const actionCell = selectedRow.querySelector('td:nth-child(6) .action-buttons');
+            if(actionCell){
+              actionCell.innerHTML = '<span style="color:#991b1b; font-weight:600;">Reservasi Dibatalkan</span>';
+            }
           }
-        });
-      }
+
+          selectedBookingId = null;
+          selectedRow = null;
+        } else {
+          alert('Gagal membatalkan reservasi');
+        }
+      })
+      .catch(() => {
+        alert('Terjadi kesalahan jaringan');
+      });
     });
   });
 </script>

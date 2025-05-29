@@ -125,7 +125,7 @@
 
         {% elif data.jenis_reservasi == "Wahana" %}
           <div class="bg-[#f8f9fa] p-4 rounded-lg">
-            <p class="text-gray-700"><span class="font-semibold text-[#006400]">Nama Wahana:</span> {{ data.nama_wahana }}</p>
+            <p class="text-gray-700"><span class="font-semibold text-[#006400]">Nama Wahana:</span> {{ data.nama_atraksi }}</p>
           </div>
           <div class="bg-[#f8f9fa] p-4 rounded-lg">
             <p class="text-gray-700"><span class="font-semibold text-[#006400]">Peraturan:</span></p>
@@ -166,7 +166,7 @@
       </div>
 
       <div class="flex flex-wrap justify-center gap-4 mt-6">
-        <a href="{% url 'pengunjung_edit_reservasi' data.id %}" class="px-6 py-2 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] transition duration-200 shadow-md">
+        <a href="{% url 'pengunjung_edit_reservasi' username=data.username_p nama_atraksi=data.nama_atraksi tanggal_kunjungan=data.tanggal|date:'Y-m-d' %}"  class="px-6 py-2 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] transition duration-200 shadow-md">
           Edit
         </a>
         <button type="button" onclick="bukaModal()" class="px-6 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition duration-200 shadow-md">

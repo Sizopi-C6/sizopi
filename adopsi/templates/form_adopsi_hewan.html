@@ -87,6 +87,26 @@
             text-align: center;
             opacity: 0.8;
         }
+
+        /* Loading animation */
+        .loading-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #008000;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 3;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
         
         .preview-container {
             background: white;
@@ -256,12 +276,24 @@
                     <h4 class="text-lg font-medium text-[#008000] mb-3 text-center">Hewan yang Akan Diadopsi</h4>
                     <div class="preview-container mx-auto max-w-xs">
                         <div class="animal-image-container">
+                            <!-- Loading Spinner -->
+                            <div class="loading-spinner" id="preview-spinner"></div>
+                            
+                            <!-- Placeholder Background -->
                             <div class="animal-placeholder">
-                                <div class="animal-emoji">🐾</div>
+                                <div class="animal-emoji" data-animal="{{ selected_animal.name|lower }}" data-species="{{ selected_animal.species|lower }}">🐾</div>
                                 <div class="animal-name-placeholder">{{ selected_animal.name }}</div>
                             </div>
-                            <img src="{{ selected_animal.url_foto }}" alt="{{ selected_animal.name }}" 
-                                 class="animal-image" onload="handleImageLoad(this)" onerror="handleImageError(this)">
+                            
+                            <!-- Main Image -->
+                            <img src="{{ selected_animal.url_foto }}" 
+                                 alt="{{ selected_animal.name }}" 
+                                 class="animal-image"
+                                 data-species="{{ selected_animal.species|lower }}"
+                                 data-name="{{ selected_animal.name|lower }}"
+                                 onload="handleImageLoad(this)"
+                                 onerror="handleImageError(this)"
+                                 loading="lazy">
                         </div>
                         <div class="preview-info">
                             <div class="font-medium text-[#008000]">{{ selected_animal.name }}</div>
@@ -400,10 +432,6 @@
             const name = animalName.toLowerCase();
             const spec = species.toLowerCase();
             
-            // Lions
-            if (name.includes('simba') || name.includes('lion') || spec.includes('leo')) return '🦁';
-            // Elephants  
-            if (name.includes('manny') || name.includes('tiny') || name.includes('elephant') || spec.includes('elephas') || spec.includes('loxodonta')) return '🐘';
             // Tigers
             if (name.includes('shere') || name.includes('khan') || name.includes('rajah') || name.includes('tiger') || name.includes('stripe') || name.includes('whiskers') || spec.includes('tigris')) return '🐅';
             // Bears
@@ -432,6 +460,23 @@
             if (name.includes('bagheera') || spec.includes('pardus')) return '🐆';
             
             return '🐾';
+        }
+
+        function hideLoadingSpinner() {
+            const spinner = document.getElementById('preview-spinner');
+            if (spinner) {
+                spinner.style.display = 'none';
+            }
+        }
+
+        function handleImageLoad(img) {
+            img.classList.add('loaded');
+            hideLoadingSpinner();
+        }
+
+        function handleImageError(img) {
+            hideLoadingSpinner();
+            img.style.display = 'none';
         }
 
         function verifyAccount() {
@@ -794,14 +839,6 @@
             if (errorDiv) {
                 errorDiv.classList.add('hidden');
             }
-        }
-
-        function handleImageLoad(img) {
-            img.classList.add('loaded');
-        }
-
-        function handleImageError(img) {
-            img.style.display = 'none';
         }
 
         document.addEventListener('DOMContentLoaded', function() {

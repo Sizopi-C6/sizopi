@@ -82,6 +82,26 @@
             text-align: center;
             opacity: 0.8;
         }
+
+        /* Loading animation */
+        .loading-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #008000;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 3;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
     </style>
 {% endblock meta %}
 
@@ -123,20 +143,25 @@
                 {% for animal in animals %}
                 <div class="animal-card bg-white rounded-2xl shadow-md overflow-hidden">
                     <div class="animal-image-container">
+                        <!-- Loading Spinner -->
+                        <div class="loading-spinner" id="spinner-{{ forloop.counter }}"></div>
+                        
                         <!-- Placeholder Background -->
                         <div class="animal-placeholder">
                             <div class="animal-emoji" data-animal="{{ animal.nama_hewan|lower }}" data-species="{{ animal.species|lower }}">🐾</div>
                             <div class="animal-name-placeholder">{{ animal.nama_hewan }}</div>
                         </div>
                         
-                        <img src="https://picsum.photos/300/200?random={{ forloop.counter }}"
+                        <!-- Main Image -->
+                        <img src="{{ animal.url_foto }}"
                              alt="{{ animal.nama_hewan }}" 
                              class="animal-image"
-                             data-original="{{ animal.url_foto }}"
                              data-species="{{ animal.species|lower }}"
                              data-name="{{ animal.nama_hewan|lower }}"
+                             data-counter="{{ forloop.counter }}"
                              onload="handleImageLoad(this)"
-                             onerror="handleImageError(this)">
+                             onerror="handleImageError(this)"
+                             loading="lazy">
                     </div>
                     <div class="p-6">
                         <h3 class="text-xl font-semibold text-[#008000] mb-2">{{ animal.nama_hewan }}</h3>
@@ -289,10 +314,6 @@
             const name = animalName.toLowerCase();
             const spec = species.toLowerCase();
             
-            // Lions
-            if (name.includes('simba') || name.includes('lion') || spec.includes('leo')) return '🦁';
-            // Elephants  
-            if (name.includes('manny') || name.includes('tiny') || name.includes('elephant') || spec.includes('elephas') || spec.includes('loxodonta')) return '🐘';
             // Tigers
             if (name.includes('shere') || name.includes('khan') || name.includes('rajah') || name.includes('tiger') || name.includes('stripe') || name.includes('whiskers') || spec.includes('tigris')) return '🐅';
             // Bears
@@ -323,6 +344,24 @@
             return '🐾';
         }
 
+        function hideLoadingSpinner(counter) {
+            const spinner = document.getElementById(`spinner-${counter}`);
+            if (spinner) {
+                spinner.style.display = 'none';
+            }
+        }
+
+        function handleImageLoad(img) {
+            img.classList.add('loaded');
+            hideLoadingSpinner(img.dataset.counter);
+        }
+
+        function handleImageError(img) {
+            hideLoadingSpinner(img.dataset.counter);
+            
+            img.style.display = 'none';
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.animal-emoji').forEach(function(element) {
                 const animalName = element.dataset.animal || '';
@@ -330,29 +369,6 @@
                 element.textContent = getAnimalEmoji(animalName, species);
             });
         });
-
-        function handleImageLoad(img) {
-            img.classList.add('loaded');
-        }
-
-        function handleImageError(img) {
-            const fallbacks = [
-                img.dataset.original,
-                `https://source.unsplash.com/300x200/?${img.dataset.species},animal`,
-                `https://source.unsplash.com/300x200/?${img.dataset.name},wildlife`,
-                `https://source.unsplash.com/300x200/?wildlife,zoo`,
-                `https://via.placeholder.com/300x200/4ade80/ffffff?text=${encodeURIComponent(img.alt)}`,
-            ];
-            
-            const currentIndex = parseInt(img.dataset.fallbackIndex || '0');
-            
-            if (currentIndex < fallbacks.length && fallbacks[currentIndex]) {
-                img.dataset.fallbackIndex = currentIndex + 1;
-                img.src = fallbacks[currentIndex];
-            } else {
-                img.style.display = 'none';
-            }
-        }
 
         function toggleDetailModal() {
             const modal = document.getElementById('detailModal');

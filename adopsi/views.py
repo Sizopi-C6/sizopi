@@ -297,9 +297,6 @@ def laporan_kondisi_hewan(request):
             verification_count = verification_result[0]
             tgl_mulai_adopsi = verification_result[1]
             
-            print(f"DEBUG - Verification count: {verification_count}")
-            print(f"DEBUG - Tanggal mulai adopsi: {tgl_mulai_adopsi}")
-            
             if verification_count == 0:
                 messages.error(request, 'Anda tidak memiliki akses untuk melihat laporan hewan ini.')
                 return redirect('adopsi:adopsi_pengunjung')
@@ -328,8 +325,6 @@ def laporan_kondisi_hewan(request):
             if isinstance(animal['id'], uuid.UUID):
                 animal['id'] = str(animal['id'])
             
-            print(f"DEBUG - Animal data: {animal}")
-            
             cursor.execute("""
                 SELECT 
                     cm.tanggal_pemeriksaan,
@@ -356,9 +351,6 @@ def laporan_kondisi_hewan(request):
                     record['tanggal_pemeriksaan'] = record['tanggal_pemeriksaan']
                 
                 medical_records.append(record)
-            
-            print(f"DEBUG - Medical records count: {len(medical_records)}")
-            print(f"DEBUG - Filtered from date: {tgl_mulai_adopsi}")
             
             sehat_count = sum(1 for record in medical_records if record['status_kesehatan'] == 'Sehat')
         
@@ -540,7 +532,7 @@ def process_perpanjang_adopsi(request):
     animal_id = request.POST.get('animal_id')
     periode = request.POST.get('periode')
     nominal = request.POST.get('nominal', '').replace('.', '').replace(',', '')
- 
+
     if not all([animal_id, periode, nominal]):
         missing_fields = []
         if not animal_id: missing_fields.append('animal_id')
@@ -582,7 +574,6 @@ def process_perpanjang_adopsi(request):
                 row = cursor.fetchone()
                 
                 if not row:
-                    print("DEBUG - No adoption data found")
                     messages.error(request, 'Data adopsi tidak ditemukan atau sudah tidak aktif!')
                     return redirect('adopsi:adopsi_pengunjung')
                 
@@ -617,7 +608,9 @@ def process_perpanjang_adopsi(request):
                     for notice in notices:
                         if 'SUKSES:' in notice:
                             clean_message = notice.replace('SUKSES:', '').strip()
-                            messages.success(request, f'{clean_message}')
+                            messages.success(request, f'🏆 {clean_message}')
+                    
+                    messages.success(request, f'Perpanjangan adopsi {animal_name} berhasil! Periode diperpanjang {periode_months} bulan dengan kontribusi tambahan Rp {nominal_value:,}')
 
                 return redirect('adopsi:adopsi_pengunjung')
                 
@@ -668,7 +661,7 @@ def berhenti_adopsi(request):
                 status_pembayaran, animal_name = row
                 
                 if status_pembayaran == 'Tertunda':
-                    messages.warning(request, 'Perhatian: Status pembayaran adopsi ini masih tertunda.')
+                    messages.warning(request, '⚠️ Perhatian: Status pembayaran adopsi ini masih tertunda.')
                 
                 cursor.execute("""
                     UPDATE adopsi 
@@ -687,7 +680,7 @@ def berhenti_adopsi(request):
                     for notice in notices:
                         if 'SUKSES:' in notice:
                             clean_message = notice.replace('SUKSES:', '').strip()
-                            messages.success(request, f'{clean_message}')
+                            messages.success(request, f'🏆 {clean_message}')
                     
                     messages.success(request, f'Adopsi untuk {animal_name} berhasil dihentikan')
                 else:
@@ -811,7 +804,7 @@ def update_adoption_status(request):
                         for notice in notices:
                             if 'SUKSES:' in notice:
                                 clean_message = notice.replace('SUKSES:', '').strip()
-                                messages.success(request, f'{clean_message}')
+                                messages.success(request, f'🏆 {clean_message}')
                         
                         messages.success(request, f'Status pembayaran berhasil diubah menjadi {status_pembayaran}!')
                     else:
@@ -854,7 +847,7 @@ def terminate_adoption(request):
                         for notice in notices:
                             if 'SUKSES:' in notice:
                                 clean_message = notice.replace('SUKSES:', '').strip()
-                                messages.success(request, f'✅ {clean_message}')
+                                messages.success(request, f'🏆 {clean_message}')
                         
                         cursor.execute("""
                             SELECT name FROM hewan WHERE id = %s
@@ -953,9 +946,9 @@ def verify_adopter_account(request):
         })
     
     if request.method == 'POST':
-        username = request.POST.get('username', '').strip()
+        username_to_verify = request.POST.get('username', '').strip()
         
-        if not username:
+        if not username_to_verify:
             return JsonResponse({
                 'success': False,
                 'message': 'Username harus diisi!'
@@ -963,6 +956,42 @@ def verify_adopter_account(request):
         
         try:
             with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT p.*, 
+                    CASE 
+                        WHEN EXISTS (SELECT 1 FROM pengunjung WHERE username_p = p.username) THEN 'pengunjung'
+                        WHEN EXISTS (SELECT 1 FROM dokter_hewan WHERE username_dh = p.username) THEN 'dokter hewan'
+                        WHEN EXISTS (SELECT 1 FROM penjaga_hewan WHERE username_jh = p.username) THEN 'penjaga hewan'
+                        WHEN EXISTS (SELECT 1 FROM pelatih_hewan WHERE username_lh = p.username) THEN 'pelatih hewan'
+                        WHEN EXISTS (SELECT 1 FROM staf_admin WHERE username_sa = p.username) THEN 'staf admin'
+                        ELSE 'incomplete_registration'
+                    END AS role
+                    FROM pengguna p 
+                    WHERE p.username = %s
+                """, [username_to_verify])
+                
+                row = cursor.fetchone()
+                if not row:
+                    return JsonResponse({
+                        'success': False,
+                        'message': 'Username tidak ditemukan!'
+                    })
+                
+                user_data = dict(zip([column[0] for column in cursor.description], row))
+                
+                if user_data.get('role') != 'pengunjung':
+                    role_name = user_data.get('role', 'unknown')
+                    if role_name == 'incomplete_registration':
+                        return JsonResponse({
+                            'success': False,
+                            'message': 'Registrasi pengguna belum lengkap!'
+                        })
+                    else:
+                        return JsonResponse({
+                            'success': False,
+                            'message': f'Username ini terdaftar sebagai {role_name}, bukan pengunjung!'
+                        })
+                
                 cursor.execute("""
                     SELECT 
                         p.username,
@@ -976,28 +1005,30 @@ def verify_adopter_account(request):
                     FROM pengguna p
                     INNER JOIN pengunjung pg ON p.username = pg.username_p
                     WHERE p.username = %s
-                """, [username])
+                """, [username_to_verify])
                 
-                row = cursor.fetchone()
-                if not row:
+                pengunjung_row = cursor.fetchone()
+                if not pengunjung_row:
                     return JsonResponse({
                         'success': False,
-                        'message': 'Username tidak ditemukan atau bukan akun pengunjung!'
+                        'message': 'Data pengunjung tidak ditemukan atau tidak konsisten!'
                     })
                 
-                user_data = dict(zip([column[0] for column in cursor.description], row))
+                user_data = dict(zip([column[0] for column in cursor.description], pengunjung_row))
                 
                 if user_data['tgl_lahir']:
                     user_data['tgl_lahir'] = user_data['tgl_lahir'].isoformat()
                 
                 cursor.execute("""
                     SELECT id_adopter FROM adopter WHERE username_adopter = %s
-                """, [username])
+                """, [username_to_verify])
                 
                 adopter_row = cursor.fetchone()
                 
                 if adopter_row:
                     adopter_id = adopter_row[0]
+                    user_data['is_adopter'] = True
+                    user_data['adopter_id'] = str(adopter_id)
                     
                     cursor.execute("""
                         SELECT nik, nama FROM individu WHERE id_adopter = %s
@@ -1005,17 +1036,27 @@ def verify_adopter_account(request):
                     
                     individual_row = cursor.fetchone()
                     if individual_row:
+                        user_data['adopter_type'] = 'individu'
                         user_data['existing_nik'] = individual_row[0]
                         user_data['existing_individual_name'] = individual_row[1]
-                    
-                    cursor.execute("""
-                        SELECT npp, nama_organisasi FROM organisasi WHERE id_adopter = %s
-                    """, [adopter_id])
-                    
-                    organization_row = cursor.fetchone()
-                    if organization_row:
-                        user_data['existing_npp'] = organization_row[0]
-                        user_data['existing_org_name'] = organization_row[1]
+                    else:
+                        cursor.execute("""
+                            SELECT npp, nama_organisasi FROM organisasi WHERE id_adopter = %s
+                        """, [adopter_id])
+                        
+                        organization_row = cursor.fetchone()
+                        if organization_row:
+                            user_data['adopter_type'] = 'organisasi'
+                            user_data['existing_npp'] = organization_row[0]
+                            user_data['existing_org_name'] = organization_row[1]
+                        else:
+                            return JsonResponse({
+                                'success': False,
+                                'message': 'Data adopter tidak konsisten. Silakan hubungi administrator!'
+                            })
+                else:
+                    user_data['is_adopter'] = False
+                    user_data['adopter_type'] = 'new'
                 
                 return JsonResponse({
                     'success': True,
@@ -1028,7 +1069,12 @@ def verify_adopter_account(request):
                 'success': False,
                 'message': 'Terjadi kesalahan saat verifikasi akun!'
             })
-            
+    
+    return JsonResponse({
+        'success': False,
+        'message': 'Invalid request method'
+    })
+
 def submit_adoption_form(request):
     username, user, error_msg = check_admin_access(request)
     
@@ -1103,17 +1149,214 @@ def submit_adoption_form(request):
                     
                     if adopter_row:
                         adopter_id = adopter_row[0]
-                        cursor.execute("""
-                            UPDATE adopter 
-                            SET total_kontribusi = total_kontribusi + %s 
-                            WHERE id_adopter = %s
-                        """, [nominal_value, adopter_id])
+                        nama_adopter = "Adopter"
+                        
+                        if tipe_adopter == 'individu':
+                            cursor.execute("""
+                                SELECT nama FROM individu WHERE id_adopter = %s
+                            """, [adopter_id])
+                            individual_row = cursor.fetchone()
+                            if not individual_row:
+                                messages.error(request, 'Adopter ini tidak terdaftar sebagai individu!')
+                                return redirect(f'/adopsi/form/?animal_id={animal_id}')
+                            nama_adopter = individual_row[0]
+                            
+                        elif tipe_adopter == 'organisasi':
+                            cursor.execute("""
+                                SELECT nama_organisasi FROM organisasi WHERE id_adopter = %s
+                            """, [adopter_id])
+                            org_row = cursor.fetchone()
+                            if not org_row:
+                                messages.error(request, 'Adopter ini tidak terdaftar sebagai organisasi!')
+                                return redirect(f'/adopsi/form/?animal_id={animal_id}')
+                            nama_adopter = org_row[0]
+                        
                     else:
                         adopter_id = str(uuid.uuid4())
                         cursor.execute("""
                             INSERT INTO adopter (id_adopter, username_adopter, total_kontribusi)
                             VALUES (%s, %s, %s)
-                        """, [adopter_id, adopter_username, nominal_value])
+                        """, [adopter_id, adopter_username, 0])
+                        
+                        if tipe_adopter == 'individu':
+                            nik = request.POST.get('nik', '').strip()
+                            
+                            if not nik:
+                                messages.error(request, 'NIK harus diisi untuk adopter individu!')
+                                return redirect(f'/adopsi/form/?animal_id={animal_id}')
+                            
+                            if len(nik) != 16 or not nik.isdigit():
+                                messages.error(request, 'NIK harus 16 digit angka!')
+                                return redirect(f'/adopsi/form/?animal_id={animal_id}')
+                            
+                            cursor.execute("""
+                                SELECT COUNT(*) FROM individu WHERE nik = %s
+                            """, [nik])
+                            
+                            if cursor.fetchone()[0] > 0:
+                                messages.error(request, 'NIK sudah terdaftar untuk adopter lain!')
+                                return redirect(f'/adopsi/form/?animal_id={animal_id}')
+                            
+                            cursor.execute("""
+                                SELECT nama_depan, nama_tengah, nama_belakang FROM pengguna 
+                                WHERE username = %s
+                            """, [adopter_username])
+                            
+                            nama_row = cursor.fetchone()
+                            if nama_row:
+                                nama_parts = [part for part in nama_row if part]
+                                nama_lengkap = ' '.join(nama_parts)
+                            else:
+                                nama_lengkap = "Unknown"
+                            
+                            cursor.execute("""
+                                INSERT INTO individu (nik, nama, id_adopter)
+                                VALUES (%s, %s, %s)
+                            """, [nik, nama_lengkap, adopter_id])
+                            
+                            nama_adopter = nama_lengkap
+                            
+                        elif tipe_adopter == 'organisasi':
+                            nama_organisasi = request.POST.get('nama_organisasi', '').strip()
+                            npp = request.POST.get('npp', '').strip()
+                            
+                            if not nama_organisasi or not npp:
+                                messages.error(request, 'Nama organisasi dan NPP harus diisi!')
+                                return redirect(f'/adopsi/form/?animal_id={animal_id}')
+                                
+                            if len(npp) != 8 or not npp.isdigit():
+                                messages.error(request, 'NPP harus 8 digit angka!')
+                                return redirect(f'/adopsi/form/?animal_id={animal_id}')
+                            
+                            cursor.execute("""
+                                SELECT COUNT(*) FROM organisasi WHERE npp = %s
+                            """, [npp])
+                            
+                            if cursor.fetchone()[0] > 0:
+                                messages.error(request, 'NPP sudah terdaftar untuk adopter lain!')
+                                return redirect(f'/adopsi/form/?animal_id={animal_id}')
+                            
+                            cursor.execute("""
+                                INSERT INTO organisasi (npp, nama_organisasi, id_adopter)
+                                VALUES (%s, %s, %s)
+                            """, [npp, nama_organisasi, adopter_id])
+                            
+                            nama_adopter = nama_organisasi
+                    
+                    tgl_mulai = date.today()
+                    
+                    if periode_months == 3:
+                        tgl_berhenti = tgl_mulai + timedelta(days=90)
+                    elif periode_months == 6:
+                        tgl_berhenti = tgl_mulai + timedelta(days=180)
+                    else:
+                        tgl_berhenti = tgl_mulai + timedelta(days=365)
+                    
+                    cursor.execute("""
+                        INSERT INTO adopsi (id_adopter, id_hewan, status_pembayaran, tgl_mulai_adopsi, tgl_berhenti_adopsi, kontribusi_finansial)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                    """, [adopter_id, animal_id, 'Tertunda', tgl_mulai, tgl_berhenti, nominal_value])
+                    
+                    notices = capture_database_notices(cursor)
+                    
+                    for notice in notices:
+                        if 'SUKSES:' in notice:
+                            clean_message = notice.replace('SUKSES:', '').strip()
+                            messages.success(request, f'🏆 {clean_message}')
+                    
+                    messages.success(request, f'Adopsi {nama_hewan} oleh {nama_adopter} berhasil didaftarkan dengan kontribusi Rp {nominal_value:,} untuk periode {periode_months} bulan!')
+                    return redirect('adopsi:adopsi_admin')
+                    
+        except Exception as e:
+            logger.error(f"Error in submit_adoption_form: {str(e)}")
+            messages.error(request, f'Terjadi kesalahan saat menyimpan data adopsi: {str(e)}')
+            
+            animal_id = request.POST.get('animal_id', '')
+            if animal_id:
+                return redirect(f'/adopsi/form/?animal_id={animal_id}')
+    
+    return redirect('adopsi:adopsi_admin')
+                        
+def submit_adoption_form(request):
+    username, user, error_msg = check_admin_access(request)
+    
+    if not username:
+        messages.error(request, error_msg)
+        return redirect('/login/')
+    
+    if request.method == 'POST':
+        try:
+            adopter_username = request.POST.get('adopter_username', '').strip()
+            animal_id = request.POST.get('animal_id', '')
+            tipe_adopter = request.POST.get('tipe_adopter', '')
+            nominal = request.POST.get('nominal', '').replace('.', '').replace(',', '')
+            periode = request.POST.get('periode', '')
+            
+            if not all([adopter_username, animal_id, tipe_adopter, nominal, periode]):
+                messages.error(request, 'Semua field wajib harus diisi!')
+                return redirect(f'/adopsi/form/?animal_id={animal_id}')
+            
+            try:
+                nominal_value = int(nominal)
+                if nominal_value < 100000:
+                    messages.error(request, 'Nominal kontribusi minimal Rp 100.000!')
+                    return redirect(f'/adopsi/form/?animal_id={animal_id}')
+            except ValueError:
+                messages.error(request, 'Format nominal tidak valid!')
+                return redirect(f'/adopsi/form/?animal_id={animal_id}')
+            
+            try:
+                periode_months = int(periode)
+                if periode_months not in [3, 6, 12]:
+                    messages.error(request, 'Periode adopsi tidak valid!')
+                    return redirect(f'/adopsi/form/?animal_id={animal_id}')
+            except ValueError:
+                messages.error(request, 'Format periode tidak valid!')
+                return redirect(f'/adopsi/form/?animal_id={animal_id}')
+            
+            with transaction.atomic():
+                with connection.cursor() as cursor:
+                    cursor.execute("""
+                        SELECT h.name FROM hewan h
+                        WHERE h.id = %s
+                        AND NOT EXISTS (
+                            SELECT 1 FROM adopsi a 
+                            WHERE a.id_hewan = h.id 
+                            AND a.tgl_mulai_adopsi <= CURRENT_DATE 
+                            AND a.tgl_berhenti_adopsi >= CURRENT_DATE
+                        )
+                    """, [animal_id])
+                    
+                    hewan_row = cursor.fetchone()
+                    if not hewan_row:
+                        messages.error(request, 'Hewan tidak tersedia atau sudah diadopsi!')
+                        return redirect('adopsi:adopsi_admin')
+                    
+                    nama_hewan = hewan_row[0]
+                    
+                    cursor.execute("""
+                        SELECT COUNT(*) FROM pengunjung 
+                        WHERE username_p = %s
+                    """, [adopter_username])
+                    
+                    if cursor.fetchone()[0] == 0:
+                        messages.error(request, 'Pengunjung tidak ditemukan!')
+                        return redirect(f'/adopsi/form/?animal_id={animal_id}')
+                    
+                    cursor.execute("""
+                        SELECT id_adopter FROM adopter WHERE username_adopter = %s
+                    """, [adopter_username])
+                    
+                    adopter_row = cursor.fetchone()
+                    
+                    if adopter_row:
+                        adopter_id = adopter_row[0]
+                    else:
+                        adopter_id = str(uuid.uuid4())
+                        cursor.execute("""
+                            INSERT INTO adopter (id_adopter, username_adopter, total_kontribusi)
+                            VALUES (%s, %s, %s)
+                        """, [adopter_id, adopter_username, 0])
                     
                     if tipe_adopter == 'individu':
                         cursor.execute("""
@@ -1125,7 +1368,6 @@ def submit_adoption_form(request):
                         if existing_individual:
                             nama_adopter = existing_individual[1]
                         else:
-                            
                             nik = request.POST.get('nik', '').strip()
                             
                             if not nik:
@@ -1219,7 +1461,7 @@ def submit_adoption_form(request):
                     for notice in notices:
                         if 'SUKSES:' in notice:
                             clean_message = notice.replace('SUKSES:', '').strip()
-                            messages.success(request, f'{clean_message}')
+                            messages.success(request, f'🏆 {clean_message}')
                     
                     messages.success(request, f'Adopsi {nama_hewan} oleh {nama_adopter} berhasil didaftarkan dengan kontribusi Rp {nominal_value:,} untuk periode {periode_months} bulan!')
                     return redirect('adopsi:adopsi_admin')
@@ -1243,29 +1485,31 @@ def daftar_adopter(request):
     
     try:
         with connection.cursor() as cursor:
-            cursor.execute("""
-                SELECT 
-                    COALESCE(i.nama, o.nama_organisasi) as nama_adopter,
-                    SUM(CASE WHEN a.status_pembayaran = 'Lunas' THEN a.kontribusi_finansial ELSE 0 END) as total_kontribusi_setahun
-                FROM adopter ad
-                LEFT JOIN individu i ON ad.id_adopter = i.id_adopter
-                LEFT JOIN organisasi o ON ad.id_adopter = o.id_adopter
-                LEFT JOIN adopsi a ON ad.id_adopter = a.id_adopter
-                WHERE a.tgl_mulai_adopsi >= CURRENT_DATE - INTERVAL '1 year'
-                AND a.status_pembayaran = 'Lunas'
-                GROUP BY ad.id_adopter, i.nama, o.nama_organisasi
-                HAVING SUM(CASE WHEN a.status_pembayaran = 'Lunas' THEN a.kontribusi_finansial ELSE 0 END) > 0
-                ORDER BY total_kontribusi_setahun DESC
-                LIMIT 5
-            """)
+            cursor.execute("SELECT * FROM top5_adopter()")
             
             top_contributors = []
             for row in cursor.fetchall():
                 contributor = dict(zip([column[0] for column in cursor.description], row))
-                if isinstance(contributor['total_kontribusi_setahun'], Decimal):
-                    contributor['total_kontribusi_setahun'] = float(contributor['total_kontribusi_setahun'])
+                if isinstance(contributor.get('total_kontribusi'), Decimal):
+                    contributor['total_kontribusi'] = float(contributor['total_kontribusi'])
+                elif isinstance(contributor.get('total_kontribusi'), int):
+                    contributor['total_kontribusi'] = float(contributor['total_kontribusi'])
+                
+                if 'total_kontribusi' in contributor:
+                    contributor['total_kontribusi_formatted'] = f"Rp {contributor['total_kontribusi']:,.0f}"
+                
                 top_contributors.append(contributor)
             
+            cursor.execute("SELECT update_adopter_ranking()")
+            ranking_result = cursor.fetchone()
+            ranking_message = ranking_result[0] if ranking_result else None
+            
+            notices = capture_database_notices(cursor)
+            for notice in notices:
+                if 'SUKSES:' in notice:
+                    clean_message = notice.replace('SUKSES:', '').strip()
+                    messages.info(request, f"{clean_message}")
+                    
             cursor.execute("""
                 SELECT 
                     ad.id_adopter,
@@ -1297,6 +1541,7 @@ def daftar_adopter(request):
                     adopter['total_kontribusi'] = float(adopter['total_kontribusi'])
                 
                 adopter['dapat_dihapus'] = adopter['adopsi_aktif_count'] == 0
+                adopter['total_kontribusi_formatted'] = f"Rp {adopter['total_kontribusi']:,.0f}"
                 
                 adopter_individu.append(adopter)
             
@@ -1331,6 +1576,7 @@ def daftar_adopter(request):
                     adopter['total_kontribusi'] = float(adopter['total_kontribusi'])
                 
                 adopter['dapat_dihapus'] = adopter['adopsi_aktif_count'] == 0
+                adopter['total_kontribusi_formatted'] = f"Rp {adopter['total_kontribusi']:,.0f}"
                 
                 adopter_organisasi.append(adopter)
             
@@ -1338,12 +1584,13 @@ def daftar_adopter(request):
                 'top_contributors': top_contributors,
                 'adopter_individu': adopter_individu,
                 'adopter_organisasi': adopter_organisasi,
+                'ranking_message': ranking_message,
                 'user': user
             })
             
     except Exception as e:
         logger.error(f"Error in daftar_adopter: {str(e)}")
-        messages.error(request, 'Terjadi kesalahan saat mengambil data adopter.')
+        messages.error(request, f'Terjadi kesalahan saat mengambil data adopter: {str(e)}')
         return render(request, 'daftar_adopter.html', {
             'top_contributors': [],
             'adopter_individu': [],
@@ -1359,7 +1606,7 @@ def riwayat_adopter(request, adopter_id):
         return redirect('/login/')
     
     try:
-        with connection.cursor() as cursor:            
+        with connection.cursor() as cursor:
             cursor.execute("""
                 SELECT 
                     ad.id_adopter,
@@ -1393,9 +1640,9 @@ def riwayat_adopter(request, adopter_id):
                     p.no_telepon,
                     p.email,
                     pg.alamat,
-                        CONCAT(p.nama_depan, ' ', 
-                            CASE WHEN p.nama_tengah IS NOT NULL THEN CONCAT(p.nama_tengah, ' ') ELSE '' END,
-                            p.nama_belakang) as nama_lengkap
+                    CONCAT(p.nama_depan, ' ', 
+                        CASE WHEN p.nama_tengah IS NOT NULL THEN CONCAT(p.nama_tengah, ' ') ELSE '' END,
+                        p.nama_belakang) as nama_lengkap
                 FROM adopter ad
                 INNER JOIN pengunjung pg ON ad.username_adopter = pg.username_p
                 INNER JOIN pengguna p ON pg.username_p = p.username
@@ -1519,7 +1766,7 @@ def delete_riwayat_adopsi(request):
                     for notice in notices:
                         if 'SUKSES:' in notice:
                             clean_message = notice.replace('SUKSES:', '').strip()
-                            messages.success(request, f'{clean_message}')
+                            messages.success(request, f'🏆 {clean_message}')
                     
                     messages.success(request, f'Riwayat adopsi {nama_hewan} berhasil dihapus!')
                 else:
@@ -1530,7 +1777,6 @@ def delete_riwayat_adopsi(request):
         messages.error(request, 'Terjadi kesalahan saat menghapus riwayat adopsi!')
     
     return redirect(f'/adopsi/adopter/{adopter_id}/riwayat/')
-
 
 def delete_adopter(request):
     username, user, error_msg = check_admin_access(request)
@@ -1580,8 +1826,15 @@ def delete_adopter(request):
                     DELETE FROM adopter WHERE id_adopter = %s
                 """, [adopter_id])
                 
+                notices = capture_database_notices(cursor)
+                
                 if cursor.rowcount > 0:
-                    messages.success(request, f'Data adopter {adopter_name} berhasil dihapus beserta riwayat adopsinya!')
+                    for notice in notices:
+                        if 'SUKSES:' in notice:
+                            clean_message = notice.replace('SUKSES:', '').strip()
+                            messages.success(request, f'🏆 {clean_message}')
+                    
+                    messages.success(request, f'✅ Data adopter {adopter_name} berhasil dihapus beserta riwayat adopsinya!')
                 else:
                     messages.error(request, 'Data adopter tidak ditemukan!')
                     
@@ -1591,83 +1844,61 @@ def delete_adopter(request):
     
     return redirect('adopsi:daftar_adopter')
 
-def delete_riwayat_adopsi(request):
+def get_current_ranking(request):
+    """
+    AJAX endpoint untuk mendapatkan ranking adopter terkini
+    """
     username, user, error_msg = check_admin_access(request)
     
     if not username:
-        messages.error(request, error_msg)
-        return redirect('/login/')
-    
-    if request.method != 'POST':
-        return redirect('adopsi:daftar_adopter')
-    
-    adopter_id = request.POST.get('adopter_id')
-    id_hewan = request.POST.get('id_hewan')
-    tgl_mulai_adopsi = request.POST.get('tgl_mulai_adopsi')
-    
-    if not all([adopter_id, id_hewan, tgl_mulai_adopsi]):
-        messages.error(request, 'Data tidak lengkap.')
-        return redirect('adopsi:daftar_adopter')
+        return JsonResponse({
+            'success': False,
+            'message': error_msg
+        })
     
     try:
-        with transaction.atomic():
-            with connection.cursor() as cursor:
-                cursor.execute("""
-                    SELECT 
-                        COUNT(*) as count,
-                        h.name as nama_hewan,
-                        CASE 
-                            WHEN tgl_mulai_adopsi <= CURRENT_DATE AND tgl_berhenti_adopsi >= CURRENT_DATE THEN true
-                            ELSE false
-                        END as is_active
-                    FROM adopsi a
-                    INNER JOIN hewan h ON a.id_hewan = h.id
-                    WHERE a.id_adopter = %s 
-                    AND a.id_hewan = %s 
-                    AND a.tgl_mulai_adopsi = %s
-                    GROUP BY h.name, is_active
-                """, [adopter_id, id_hewan, tgl_mulai_adopsi])
-                
-                result = cursor.fetchone()
-                if not result:
-                    messages.error(request, 'Data adopsi tidak ditemukan!')
-                    return redirect(f'/adopsi/adopter/{adopter_id}/riwayat/')
-                
-                count, nama_hewan, is_active = result
-                
-                if is_active:
-                    messages.error(request, 'Tidak dapat menghapus adopsi yang masih aktif!')
-                    return redirect(f'/adopsi/adopter/{adopter_id}/riwayat/')
-                
-                cursor.execute("""
-                    DELETE FROM adopsi 
-                    WHERE id_adopter = %s 
-                    AND id_hewan = %s 
-                    AND tgl_mulai_adopsi = %s
-                """, [adopter_id, id_hewan, tgl_mulai_adopsi])
-                
-                if cursor.rowcount > 0:
-                    cursor.execute("""
-                        UPDATE adopter 
-                        SET total_kontribusi = (
-                            SELECT COALESCE(SUM(kontribusi_finansial), 0)
-                            FROM adopsi 
-                            WHERE id_adopter = %s 
-                            AND status_pembayaran = 'Lunas'
-                        )
-                        WHERE id_adopter = %s
-                    """, [adopter_id, adopter_id])
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM top5_adopter()")
+            
+            top_adopters = []
+            for row in cursor.fetchall():
+                adopter = dict(zip([column[0] for column in cursor.description], row))
+                if isinstance(adopter['total_kontribusi'], Decimal):
+                    adopter['total_kontribusi'] = float(adopter['total_kontribusi'])
                     
-                    messages.success(request, f'Riwayat adopsi {nama_hewan} berhasil dihapus!')
-                else:
-                    messages.error(request, 'Gagal menghapus riwayat adopsi!')
-                    
+                adopter['total_kontribusi_formatted'] = f"Rp {adopter['total_kontribusi']:,.0f}"
+                
+                top_adopters.append(adopter)
+            
+            cursor.execute("SELECT update_adopter_ranking()")
+            ranking_result = cursor.fetchone()
+            ranking_message = ranking_result[0] if ranking_result else "Ranking berhasil diperbarui"
+            
+            notices = capture_database_notices(cursor)
+            trigger_notices = []
+            for notice in notices:
+                if 'SUKSES:' in notice:
+                    clean_message = notice.replace('SUKSES:', '').strip()
+                    trigger_notices.append(clean_message)
+            
+            return JsonResponse({
+                'success': True,
+                'data': {
+                    'top_adopters': top_adopters,
+                    'ranking_message': ranking_message,
+                    'trigger_notices': trigger_notices,
+                    'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    'total_adopters': len(top_adopters)
+                }
+            })
+            
     except Exception as e:
-        logger.error(f"Error in delete_riwayat_adopsi: {str(e)}")
-        messages.error(request, 'Terjadi kesalahan saat menghapus riwayat adopsi!')
-    
-    return redirect(f'/adopsi/adopter/{adopter_id}/riwayat/')
-
+        logger.error(f"Error in get_current_ranking: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'message': f'Terjadi kesalahan saat mengambil ranking: {str(e)}'
+        })
+        
 def capture_database_notices(cursor):
     notices = []
     try:
@@ -1696,8 +1927,26 @@ def capture_database_notices(cursor):
                     notices.append(notice.strip())
                 else:
                     notices.append(str(notice).strip())
+        
+        try:
+            raw_conn = cursor.db.connection.connection
+            if hasattr(raw_conn, 'notices') and raw_conn.notices:
+                while raw_conn.notices:
+                    notice = raw_conn.notices.pop(0)
+                    if hasattr(notice, 'message'):
+                        notices.append(notice.message.strip())
+                    else:
+                        notices.append(str(notice).strip())
+        except:
+            pass
+        
+        try:
+            if hasattr(cursor.db.connection, 'connection') and hasattr(cursor.db.connection.connection, 'notices'):
+                cursor.db.connection.connection.notices.clear()
+        except:
+            pass
             
     except Exception as e:
-        print(f"Error capturing notices: {e}")
+        logger.error(f"Error capturing notices: {e}")
         
     return notices

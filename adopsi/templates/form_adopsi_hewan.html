@@ -116,6 +116,7 @@
         .readonly-field {
             background-color: #f8fafc !important;
             cursor: not-allowed;
+            border-color: #d1d5db !important;
         }
         
         .info-message {
@@ -123,6 +124,45 @@
             color: #2563eb;
             margin-top: 0.25rem;
             font-style: italic;
+            display: flex;
+            align-items: center;
+        }
+        
+        .info-message i {
+            margin-right: 0.25rem;
+        }
+        
+        .lock-message {
+            font-size: 0.875rem;
+            color: #059669;
+            margin-top: 0.5rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            background-color: #d1fae5;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .lock-message i {
+            margin-right: 0.25rem;
+        }
+        
+        input[type="radio"]:disabled + span {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .adopter-type-section {
+            transition: all 0.3s ease;
+        }
+        
+        .adopter-type-section.locked {
+            background-color: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 0.5rem;
+            padding: 1rem;
         }
 
         /* Validation Notice Styles */
@@ -191,7 +231,7 @@
                     placeholder="Masukkan username pengunjung">
             </div>
             
-            <div class="mb-6">
+            <div class="mb-6 adopter-type-section">
                 <label class="block text-sm font-medium text-[#008000]/80 mb-2">Calon Adopter akan mengadopsi satwa sebagai</label>
                 <div class="flex space-x-6">
                     <label class="flex items-center cursor-pointer">
@@ -419,6 +459,376 @@
             return '🐾';
         }
 
+        function verifyAccount() {
+            const username = document.getElementById('adopter_username').value.trim();
+            const adopterTypeRadios = document.querySelectorAll('input[name="adopter_type"]');
+            const selectedType = document.querySelector('input[name="adopter_type"]:checked')?.value;
+            
+            if (!username) {
+                showError('Username harus diisi!', 'step1');
+                return;
+            }
+            
+            hideError('step1');
+            
+            console.log('Verifying account for:', username);
+            
+            const formData = new FormData();
+            formData.append('username', username);
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+            
+            fetch('{% url "adopsi:verify_adopter_account" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    const userData = data.data;
+                    
+                    if (userData.is_adopter) {
+                        handleExistingAdopter(userData, username);
+                    } else {
+                        handleNewAdopter(userData, selectedType, username);
+                    }
+                    
+                    document.getElementById('step1').style.display = 'none';
+                    document.getElementById('step2').classList.remove('hidden');
+                    document.getElementById('step2').style.display = 'block';
+                    
+                    console.log('Successfully moved to step 2');
+                } else {
+                    showError(data.message, 'step1');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('Terjadi kesalahan saat verifikasi akun!', 'step1');
+            });
+        }
+
+        function handleExistingAdopter(userData, username) {
+            console.log('Handling existing adopter:', userData);
+            
+            fillBasicUserData(userData);
+            
+            document.getElementById('form_adopter_username').value = username;
+            document.getElementById('form_tipe_adopter').value = userData.adopter_type;
+            
+            const adopterTypeRadios = document.querySelectorAll('input[name="adopter_type"]');
+            adopterTypeRadios.forEach(radio => {
+                if (radio.value === userData.adopter_type) {
+                    radio.checked = true;
+                }
+                radio.disabled = true;
+            });
+            
+            const typeSection = document.querySelector('input[name="adopter_type"]').closest('.mb-6');
+            let lockMessage = typeSection.querySelector('.lock-message');
+            if (!lockMessage) {
+                lockMessage = document.createElement('div');
+                lockMessage.className = 'lock-message text-sm text-green-600 mt-2 font-medium bg-green-50 p-2 rounded border border-green-200';
+                lockMessage.innerHTML = `🔒 Tipe adopter dikunci sesuai data yang sudah terdaftar`;
+                typeSection.appendChild(lockMessage);
+            }
+            
+            const individualSection = document.getElementById('individual_section');
+            const organizationSection = document.getElementById('organization_section');
+            
+            if (userData.adopter_type === 'individu') {
+                individualSection.classList.remove('hidden');
+                organizationSection.classList.add('hidden');
+                
+                const nikField = document.getElementById('nik');
+                nikField.value = userData.existing_nik;
+                nikField.readOnly = true;
+                nikField.classList.add('readonly-field');
+                
+                const nikContainer = nikField.parentElement;
+                let infoDiv = nikContainer.querySelector('.info-message');
+                if (!infoDiv) {
+                    infoDiv = document.createElement('div');
+                    infoDiv.className = 'info-message text-sm text-blue-600 mt-1';
+                    infoDiv.textContent = 'NIK sudah terdaftar sebagai adopter individu';
+                    nikContainer.appendChild(infoDiv);
+                }
+                
+            } else if (userData.adopter_type === 'organisasi') {
+                individualSection.classList.add('hidden');
+                organizationSection.classList.remove('hidden');
+                
+                const nppField = document.getElementById('npp');
+                const namaOrganisasiField = document.getElementById('nama_organisasi');
+                
+                nppField.value = userData.existing_npp;
+                nppField.readOnly = true;
+                nppField.classList.add('readonly-field');
+                
+                namaOrganisasiField.value = userData.existing_org_name;
+                namaOrganisasiField.readOnly = true;
+                namaOrganisasiField.classList.add('readonly-field');
+                
+                const nppContainer = nppField.parentElement;
+                const orgContainer = namaOrganisasiField.parentElement;
+                
+                let nppInfoDiv = nppContainer.querySelector('.info-message');
+                if (!nppInfoDiv) {
+                    nppInfoDiv = document.createElement('div');
+                    nppInfoDiv.className = 'info-message text-sm text-blue-600 mt-1';
+                    nppInfoDiv.textContent = 'NPP sudah terdaftar sebagai adopter organisasi';
+                    nppContainer.appendChild(nppInfoDiv);
+                }
+                
+                let orgInfoDiv = orgContainer.querySelector('.info-message');
+                if (!orgInfoDiv) {
+                    orgInfoDiv = document.createElement('div');
+                    orgInfoDiv.className = 'info-message text-sm text-blue-600 mt-1';
+                    orgInfoDiv.textContent = 'Nama organisasi sudah terdaftar';
+                    orgContainer.appendChild(orgInfoDiv);
+                }
+            }
+        }
+
+        function handleNewAdopter(userData, selectedType, username) {
+            console.log('Handling new adopter:', userData, 'selected type:', selectedType);
+            
+            fillBasicUserData(userData);
+            
+            document.getElementById('form_adopter_username').value = username;
+            document.getElementById('form_tipe_adopter').value = selectedType;
+            
+            const adopterTypeRadios = document.querySelectorAll('input[name="adopter_type"]');
+            adopterTypeRadios.forEach(radio => {
+                radio.disabled = false;
+            });
+            
+            const lockMessage = document.querySelector('.lock-message');
+            if (lockMessage) {
+                lockMessage.remove();
+            }
+            
+            showAdopterTypeSection(selectedType);
+            
+            adopterTypeRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const newType = this.value;
+                    document.getElementById('form_tipe_adopter').value = newType;
+                    showAdopterTypeSection(newType);
+                });
+            });
+        }
+
+        function fillBasicUserData(userData) {
+            const namaLengkap = `${userData.nama_depan || ''} ${userData.nama_tengah ? userData.nama_tengah + ' ' : ''}${userData.nama_belakang || ''}`.trim();
+            document.getElementById('display_nama').value = namaLengkap;
+            document.getElementById('display_alamat').value = userData.alamat || '';
+            document.getElementById('display_telepon').value = userData.no_telepon || '';
+        }
+
+        function showAdopterTypeSection(type) {
+            const individualSection = document.getElementById('individual_section');
+            const organizationSection = document.getElementById('organization_section');
+            const nikField = document.getElementById('nik');
+            const nppField = document.getElementById('npp');
+            const namaOrganisasiField = document.getElementById('nama_organisasi');
+            
+            if (type === 'individu') {
+                individualSection.classList.remove('hidden');
+                organizationSection.classList.add('hidden');
+                
+                nikField.value = '';
+                nikField.readOnly = false;
+                nikField.classList.remove('readonly-field');
+                nikField.required = true;
+                
+                if (nppField) nppField.required = false;
+                if (namaOrganisasiField) namaOrganisasiField.required = false;
+                
+            } else if (type === 'organisasi') {
+                individualSection.classList.add('hidden');
+                organizationSection.classList.remove('hidden');
+                
+                nppField.value = '';
+                nppField.readOnly = false;
+                nppField.classList.remove('readonly-field');
+                nppField.required = true;
+                
+                namaOrganisasiField.value = '';
+                namaOrganisasiField.readOnly = false;
+                namaOrganisasiField.classList.remove('readonly-field');
+                namaOrganisasiField.required = true;
+                
+                if (nikField) nikField.required = false;
+            }
+            
+            const infoMessages = document.querySelectorAll('.info-message');
+            infoMessages.forEach(msg => {
+                if (!msg.textContent.includes('sudah terdaftar')) {
+                    msg.remove();
+                }
+            });
+        }
+
+        function validateForm() {
+            const nominalInput = document.getElementById('nominal');
+            const periodeSelect = document.getElementById('periode');
+            
+            const nominalValue = parseInt(nominalInput.value) || 0;
+            if (nominalValue < 100000) {
+                showError('Kontribusi minimal adalah Rp 100.000!', 'step2');
+                nominalInput.focus();
+                return false;
+            }
+            
+            if (!periodeSelect.value) {
+                showError('Periode adopsi harus dipilih!', 'step2');
+                periodeSelect.focus();
+                return false;
+            }
+            
+            const adopterType = document.getElementById('form_tipe_adopter').value;
+            
+            if (adopterType === 'individu') {
+                const nikInput = document.getElementById('nik');
+                if (!nikInput.readOnly) {
+                    if (!nikInput.value.trim()) {
+                        showError('NIK harus diisi!', 'step2');
+                        nikInput.focus();
+                        return false;
+                    }
+                    
+                    if (nikInput.value.length !== 16) {
+                        showError('NIK harus terdiri dari 16 digit!', 'step2');
+                        nikInput.focus();
+                        return false;
+                    }
+                }
+            } else if (adopterType === 'organisasi') {
+                const nppInput = document.getElementById('npp');
+                const namaOrganisasiInput = document.getElementById('nama_organisasi');
+                
+                if (!nppInput.readOnly) {
+                    if (!nppInput.value.trim()) {
+                        showError('NPP harus diisi!', 'step2');
+                        nppInput.focus();
+                        return false;
+                    }
+                    
+                    if (nppInput.value.length !== 8) {
+                        showError('NPP harus terdiri dari 8 digit!', 'step2');
+                        nppInput.focus();
+                        return false;
+                    }
+                }
+                
+                if (!namaOrganisasiInput.readOnly) {
+                    if (!namaOrganisasiInput.value.trim()) {
+                        showError('Nama organisasi harus diisi!', 'step2');
+                        namaOrganisasiInput.focus();
+                        return false;
+                    }
+                }
+            }
+            
+            hideError('step2');
+            return true;
+        }
+
+        function backToStep1() {
+            document.getElementById('step2').style.display = 'none';
+            document.getElementById('step1').style.display = 'block';
+            
+            document.getElementById('adopter_username').value = '';
+            document.getElementById('display_nama').value = '';
+            document.getElementById('display_alamat').value = '';
+            document.getElementById('display_telepon').value = '';
+            
+            const adopterTypeRadios = document.querySelectorAll('input[name="adopter_type"]');
+            adopterTypeRadios.forEach(radio => {
+                radio.disabled = false;
+                if (radio.value === 'individu') {
+                    radio.checked = true;
+                }
+            });
+            
+            const nikField = document.getElementById('nik');
+            const namaOrganisasiField = document.getElementById('nama_organisasi');
+            const nppField = document.getElementById('npp');
+            
+            if (nikField) {
+                nikField.value = '';
+                nikField.readOnly = false;
+                nikField.classList.remove('readonly-field');
+                nikField.required = false;
+            }
+            if (namaOrganisasiField) {
+                namaOrganisasiField.value = '';
+                namaOrganisasiField.readOnly = false;
+                namaOrganisasiField.classList.remove('readonly-field');
+                namaOrganisasiField.required = false;
+            }
+            if (nppField) {
+                nppField.value = '';
+                nppField.readOnly = false;
+                nppField.classList.remove('readonly-field');
+                nppField.required = false;
+            }
+            
+            document.getElementById('individual_section').classList.add('hidden');
+            document.getElementById('organization_section').classList.add('hidden');
+            
+            const infoMessages = document.querySelectorAll('.info-message, .lock-message');
+            infoMessages.forEach(msg => msg.remove());
+            
+            const periodNotices = document.querySelectorAll('.period-notice');
+            periodNotices.forEach(notice => notice.remove());
+            
+            document.getElementById('nominal').value = '';
+            document.getElementById('periode').value = '';
+            
+            hideError('step1');
+            hideError('step2');
+        }
+
+        function showError(message, step = 'step2') {
+            const errorDiv = step === 'step1' ? 
+                document.getElementById('step1ErrorMessage') : 
+                document.getElementById('errorMessage');
+                
+            if (errorDiv) {
+                errorDiv.textContent = message;
+                errorDiv.classList.remove('hidden');
+                console.log('Showing error:', message, 'in', step);
+            } else {
+                alert(message);
+            }
+        }
+
+        function hideError(step = 'step2') {
+            const errorDiv = step === 'step1' ? 
+                document.getElementById('step1ErrorMessage') : 
+                document.getElementById('errorMessage');
+                
+            if (errorDiv) {
+                errorDiv.classList.add('hidden');
+            }
+        }
+
+        function handleImageLoad(img) {
+            img.classList.add('loaded');
+        }
+
+        function handleImageError(img) {
+            img.style.display = 'none';
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             {% if selected_animal %}
             const animalName = "{{ selected_animal.name|lower }}";
@@ -475,279 +885,31 @@
             
             if (nikInput) {
                 nikInput.addEventListener('input', function(e) {
-                    this.value = this.value.replace(/[^0-9]/g, '');
+                    if (!this.readOnly) {
+                        this.value = this.value.replace(/[^0-9]/g, '');
+                    }
                 });
             }
             
             if (nppInput) {
                 nppInput.addEventListener('input', function(e) {
-                    this.value = this.value.replace(/[^0-9]/g, '');
+                    if (!this.readOnly) {
+                        this.value = this.value.replace(/[^0-9]/g, '');
+                    }
                 });
             }
-        });
-
-        function validateForm() {
-            const nominalInput = document.getElementById('nominal');
-            const periodeSelect = document.getElementById('periode');
             
-            const nominalValue = parseInt(nominalInput.value) || 0;
-            if (nominalValue < 100000) {
-                showError('Kontribusi minimal adalah Rp 100.000!', 'step2');
-                nominalInput.focus();
-                return false;
-            }
-            
-            if (!periodeSelect.value) {
-                showError('Periode adopsi harus dipilih!', 'step2');
-                periodeSelect.focus();
-                return false;
-            }
-            
-            const adopterType = document.getElementById('form_tipe_adopter').value;
-            
-            if (adopterType === 'individu') {
-                const nikInput = document.getElementById('nik');
-                if (!nikInput.readOnly && !nikInput.value.trim()) {
-                    showError('NIK harus diisi!', 'step2');
-                    nikInput.focus();
-                    return false;
-                }
-                
-                if (!nikInput.readOnly && nikInput.value.length !== 16) {
-                    showError('NIK harus terdiri dari 16 digit!', 'step2');
-                    nikInput.focus();
-                    return false;
-                }
-            } else if (adopterType === 'organisasi') {
-                const nppInput = document.getElementById('npp');
-                const namaOrganisasiInput = document.getElementById('nama_organisasi');
-                
-                if (!nppInput.readOnly && !nppInput.value.trim()) {
-                    showError('NPP harus diisi!', 'step2');
-                    nppInput.focus();
-                    return false;
-                }
-                
-                if (!nppInput.readOnly && nppInput.value.length !== 8) {
-                    showError('NPP harus terdiri dari 8 digit!', 'step2');
-                    nppInput.focus();
-                    return false;
-                }
-                
-                if (!namaOrganisasiInput.readOnly && !namaOrganisasiInput.value.trim()) {
-                    showError('Nama organisasi harus diisi!', 'step2');
-                    namaOrganisasiInput.focus();
-                    return false;
-                }
-            }
-            
-            hideError('step2');
-            return true;
-        }
-
-        function verifyAccount() {
-            const username = document.getElementById('adopter_username').value.trim();
-            const adopterType = document.querySelector('input[name="adopter_type"]:checked').value;
-            
-            if (!username) {
-                showError('Username harus diisi!', 'step1');
-                return;
-            }
-            
-            hideError('step1');
-            
-            console.log('Verifying account for:', username, 'as', adopterType);
-            
-            const formData = new FormData();
-            formData.append('username', username);
-            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
-            
-            fetch('{% url "adopsi:verify_adopter_account" %}', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                }
-            })
-            .then(response => {
-                console.log('Response status:', response.status);
-                return response.json();
-            })
-            .then(data => {
-                console.log('Response data:', data);
-                if (data.success) {
-                    fillUserData(data.data, adopterType);
-                    
-                    document.getElementById('form_adopter_username').value = username;
-                    document.getElementById('form_tipe_adopter').value = adopterType;
-                    
-                    document.getElementById('step1').style.display = 'none';
-                    document.getElementById('step2').classList.remove('hidden');
-                    document.getElementById('step2').style.display = 'block';
-                    
-                    console.log('Successfully moved to step 2');
-                } else {
-                    showError(data.message, 'step1');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showError('Terjadi kesalahan saat verifikasi akun!', 'step1');
+            const adopterTypeRadios = document.querySelectorAll('input[name="adopter_type"]');
+            adopterTypeRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (!this.disabled) {
+                        const selectedType = this.value;
+                        document.getElementById('form_tipe_adopter').value = selectedType;
+                        showAdopterTypeSection(selectedType);
+                    }
+                });
             });
-        }
-
-        function fillUserData(userData, adopterType) {
-            console.log('Filling user data:', userData, 'for type:', adopterType);
-            
-            const namaLengkap = `${userData.nama_depan || ''} ${userData.nama_tengah ? userData.nama_tengah + ' ' : ''}${userData.nama_belakang || ''}`.trim();
-            document.getElementById('display_nama').value = namaLengkap;
-            document.getElementById('display_alamat').value = userData.alamat || '';
-            document.getElementById('display_telepon').value = userData.no_telepon || '';
-            
-            const individualSection = document.getElementById('individual_section');
-            const organizationSection = document.getElementById('organization_section');
-            const nikField = document.getElementById('nik');
-            const namaOrganisasiField = document.getElementById('nama_organisasi');
-            const nppField = document.getElementById('npp');
-            
-            if (adopterType === 'individu') {
-                individualSection.classList.remove('hidden');
-                organizationSection.classList.add('hidden');
-                
-                if (userData.existing_nik) {
-                    nikField.value = userData.existing_nik;
-                    nikField.readOnly = true;
-                    nikField.classList.add('readonly-field');
-                    
-                    const nikContainer = nikField.parentElement;
-                    let infoDiv = nikContainer.querySelector('.info-message');
-                    if (!infoDiv) {
-                        infoDiv = document.createElement('div');
-                        infoDiv.className = 'info-message text-sm text-blue-600 mt-1';
-                        nikContainer.appendChild(infoDiv);
-                    }
-                } else {
-                    nikField.readOnly = false;
-                    nikField.classList.remove('readonly-field');
-                    nikField.required = true;
-                }
-                
-                if (namaOrganisasiField) namaOrganisasiField.required = false;
-                if (nppField) nppField.required = false;
-                
-                console.log('Showing individual section, existing NIK:', userData.existing_nik);
-            } else {
-                individualSection.classList.add('hidden');
-                organizationSection.classList.remove('hidden');
-                
-                if (userData.existing_npp) {
-                    nppField.value = userData.existing_npp;
-                    nppField.readOnly = true;
-                    nppField.classList.add('readonly-field');
-                    
-                    namaOrganisasiField.value = userData.existing_org_name;
-                    namaOrganisasiField.readOnly = true;
-                    namaOrganisasiField.classList.add('readonly-field');
-                    
-                    const nppContainer = nppField.parentElement;
-                    let nppInfoDiv = nppContainer.querySelector('.info-message');
-                    if (!nppInfoDiv) {
-                        nppInfoDiv = document.createElement('div');
-                        nppInfoDiv.className = 'info-message text-sm text-blue-600 mt-1';
-                        nppInfoDiv.textContent = 'NPP sudah terdaftar sebagai adopter organisasi';
-                        nppContainer.appendChild(nppInfoDiv);
-                    }
-                } else {
-                    nppField.readOnly = false;
-                    nppField.classList.remove('readonly-field');
-                    nppField.required = true;
-                    
-                    namaOrganisasiField.readOnly = false;
-                    namaOrganisasiField.classList.remove('readonly-field');
-                    namaOrganisasiField.required = true;
-                }
-                
-                if (nikField) nikField.required = false;
-                
-                console.log('Showing organization section, existing NPP:', userData.existing_npp);
-            }
-        }
-
-        function backToStep1() {
-            document.getElementById('step2').style.display = 'none';
-            document.getElementById('step1').style.display = 'block';
-            
-            document.getElementById('adopter_username').value = '';
-            document.getElementById('display_nama').value = '';
-            document.getElementById('display_alamat').value = '';
-            document.getElementById('display_telepon').value = '';
-            
-            const nikField = document.getElementById('nik');
-            const namaOrganisasiField = document.getElementById('nama_organisasi');
-            const nppField = document.getElementById('npp');
-            
-            if (nikField) {
-                nikField.value = '';
-                nikField.readOnly = false;
-                nikField.classList.remove('readonly-field');
-            }
-            if (namaOrganisasiField) {
-                namaOrganisasiField.value = '';
-                namaOrganisasiField.readOnly = false;
-                namaOrganisasiField.classList.remove('readonly-field');
-            }
-            if (nppField) {
-                nppField.value = '';
-                nppField.readOnly = false;
-                nppField.classList.remove('readonly-field');
-            }
-            
-            const infoMessages = document.querySelectorAll('.info-message');
-            infoMessages.forEach(msg => msg.remove());
-            
-            const periodNotices = document.querySelectorAll('.period-notice');
-            periodNotices.forEach(notice => notice.remove());
-            
-            document.getElementById('nominal').value = '';
-            document.getElementById('periode').value = '';
-            
-            hideError('step1');
-            hideError('step2');
-        }
-
-
-
-        function showError(message, step = 'step2') {
-            const errorDiv = step === 'step1' ? 
-                document.getElementById('step1ErrorMessage') : 
-                document.getElementById('errorMessage');
-                
-            if (errorDiv) {
-                errorDiv.textContent = message;
-                errorDiv.classList.remove('hidden');
-                console.log('Showing error:', message, 'in', step);
-            } else {
-                alert(message);
-            }
-        }
-
-        function hideError(step = 'step2') {
-            const errorDiv = step === 'step1' ? 
-                document.getElementById('step1ErrorMessage') : 
-                document.getElementById('errorMessage');
-                
-            if (errorDiv) {
-                errorDiv.classList.add('hidden');
-            }
-        }
-
-        function handleImageLoad(img) {
-            img.classList.add('loaded');
-        }
-
-        function handleImageError(img) {
-            img.style.display = 'none';
-        }
+        });
 
         setTimeout(function() {
             const messages = document.querySelectorAll('.alert');

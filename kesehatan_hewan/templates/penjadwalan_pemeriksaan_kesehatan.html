@@ -35,65 +35,161 @@
     .table-hover tr:hover {
       background-color: rgba(0, 128, 0, 0.05);
     }
+
+    .toast-animation {
+      animation: slideIn 0.3s, fadeOut 0.5s 1.5s;
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+
+    .step-card {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border-left: 4px solid #008000;
+    }
+
+    .step-number {
+      background: #008000;
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin-right: 12px;
+    }
   </style>
 {% endblock meta %}
 
 {% block content %}
-{% include 'navbar/dokter.html' %}
   <div class="bg-[#e8f4ea] min-h-screen flex flex-col items-center p-8 font-[Poppins]">
 
-    <div class="card p-8 rounded-2xl shadow-lg border border-[#c8e1cc] w-full max-w-3xl">
+    <div class="card p-8 rounded-2xl shadow-lg border border-[#c8e1cc] w-full max-w-5xl">
       <div class="mb-6">
         <h1 class="text-3xl font-bold text-center text-[#008000] mb-2">JADWAL PEMERIKSAAN KESEHATAN</h1>
-        <p class="text-center text-[#008000]/70">Sistem Informasi Zoo Pintar</p>
+        <p class="text-center text-[#008000]/70">{{ animal_name }}</p>
       </div>
 
-      <div class="bg-white/70 rounded-xl p-6 mb-6 shadow-sm">
+      <!-- Step 1: Set Frequency -->
+      <div class="step-card p-6 rounded-xl mb-6 shadow-sm">
+        <div class="flex items-center mb-4">
+          <div class="step-number">1</div>
+          <h2 class="text-xl font-bold text-[#008000]">Atur Frekuensi Pemeriksaan</h2>
+        </div>
+        
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-          <p class="text-gray-700">
-            Frekuensi Pemeriksaan Rutin: 
-            <span class="font-semibold text-[#008000]">3 bulan sekali</span>
-          </p>
+          <div class="text-gray-700">
+            <p class="mb-2">Frekuensi Pemeriksaan Rutin Saat Ini:</p>
+            <span class="text-2xl font-bold text-[#008000]">{{ frequency }} bulan sekali</span>
+            <p class="text-sm text-gray-500 mt-1">Jadwal otomatis akan dibuat berdasarkan frekuensi ini</p>
+          </div>
           <button 
-            onclick=""
-            class="btn-secondary px-6 py-2 bg-white text-[#008000] font-medium rounded-lg border border-[#008000] hover:bg-[#e0f0e3] focus:outline-none focus:ring-2 focus:ring-[#008000] focus:ring-opacity-50 whitespace-nowrap">
-            Edit
+            onclick="openFrequencyModal()"
+            class="btn-secondary px-6 py-3 bg-white text-[#008000] font-medium rounded-lg border border-[#008000] hover:bg-[#e0f0e3] focus:outline-none focus:ring-2 focus:ring-[#008000] focus:ring-opacity-50 whitespace-nowrap">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+            Ubah Frekuensi
           </button>
         </div>
       </div>
-      <button 
-            onclick="toggleModal(true)"
-            class="btn-primary mb-3 px-6 py-2 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] focus:outline-none focus:ring-2 focus:ring-[#008000] focus:ring-opacity-50 whitespace-nowrap">
-            + Tambah Jadwal Pemeriksaan
-      </button>
 
-      <div class="overflow-hidden rounded-xl shadow">
-        <table class="table-auto w-full border-collapse bg-white rounded-xl overflow-hidden table-hover">
-          <thead>
-            <tr class="text-xs text-[#006400] uppercase bg-[#d2e7d6]">
-              <th class="px-6 py-4 text-center">Tanggal Pemeriksaan Selanjutnya</th>
-              <th class="px-6 py-4 text-center">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="border-b border-[#e0f0e3]">
-              <td class="px-6 py-4 text-center">2025-03-20</td>
-              <td class="px-6 py-4 text-center">
-                <button 
-                  onclick="toggleModal(true)"
-                  class="btn-secondary px-4 py-2 bg-white text-[#008000] font-medium rounded-lg border border-[#008000] hover:bg-[#e0f0e3] focus:outline-none focus:ring-2 focus:ring-[#008000] focus:ring-opacity-50 whitespace-nowrap">
-                  Edit
-                </button>
-                <button 
-                  onclick="toggleModal(true)"
-                  class="btn-secondary px-4 py-2 bg-red-600 text-white font-medium rounded-lg border border-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 whitespace-nowrap">
-                  Hapus
-                </button>
-              </td>
-            </tr>
-            <!-- Baris tambahan nanti -->
-          </tbody>
-        </table>
+      <!-- Step 2: Add Schedule -->
+      <div class="step-card p-6 rounded-xl mb-6 shadow-sm">
+        <div class="flex items-center mb-4">
+          <div class="step-number">2</div>
+          <h2 class="text-xl font-bold text-[#008000]">Tambah Jadwal Pemeriksaan</h2>
+        </div>
+        
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div class="text-gray-700">
+            <p class="mb-1">Tambahkan jadwal pemeriksaan pertama</p>
+            <p class="text-sm text-gray-500">Sistem akan otomatis membuat jadwal berikutnya dalam tahun yang sama</p>
+          </div>
+          <button 
+            onclick="openAddModal()"
+            class="btn-primary px-6 py-3 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] focus:outline-none focus:ring-2 focus:ring-[#008000] focus:ring-opacity-50 whitespace-nowrap">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            Tambah Jadwal
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 3: Existing Schedules -->
+      <div class="step-card p-6 rounded-xl shadow-sm">
+        <div class="flex items-center mb-4">
+          <div class="step-number">3</div>
+          <h2 class="text-xl font-bold text-[#008000]">Jadwal Pemeriksaan yang Terdaftar</h2>
+        </div>
+
+        <div class="overflow-hidden rounded-xl shadow">
+          <table class="table-auto w-full border-collapse bg-white rounded-xl overflow-hidden table-hover">
+            <thead>
+              <tr class="text-xs text-[#006400] uppercase bg-[#d2e7d6]">
+                <th class="px-6 py-4 text-center">No</th>
+                <th class="px-6 py-4 text-center">Tanggal Pemeriksaan</th>
+                <th class="px-6 py-4 text-center">Frekuensi</th>
+                <th class="px-6 py-4 text-center">Status</th>
+                <th class="px-6 py-4 text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for schedule in schedules %}
+              <tr class="border-b border-[#e0f0e3]">
+                <td class="px-6 py-4 text-center">{{ forloop.counter }}</td>
+                <td class="px-6 py-4 text-center">{{ schedule.tgl_pemeriksaan_selanjutnya|date:"d M Y" }}</td>
+                <td class="px-6 py-4 text-center">{{ schedule.freq_pemeriksaan_rutin }} bulan</td>
+                <td class="px-6 py-4 text-center">
+                  {% if schedule.tgl_pemeriksaan_selanjutnya < today %}
+                    <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">Terlewat</span>
+                  {% elif schedule.tgl_pemeriksaan_selanjutnya == today %}
+                    <span class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Hari Ini</span>
+                  {% else %}
+                    <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Terjadwal</span>
+                  {% endif %}
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <div class="flex justify-center gap-2">
+                    <button 
+                      onclick="openEditModal('{{ schedule.tgl_pemeriksaan_selanjutnya|date:"Y-m-d"|escapejs }}')"
+                      class="btn-secondary px-3 py-1 bg-white text-[#008000] text-xs font-medium rounded-lg border border-[#008000] hover:bg-[#e0f0e3] focus:outline-none focus:ring-2 focus:ring-[#008000] focus:ring-opacity-50">
+                      Edit
+                    </button>
+                    <button 
+                      onclick="openDeleteModal('{{ schedule.tgl_pemeriksaan_selanjutnya|date:"Y-m-d"|escapejs }}')"
+                      class="btn-secondary px-3 py-1 bg-red-600 text-white text-xs font-medium rounded-lg border border-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">
+                      Hapus
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                  <div class="flex flex-col items-center">
+                    <svg class="w-12 h-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <p>Belum ada jadwal pemeriksaan untuk hewan ini</p>
+                    <p class="text-sm">Tambahkan jadwal pertama untuk memulai</p>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
     
@@ -101,27 +197,35 @@
       © 2025 SIZOPI. All rights reserved.
     </p>
 
-    <!-- Modal -->
-    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <!-- Modal Set Frequency -->
+    <div id="frequencyModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
       <div class="bg-white p-8 rounded-2xl w-full max-w-md shadow-xl border-2 border-[#c8e1cc]">
-        <h2 class="text-2xl font-bold text-[#008000] mb-6 text-center">TAMBAH JADWAL</h2>
+        <h2 class="text-2xl font-bold text-[#008000] mb-6 text-center">ATUR FREKUENSI PEMERIKSAAN</h2>
 
-        <form onsubmit="addSchedule(event)" class="space-y-4">
+        <form method="post" class="space-y-4">
           {% csrf_token %}
+          <input type="hidden" name="action" value="set_frequency">
           <div>
-            <label for="tanggal" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pemeriksaan Selanjutnya:</label>
-            <input 
-              type="date" 
-              id="tanggal" 
-              name="tanggal" 
-              class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition"
-              required>
+            <label for="new_frequency" class="block text-sm font-medium text-gray-700 mb-1">Frekuensi pemeriksaan rutin:</label>
+            <div class="flex items-center gap-2">
+              <input 
+                type="number" 
+                id="new_frequency"
+                name="new_frequency" 
+                min="1" 
+                max="12" 
+                value="{{ frequency }}"
+                class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition"
+                required>
+              <span class="text-gray-600">bulan sekali</span>
+            </div>
+            <p class="text-sm text-gray-500 mt-2">Jadwal otomatis akan dibuat berdasarkan frekuensi ini</p>
           </div>
 
           <div class="flex justify-end gap-3 pt-4">
             <button 
               type="button" 
-              onclick="toggleModal(false)" 
+              onclick="closeModal('frequencyModal')" 
               class="btn-secondary px-6 py-2 bg-white text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50">
               Batal
             </button>
@@ -134,42 +238,175 @@
         </form>
       </div>
     </div>
+
+    <!-- Modal Add Schedule -->
+    <div id="addModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+      <div class="bg-white p-8 rounded-2xl w-full max-w-md shadow-xl border-2 border-[#c8e1cc]">
+        <h2 class="text-2xl font-bold text-[#008000] mb-6 text-center">TAMBAH JADWAL PEMERIKSAAN</h2>
+
+        <form method="post" class="space-y-4">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="add_schedule">
+          <div>
+            <label for="tgl_pemeriksaan" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pemeriksaan:</label>
+            <input 
+              type="date" 
+              id="tgl_pemeriksaan"
+              name="tgl_pemeriksaan" 
+              class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition"
+              required>
+            <p class="text-sm text-gray-500 mt-2">
+              Sistem akan otomatis membuat jadwal berikutnya dengan interval {{ frequency }} bulan dalam tahun yang sama
+            </p>
+          </div>
+
+          <div class="flex justify-end gap-3 pt-4">
+            <button 
+              type="button" 
+              onclick="closeModal('addModal')" 
+              class="btn-secondary px-6 py-2 bg-white text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50">
+              Batal
+            </button>
+            <button 
+              type="submit" 
+              class="btn-primary px-6 py-2 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] focus:outline-none focus:ring-2 focus:ring-[#008000] focus:ring-opacity-50">
+              Simpan
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Edit Schedule -->
+    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+      <div class="bg-white p-8 rounded-2xl w-full max-w-md shadow-xl border-2 border-[#c8e1cc]">
+        <h2 class="text-2xl font-bold text-[#008000] mb-6 text-center">EDIT JADWAL</h2>
+
+        <form method="post" class="space-y-4">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="edit_schedule">
+          <input type="hidden" id="editOldDate" name="old_date">
+          <div>
+            <label for="editNewDate" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pemeriksaan Baru:</label>
+            <input 
+              type="date" 
+              id="editNewDate"
+              name="new_date" 
+              class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-[#008000] focus:border-[#008000] outline-none transition"
+              required>
+          </div>
+
+          <div class="flex justify-end gap-3 pt-4">
+            <button 
+              type="button" 
+              onclick="closeModal('editModal')" 
+              class="btn-secondary px-6 py-2 bg-white text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50">
+              Batal
+            </button>
+            <button 
+              type="submit" 
+              class="btn-primary px-6 py-2 bg-[#008000] text-white font-medium rounded-lg hover:bg-[#006400] focus:outline-none focus:ring-2 focus:ring-[#008000] focus:ring-opacity-50">
+              Simpan
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Delete -->
+    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+      <div class="bg-white p-8 rounded-2xl w-full max-w-md shadow-xl border-2 border-[#c8e1cc]">
+        <h2 class="text-2xl font-bold text-[#008000] mb-6 text-center">HAPUS JADWAL</h2>
+        <p class="text-gray-600 mb-6 text-center">Apakah anda yakin ingin menghapus jadwal pemeriksaan ini?</p>
+
+        <form method="post" class="space-y-4">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="delete_schedule">
+          <input type="hidden" id="deleteDate" name="date_to_delete">
+
+          <div class="flex justify-end gap-3 pt-4">
+            <button 
+              type="button" 
+              onclick="closeModal('deleteModal')" 
+              class="btn-secondary px-6 py-2 bg-white text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50">
+              Tidak
+            </button>
+            <button 
+              type="submit" 
+              class="btn-secondary px-6 py-2 bg-red-600 text-white font-medium rounded-lg border border-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">
+              Ya
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Toast Messages -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="fixed bottom-4 right-4 {% if message.tags == 'error' %}bg-red-600{% else %}bg-[#008000]{% endif %} text-white px-6 py-3 rounded-lg shadow-lg toast-animation flex items-center">
+          <span>{{ message }}</span>
+        </div>
+      {% endfor %}
+    {% endif %}
   </div>
 {% endblock content %}
 
 {% block scripts %}
 <script>
-  function toggleModal(show) {
-    const modal = document.getElementById('modal');
-    if (show) {
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-      document.body.classList.add('overflow-hidden');
-    } else {
-      modal.classList.remove('flex');
-      modal.classList.add('hidden');
-      document.body.classList.remove('overflow-hidden');
-    }
+  function openFrequencyModal() {
+    document.getElementById('frequencyModal').classList.remove('hidden');
+    document.getElementById('frequencyModal').classList.add('flex');
+    document.body.classList.add('overflow-hidden');
   }
 
-  function addSchedule(event) {
-    event.preventDefault(); 
-
-    const tanggalInput = document.getElementById('tanggal');
-    const tanggal = tanggalInput.value;
-
-    if (tanggal) {
-      const tbody = document.querySelector('table tbody');
-      const newRow = document.createElement('tr');
-      newRow.className = "border-b border-[#e0f0e3]";
-      newRow.innerHTML = `
-        <td class="px-6 py-4 text-center">${tanggal}</td>
-      `;
-      tbody.appendChild(newRow);
-
-      tanggalInput.value = ''; 
-      toggleModal(false); 
-    }
+  function openAddModal() {
+    document.getElementById('addModal').classList.remove('hidden');
+    document.getElementById('addModal').classList.add('flex');
+    document.body.classList.add('overflow-hidden');
+    
+    // Set minimum date to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    document.getElementById('tgl_pemeriksaan').min = tomorrow.toISOString().split('T')[0];
   }
+
+  function openEditModal(oldDate) {
+    document.getElementById('editModal').classList.remove('hidden');
+    document.getElementById('editModal').classList.add('flex');
+    document.body.classList.add('overflow-hidden');
+    
+    document.getElementById('editOldDate').value = oldDate;
+    document.getElementById('editNewDate').value = oldDate;
+    
+    // Set minimum date to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    document.getElementById('editNewDate').min = tomorrow.toISOString().split('T')[0];
+  }
+
+  function openDeleteModal(dateToDelete) {
+    document.getElementById('deleteModal').classList.remove('hidden');
+    document.getElementById('deleteModal').classList.add('flex');
+    document.body.classList.add('overflow-hidden');
+    
+    document.getElementById('deleteDate').value = dateToDelete;
+  }
+
+  function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('flex');
+    document.getElementById(modalId).classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+  }
+
+  // Auto-hide toast messages
+  document.addEventListener('DOMContentLoaded', function() {
+    const toasts = document.querySelectorAll('.toast-animation');
+    toasts.forEach(toast => {
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 4000);
+    });
+  });
 </script>
 {% endblock scripts %}

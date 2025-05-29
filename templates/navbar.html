@@ -232,7 +232,7 @@
             
                         {% elif request.session.user.role == 'pengunjung' %}
                             {% if is_adopter %}
-                                <a href="{% url 'adopsi:program_adopsi_pengunjung' %}" id="adopsi-link" class="navbar-item">Hewan Adopsi</a>
+                                <a href="{% url 'adopsi:adopsi_pengunjung' %}" id="adopsi-link" class="navbar-item">Hewan Adopsi</a>
                             {% else %}
                                 <a href="{% url 'data_satwa_habitat:list_habitat' %}" class="navbar-item">Informasi Kebun Binatang</a>
                                 <a href="/reservasi/pengunjung" class="navbar-item">Reservasi Tiket</a>

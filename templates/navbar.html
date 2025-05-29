@@ -136,10 +136,10 @@
             {% if request.session.user.role %}
                 <a href="/dashboard" class="navbar-item">Dashboard</a>
                     {% if request.session.user.role == 'dokter_hewan' %}
-                        <a href="/kesehatan/rekam-medis-hewan" class="navbar-item">Rekam Medis</a>
+                        <a href="/kesehatan/daftar-hewan" class="navbar-item">Rekam Medis</a>
         
                     {% elif request.session.user.role == 'penjaga_hewan' %}
-                        <a href="/kesehatan/pemberian-pakan" class="navbar-item">Catatan Perawatan Hewan</a>
+                        <a href="/kesehatan/daftar-hewan" class="navbar-item">Catatan Perawatan Hewan</a>
         
                     {% elif request.session.user.role == 'staf_admin' %}
                         <a href="/kelola-pengunjung" class="navbar-item">Kelola Pengunjung</a>

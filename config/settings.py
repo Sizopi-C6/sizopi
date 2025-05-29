@@ -34,7 +34,7 @@ SECRET_KEY = 'django-insecure-ada(8e&fq7=eyl+&=qr@k6h%awnve%c0i4p(8+*+^5@_&r$7q0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["https://sizopi-jet.vercel.app/", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["sizopi-jet.vercel.app", "localhost", "127.0.0.1"]
 
 # Application definition
 

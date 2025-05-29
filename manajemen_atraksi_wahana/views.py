@@ -1,8 +1,8 @@
 from collections import defaultdict
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, timedelta
 from django.utils import timezone
 from django.http import HttpResponse
-from django.db import connection
+from django.db import IntegrityError, connection
 from django.shortcuts import render, redirect
 from django.contrib import messages
 
@@ -296,26 +296,53 @@ def tambah_atraksi(request):
         data = request.POST
         nama_atraksi = data.get('nama_atraksi')
         lokasi = data.get('lokasi')
-        jam_input = data.get('jadwal')  
+        jam_input = data.get('jadwal')  # format: "HH:MM"
         kapasitas = data.get('kapasitas_max')
         pelatih_fullname = data.get('pelatih')
         hewan_terpilih = data.getlist('hewan')
 
-        # Validasi input
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT CONCAT_WS(' ', u.nama_depan, u.nama_tengah, u.nama_belakang)
+                FROM pelatih_hewan p
+                JOIN pengguna u ON p.username_lh = u.username
+            """)
+            pelatih_list = [row[0] for row in cursor.fetchall()]
+
+            cursor.execute("SELECT name, species FROM hewan")
+            hewan_list = [f"{name} ({species})" for name, species in cursor.fetchall()]
+
         if not all([nama_atraksi, lokasi, jam_input, kapasitas, pelatih_fullname]):
-            return HttpResponse("Data tidak lengkap", status=400)
+            messages.error(request, "Data tidak lengkap.")
+            return render(request, 'form_tambah_atraksi.html', {
+                'pelatih_list': pelatih_list,
+                'hewan_list': hewan_list,
+                'data': data,
+            })
 
         try:
             kapasitas = int(kapasitas)
             waktu = datetime.strptime(jam_input, "%H:%M").time()
         except ValueError:
-            return HttpResponse("Format jam harus HH:MM dan kapasitas harus angka", status=400)
+            messages.error(request, "Format jam harus HH:MM dan kapasitas harus angka.")
+            return render(request, 'form_tambah_atraksi.html', {
+                'pelatih_list': pelatih_list,
+                'hewan_list': hewan_list,
+                'data': data,
+            })
 
-        # Gabungkan tanggal sekarang dengan waktu input user
         jadwal_timestamp = datetime.combine(timezone.now().date(), waktu)
 
         with connection.cursor() as cursor:
-            # Ambil username pelatih dari fullname
+            cursor.execute("SELECT 1 FROM fasilitas WHERE nama = %s", [nama_atraksi])
+            if cursor.fetchone():
+                messages.error(request, f"Atraksi dengan nama '{nama_atraksi}' sudah ada.")
+                return render(request, 'form_tambah_atraksi.html', {
+                    'pelatih_list': pelatih_list,
+                    'hewan_list': hewan_list,
+                    'data': data,
+                })
+
             cursor.execute("""
                 SELECT p.username_lh
                 FROM pelatih_hewan p
@@ -324,41 +351,50 @@ def tambah_atraksi(request):
             """, [pelatih_fullname])
             result = cursor.fetchone()
             if not result:
-                return HttpResponse("Pelatih tidak ditemukan", status=400)
+                messages.error(request, "Pelatih tidak ditemukan.")
+                return render(request, 'form_tambah_atraksi.html', {
+                    'pelatih_list': pelatih_list,
+                    'hewan_list': hewan_list,
+                    'data': data,
+                })
             username_pelatih = result[0]
 
-            # Insert ke tabel fasilitas
-            cursor.execute("""
-                INSERT INTO fasilitas (nama, jadwal, kapasitas_max)
-                VALUES (%s, %s, %s)
-            """, [nama_atraksi, jadwal_timestamp, kapasitas])
+            try:
+                cursor.execute("""
+                    INSERT INTO fasilitas (nama, jadwal, kapasitas_max)
+                    VALUES (%s, %s, %s)
+                """, [nama_atraksi, jadwal_timestamp, kapasitas])
 
-            # Insert ke tabel atraksi
-            cursor.execute("""
-                INSERT INTO atraksi (nama_atraksi, lokasi)
-                VALUES (%s, %s)
-            """, [nama_atraksi, lokasi])
+                cursor.execute("""
+                    INSERT INTO atraksi (nama_atraksi, lokasi)
+                    VALUES (%s, %s)
+                """, [nama_atraksi, lokasi])
 
-            # Insert jadwal penugasan pakai jadwal_timestamp juga
-            cursor.execute("""
-                INSERT INTO jadwal_penugasan (nama_atraksi, username_lh, tgl_penugasan)
-                VALUES (%s, %s, %s)
-            """, [nama_atraksi, username_pelatih, jadwal_timestamp])
+                cursor.execute("""
+                    INSERT INTO jadwal_penugasan (nama_atraksi, username_lh, tgl_penugasan)
+                    VALUES (%s, %s, %s)
+                """, [nama_atraksi, username_pelatih, jadwal_timestamp])
 
-            # Insert relasi hewan yang berpartisipasi
-            for hewan in hewan_terpilih:
-                nama_hewan = hewan.split(' (')[0]
-                cursor.execute("SELECT id FROM hewan WHERE name = %s", [nama_hewan])
-                hasil = cursor.fetchone()
-                if hasil:
-                    cursor.execute("""
-                        INSERT INTO berpartisipasi (nama_fasilitas, id_hewan)
-                        VALUES (%s, %s)
-                    """, [nama_atraksi, hasil[0]])
+                for hewan in hewan_terpilih:
+                    nama_hewan = hewan.split(' (')[0]
+                    cursor.execute("SELECT id FROM hewan WHERE name = %s", [nama_hewan])
+                    hasil = cursor.fetchone()
+                    if hasil:
+                        cursor.execute("""
+                            INSERT INTO berpartisipasi (nama_fasilitas, id_hewan)
+                            VALUES (%s, %s)
+                        """, [nama_atraksi, hasil[0]])
+            except IntegrityError:
+                messages.error(request, "Gagal menyimpan atraksi. Pastikan nama tidak duplikat.")
+                return render(request, 'form_tambah_atraksi.html', {
+                    'pelatih_list': pelatih_list,
+                    'hewan_list': hewan_list,
+                    'data': data,
+                })
 
+        messages.success(request, "Atraksi berhasil ditambahkan.")
         return redirect('data_atraksi')
 
-    # GET: Ambil data pelatih & hewan untuk form
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT CONCAT_WS(' ', u.nama_depan, u.nama_tengah, u.nama_belakang)
@@ -372,7 +408,7 @@ def tambah_atraksi(request):
 
     return render(request, 'form_tambah_atraksi.html', {
         'pelatih_list': pelatih_list,
-        'hewan_list': hewan_list
+        'hewan_list': hewan_list,
     })
 
 def edit_atraksi(request, nama_atraksi):
@@ -503,46 +539,60 @@ def tambah_wahana(request):
     if request.method == 'POST':
         data = request.POST
         nama_wahana = data.get('nama_wahana')
-        kapasitas_max = data.get('kapasitas_max')
-        jadwal_input = data.get('jadwal') 
+        kapasitas_max = data.get('kapasitas')
+        jadwal_input = data.get('jadwal')
         peraturan_list = []
-        for key, value in request.POST.items():
-            print(f"{key}: {value}")
 
         for key in data.keys():
             if key.startswith('peraturan_'):
                 peraturan_list.append(data.get(key))
 
         if not all([nama_wahana, kapasitas_max, jadwal_input]):
-            return HttpResponse("Data tidak lengkap", status=400)
+            messages.error(request, "Data tidak lengkap.")
+            return render(request, 'form_tambah_wahana.html', {
+                'data': data,
+            })
 
         try:
             kapasitas_max = int(kapasitas_max)
             waktu = datetime.strptime(jadwal_input, "%H:%M").time()
         except ValueError:
-            return HttpResponse("Format waktu harus HH:MM dan kapasitas harus angka", status=400)
+            messages.error(request, "Format waktu harus HH:MM dan kapasitas harus angka.")
+            return render(request, 'form_tambah_wahana.html', {
+                'data': data,
+            })
 
         jadwal_timestamp = datetime.combine(timezone.now().date(), waktu)
-
         peraturan_text = "\n".join(peraturan_list) if peraturan_list else ""
 
         with connection.cursor() as cursor:
-            # Insert ke fasilitas
-            cursor.execute("""
-                INSERT INTO fasilitas (nama, jadwal, kapasitas_max)
-                VALUES (%s, %s, %s)
-            """, [nama_wahana, jadwal_timestamp, kapasitas_max])
+            cursor.execute("SELECT 1 FROM fasilitas WHERE nama = %s", [nama_wahana])
+            if cursor.fetchone():
+                messages.error(request, f"Nama wahana '{nama_wahana}' sudah digunakan.")
+                return render(request, 'form_tambah_wahana.html', {
+                    'data': data,
+                })
 
-            # Insert ke wahana (nama_wahana dan peraturan)
-            cursor.execute("""
-                INSERT INTO wahana (nama_wahana, peraturan)
-                VALUES (%s, %s)
-            """, [nama_wahana, peraturan_text])
+            try:
+                cursor.execute("""
+                    INSERT INTO fasilitas (nama, jadwal, kapasitas_max)
+                    VALUES (%s, %s, %s)
+                """, [nama_wahana, jadwal_timestamp, kapasitas_max])
 
+                cursor.execute("""
+                    INSERT INTO wahana (nama_wahana, peraturan)
+                    VALUES (%s, %s)
+                """, [nama_wahana, peraturan_text])
+            except IntegrityError:
+                messages.error(request, "Gagal menyimpan wahana. Pastikan nama tidak duplikat.")
+                return render(request, 'form_tambah_wahana.html', {
+                    'data': data,
+                })
+
+        messages.success(request, "Wahana berhasil ditambahkan.")
         return redirect('data_wahana')
 
     return render(request, 'form_tambah_wahana.html')
-
 def edit_wahana(request, nama_wahana):
     if request.method == 'POST':
         kapasitas = request.POST.get('kapasitas')

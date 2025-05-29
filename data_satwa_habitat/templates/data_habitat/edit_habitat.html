@@ -61,38 +61,43 @@
 {% endblock meta %}
 
 {% block content %}
-{% include 'navbar/dokter.html' %}
 <div class="min-h-screen p-8 font-[Poppins] flex items-center justify-center">
   <div class="w-full max-w-4xl">
     <div class="card p-8 rounded-2xl shadow-lg border border-[#c8e1cc]">
       <h2 class="text-3xl font-bold text-[#008000] mb-6 text-center">Form Edit Habitat</h2>
 
+      {% if form.non_field_errors %}
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+          {% for error in form.non_field_errors %}
+        <p class="font-medium">{{ error }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+
       <form method="post" class="space-y-6">
         {% csrf_token %}
         
         <div class="grid grid-cols-1 gap-6">
-          <!-- Nama (readonly) -->
           <div>
             <label class="block text-sm font-medium text-[#006400] mb-2">
               {{ form.nama.label }}
             </label>
-            <div class="readonly-field">
-              {{ form.nama.value }}
+            <div>
+              <input type="text" name="{{ form.nama.name }}" value="{{ form.nama.value }}" 
+                   class="form-input" id="id_nama">
             </div>
-            <input type="hidden" name="{{ form.nama.name }}" value="{{ form.nama.value }}">
           </div>
 
-          <!-- Luas Area (readonly) -->
           <div>
             <label class="block text-sm font-medium text-[#006400] mb-2">
               {{ form.luas_area.label }}
             </label>
-            <div class="readonly-field">
-              {{ form.luas_area.value }} m²
+            <div>
+              <input type="text" name="{{ form.luas_area.name }}" value="{{ form.luas_area.value }}" 
+                   class="form-input" id="id_luas_area">
             </div>
           </div>
 
-          <!-- Kapasitas (editable) -->
           <div>
             <label class="block text-sm font-medium text-[#006400] mb-2">
               {{ form.kapasitas.label }}
